@@ -15,11 +15,15 @@ Your goal is to build our first line of defense: a Machine Learning model (like 
 - **You combine your model's score with Priyanshi's GNN score** to create the final Risk Engine.
 - **You provide the explainable AI reasons to Deekshant** so he can send them to the frontend.
 
-## 📝 What You Have to Do RIGHT NOW (Documentation Phase)
-- Write down a list of "Features" your model will use (e.g., Transaction Velocity, Account Age, Number of Connections).
-- Document how you plan to evaluate if your model is actually working (Metrics).
-- **Do not train any models or write code yet!** Just document the plan.
+## 🛠️ Features & Domain Responsibility
+- Baseline AI rules and tabular feature extraction
+- XGBoost classification model for tabular/spreadsheet data
+- Class imbalance handling strategies
+- Explainable AI using SHAP values
+- Model evaluation metrics (e.g., PR-AUC)
 
-## 🚀 What You Will Build LATER (Implementation Phase)
-- Write the Python code to train the XGBoost model.
-- Write the code that generates the SHAP explanations for the frontend.
+## 📋 Step-by-Step Tasks
+1. **Step 1 (Documentation):** Write down a list of "Features" your model will use (e.g., Transaction Velocity, Account Age, Number of Connections).
+2. **Step 2 (Documentation):** Document how you plan to evaluate if your model is actually working (Metrics like PR-AUC).
+3. **Step 3 (Implementation):** Write the Python code to train the XGBoost model.
+4. **Step 4 (Implementation):** Write the code that generates the SHAP explanations for the frontend.

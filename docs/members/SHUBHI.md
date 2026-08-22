@@ -13,12 +13,16 @@ Your goal is to build the visual dashboard that a human investigator will actual
 - **You depend completely on Deekshant's API** to get the data you need to display.
 - **You display the Explainable AI reasons** created by Vinayak and Priyanshi.
 
-## 📝 What You Have to Do RIGHT NOW (Documentation Phase)
-- Sketch out a wireframe or drawing of what the main dashboard and the "Alert Investigation" screen will look like.
-- Research Cytoscape.js (or similar graph libraries) and document how we will use it to draw the network.
-- **Do not write any React code or build the UI yet!** Just document the plan.
+## 🛠️ Features & Domain Responsibility
+- React-based frontend dashboard
+- Interactive graph visualization using Cytoscape.js (or similar)
+- Investigation UI design (alerts list, risk metrics, network connections)
+- API fetching and frontend state management
+- Professional, premium-grade dashboard layout and UI interactions
 
-## 🚀 What You Will Build LATER (Implementation Phase)
-- Build the React application.
-- Create the interactive graph visualization where users can click on nodes and see money flowing.
-- Make the dashboard look highly professional and premium.
+## 📋 Step-by-Step Tasks
+1. **Step 1 (Documentation):** Sketch out a wireframe or drawing of what the main dashboard and the "Alert Investigation" screen will look like.
+2. **Step 2 (Documentation):** Research Cytoscape.js (or similar graph libraries) and document how we will use it to draw the network.
+3. **Step 3 (Implementation):** Build the React application structure and routing.
+4. **Step 4 (Implementation):** Create the interactive graph visualization component where users can click nodes to view flows.
+5. **Step 5 (Implementation):** Integrate with Deekshant's API and polish the UI styling for a premium look.

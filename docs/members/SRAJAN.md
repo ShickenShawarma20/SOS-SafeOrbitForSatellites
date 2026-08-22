@@ -14,11 +14,15 @@ You are building the network. Your goal is to take Sayansh's flat rows of data a
 - **You provide Graph Features to Vinayak** (like telling him "this account has 50 connections" so he can use it in his ML model).
 - **You provide the network structure to Priyanshi** so her advanced AI can learn from it.
 
-## 📝 What You Have to Do RIGHT NOW (Documentation Phase)
-- Draw out the visual schema: What are our Nodes and what are our Edges?
-- Write down 5 example Cypher queries we will need (e.g., "Find two accounts sharing the same device").
-- **Do not install Neo4j or write code yet!** Just document the plan.
+## 🛠️ Features & Domain Responsibility
+- Graph network topology mapping
+- Neo4j database configuration and loading
+- Cypher querying and optimization
+- Graph algorithms (e.g., Louvain community detection, centrality metrics)
+- Multi-hop queries to detect cascading transactions
 
-## 🚀 What You Will Build LATER (Implementation Phase)
-- Set up the Neo4j database.
-- Write the real Cypher queries to extract data and features for the AI team.
+## 📋 Step-by-Step Tasks
+1. **Step 1 (Documentation):** Draw out the visual schema: What are our Nodes and what are our Edges?
+2. **Step 2 (Documentation):** Write down 5 example Cypher queries we will need (e.g., "Find two accounts sharing the same device").
+3. **Step 3 (Implementation):** Set up and configure the Neo4j database.
+4. **Step 4 (Implementation):** Write the real Cypher queries to extract data and network features for the AI team.

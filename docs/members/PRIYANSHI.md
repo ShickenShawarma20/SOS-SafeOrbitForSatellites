@@ -14,11 +14,14 @@ Your goal is to build the most advanced part of our system: a Graph Neural Netwo
 - **You rely completely on Srajan** to provide the network structure.
 - **Your score is combined with Vinayak's score** to make the final decision.
 
-## 📝 What You Have to Do RIGHT NOW (Documentation Phase)
-- Read up on GraphSAGE and GAT, and write a simple summary of how we will use them.
-- Document how your model will figure out which neighbors are suspicious (Explainability).
-- **Do not train any neural networks or write code yet!** Just document the plan.
+## 🛠️ Features & Domain Responsibility
+- Graph Neural Network (GNN) models (GraphSAGE, Graph Attention/GAT)
+- Message passing mechanisms over network topology
+- Graph explainability highlighting suspicious connections
+- Feature integration from graph structures
 
-## 🚀 What You Will Build LATER (Implementation Phase)
-- Write the PyTorch code to build and train the GNN.
-- Export the trained model so the backend can use it.
+## 📋 Step-by-Step Tasks
+1. **Step 1 (Documentation):** Read up on GraphSAGE and GAT, and write a simple summary of how we will use them.
+2. **Step 2 (Documentation):** Document how your model will figure out which neighbors are suspicious (Explainability).
+3. **Step 3 (Implementation):** Write the PyTorch code to build and train the GNN model.
+4. **Step 4 (Implementation):** Export the trained GNN model so the backend can use it.

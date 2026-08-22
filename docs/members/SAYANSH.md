@@ -13,12 +13,15 @@ You are the foundation of the project. Your goal is to figure out what our fake 
 - **You provide data structure to Srajan** so he can build the Neo4j graph database.
 - **You provide clean data to Vinayak and Priyanshi** so they can train their AI models.
 
-## 📝 What You Have to Do RIGHT NOW (Documentation Phase)
-- Define the exact columns our data will have (Customer, Account, Device, Transaction).
-- Write down how a specific fraud pattern (like money laundering) will look in our data.
-- Read up on the IBM AMLSim simulator and summarize how we can use it.
-- **Do not write any code yet!** Just document the plan.
+## 🛠️ Features & Domain Responsibility
+- Raw reality definitions (transactions, entities)
+- Synthetic data generation (IBM AMLSim)
+- Data schemas and model variables
+- Event streaming (Kafka foundations)
 
-## 🚀 What You Will Build LATER (Implementation Phase)
-- Write Python scripts to generate or clean the synthetic dataset.
-- Build the data pipeline that feeds raw transactions into the rest of the system.
+## 📋 Step-by-Step Tasks
+1. **Step 1 (Documentation):** Define the exact columns our data will have (Customer, Account, Device, Transaction).
+2. **Step 2 (Documentation):** Write down how a specific fraud pattern (like money laundering) will look in our data.
+3. **Step 3 (Documentation):** Read up on the IBM AMLSim simulator and summarize how we can use it.
+4. **Step 4 (Implementation):** Write Python scripts to generate or clean the synthetic dataset.
+5. **Step 5 (Implementation):** Build the data pipeline that feeds raw transactions into the rest of the system.
