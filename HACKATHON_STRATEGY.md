@@ -75,3 +75,23 @@ Show vision beyond the hackathon:
 - Showing disorganized Jupyter notebooks instead of the Investigator UI.
 - Falsely claiming you invented GNNs or graph fraud detection. Acknowledge the research; pitch your *integration and application*.
 - Running out of time before showing the demo. **Show the demo early.**
+
+## 17. Step-by-Step Prototype Build Process
+To ensure the prototype is completed and fully integrated within the hackathon timeline, the team should execute the following phases:
+
+### Phase 1: Mock Integration (Initial Phase)
+1. **Data Seed (Sayansh):** Generate a tiny dummy transaction dataset (CSV format) detailing accounts, transactions, and devices to establish a schema.
+2. **Graph Ingestion (Srajan):** Import the dummy CSVs into Neo4j using Cypher. Verify nodes (Account, Customer, Device) and edges (TRANSFER, OWNED_BY, USED_DEVICE).
+3. **Mock API Server (Deekshant):** Build the initial FastAPI shell. Fetch mock nodes/edges from Neo4j and expose endpoints (e.g., `/alerts` and `/graph/{account_id}`) returning JSON.
+4. **Mock UI Rendering (Shubhi):** Establish the React project, configure Cytoscape.js, fetch data from the FastAPI mock endpoints, and render a basic node-link graph on screen.
+
+### Phase 2: Model Training & Feature Engineering (Middle Phase)
+5. **Synthetic Ingestion (Sayansh):** Run the IBM AMLSim simulator to generate a larger, realistic dataset containing pre-defined fraud rings.
+6. **Tabular & Topological Extraction (Srajan & Sayansh):** Load the simulated dataset into Neo4j. Run Louvain community detection and degree centrality algorithms, exporting these topological features to CSV for the ML models.
+7. **XGBoost Classifier (Vinayak):** Clean tabular features and train the XGBoost model to output a fraud probability score and compute SHAP explanations.
+8. **GNN Classifier (Priyanshi):** Build and train the PyTorch GNN model (GraphSAGE/GAT) using the network topology and node features. Export model weights or inference results.
+
+### Phase 3: Model Fusion & UI Polish (Final Phase)
+9. **API Model Integration (Deekshant, Vinayak & Priyanshi):** Integrate the trained XGBoost and GNN models into FastAPI. Create a scoring endpoint that computes the final risk score and returns explainability details (SHAP features and GNN graph attention weights).
+10. **UI Investigation Features (Shubhi):** Connect the real backend JSON to the UI. Style the risk score badges, show explainability panels (why the AI flagged the alert), and build interactive graph expansion (click to reveal neighbors).
+11. **System Walkthrough & Dry Run (All):** Perform end-to-end testing of the demo narrative (Alert -> Graph Exploration -> AI Explanation -> Action) and record the demo video as a fallback.
