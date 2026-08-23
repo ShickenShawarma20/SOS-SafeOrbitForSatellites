@@ -1,4 +1,4 @@
-# 🛰️ AEGIS-ORBITAL
+# 🛰️ SOS: Safe Orbit for Satellites
 ### Autonomous Space Situational Awareness (SSA) & Collision Avoidance Flight Director Console
 
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
@@ -8,7 +8,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**AEGIS-ORBITAL** is an intelligent, full-stack Space Situational Awareness (SSA) and Autonomous Collision Avoidance System designed to safeguard Low Earth Orbit (LEO) satellites from hypervelocity space debris encounters and prevent Kessler Syndrome.
+**SOS (Safe Orbit for Satellites)** is an intelligent, full-stack Space Situational Awareness (SSA) and Autonomous Collision Avoidance System designed to safeguard Low Earth Orbit (LEO) satellites from hypervelocity space debris encounters and prevent Kessler Syndrome.
 
 ---
 
@@ -47,7 +47,7 @@
 
 ```
                                   ┌──────────────────────────────────────────────┐
-                                  │           AEGIS OPERATIONAL CONSOLE          │
+                                  │            SOS OPERATIONAL CONSOLE           │
                                   │               (React 18 + Vite)              │
                                   └───────┬───────────────────────────────┬──────┘
                                           │                               │
@@ -90,8 +90,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/aegis-orbital.git
-   cd aegis-orbital
+   git clone https://github.com/ShickenShawarma20/SOS-SafeOrbitForSattelites.git
+   cd SOS-SafeOrbitForSattelites
    ```
 
 2. **Install dependencies:**
