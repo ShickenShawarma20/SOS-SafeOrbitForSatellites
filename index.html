@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOS · SafeOrbitForSattelites — Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="home">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- ============ ORBITAL VIEWER + CRITICAL ALERT ============ -->
+    <section class="dash-main">
+
+      <div class="orbital-viewer">
+        <canvas id="orbitalCanvas" role="img" aria-label="Live 3D orbital view of Earth, satellite tracks and the highlighted conjunction corridor between SAT-042 and OBJ-8821"></canvas>
+
+        <div class="viewer-head">
+          <div class="viewer-title">3D Orbital View</div>
+          <span class="live-dot">LIVE</span>
+        </div>
+
+        <div class="layer-chips" role="group" aria-label="Layer controls">
+          <button class="chip on" aria-pressed="true">SATELLITES</button>
+          <button class="chip chip-danger on" aria-pressed="true">DEBRIS / OBJ</button>
+          <button class="chip on" aria-pressed="true">ORBIT TRACKS</button>
+          <button class="chip">GROUND STATIONS</button>
+        </div>
+
+        <div class="viewer-controls">
+          <button class="vc-btn" data-zoom="in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+          <button class="vc-btn" data-cam="reset" aria-label="Reset camera" title="Reset camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+          <button class="vc-btn" data-zoom="out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
+        </div>
+
+        <div class="timeline-bar">
+          <button class="play-btn" id="playBtn" aria-label="Pause simulation">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          </button>
+          <div class="time-track" style="margin-bottom:8px;">
+            <span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--text-hi);">Now</span>
+            <div class="time-rail"></div>
+            <div class="time-fill"></div>
+            <div class="time-handle" style="left:50%;"></div>
+            <div class="tca-marker" style="left:64%;"></div>
+            <div class="time-labels" style="bottom:-13px;">
+              <span>-2h</span><span class="now">NOW</span><span>+2h</span>
+            </div>
+          </div>
+          <div class="tl-right">
+            <button class="btn btn-sm">2×</button>
+            <button class="icon-btn" aria-label="Fullscreen" style="width:31px;height:31px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="15" height="15"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right alert column -->
+      <div class="stack alert-panel">
+
+        <article class="alert-crit" aria-live="assertive">
+          <div class="alert-head">
+            <div class="alert-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9.5v4.5M12 17.2v.3" stroke-linecap="round"/></svg>
+              CRITICAL ALERT
+            </div>
+            <span class="badge badge-crit">HIGH RISK</span>
+          </div>
+          <div class="pair">SAT-042 <span class="arrow">↔</span> OBJ-8821</div>
+          <div class="alert-metrics">
+            <div class="am-row"><span class="k">TCA</span><span class="v red num">04:32:18</span></div>
+            <div class="am-row"><span class="k">Probability of Collision</span><span class="v red num">2.8 × 10⁻⁴</span></div>
+            <div class="am-row"><span class="k">Miss Distance</span><span class="v orange num">742 m</span></div>
+            <div class="am-row"><span class="k">Relative Velocity</span><span class="v num">13.7 km/s</span></div>
+            <div class="am-row"><span class="k">Relative Speed</span><span class="v num">27,650 km/h</span></div>
+          </div>
+          <div class="alert-actions">
+            <a class="btn btn-primary" href="conjunction.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              View Conjunction
+            </a>
+            <button class="btn btn-ghost" data-modal-open="alertMenuModal" aria-label="More actions">···</button>
+          </div>
+        </article>
+
+        <article class="card glass">
+          <div class="card-head">
+            <span class="card-title">Alert Summary</span>
+            <span class="badge badge-neutral" style="margin-left:auto;">Last 48 h</span>
+          </div>
+          <div class="card-body donut-row">
+            <div class="donut">
+              <svg id="alertDonut" width="126" height="126" viewBox="0 0 126 126" role="img" aria-label="12 total alerts: 1 critical, 3 high, 8 medium, 0 low"></svg>
+              <div class="donut-center"><div class="big">12</div><div class="small">Total</div></div>
+            </div>
+            <div class="legend">
+              <div class="legend-row"><span class="swatch" style="background:#EF4444;"></span>Critical<b>1</b></div>
+              <div class="legend-row"><span class="swatch" style="background:#F97316;"></span>High<b>3</b></div>
+              <div class="legend-row"><span class="swatch" style="background:#F59E0B;"></span>Medium<b>8</b></div>
+              <div class="legend-row"><span class="swatch" style="background:#38BDF8;"></span>Low<b>0</b></div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ============ CONJUNCTIONS / MANEUVER / FEED ============ -->
+    <section class="dash-row2">
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Upcoming Conjunctions</span>
+          <span class="live-dot" style="margin-left:auto;">TRACKING</span>
+        </div>
+        <div class="table-scroll">
+          <table class="cx-table">
+            <thead>
+              <tr><th>Satellite</th><th>Object</th><th>TCA</th><th>Miss Dist.</th><th>Pc</th></tr>
+            </thead>
+            <tbody>
+              <tr class="row-crit" onclick="location.href='conjunction.html'">
+                <td class="sat-id">SAT-042</td><td class="obj-id">OBJ-8821</td>
+                <td>04:32:18</td><td>742 m</td><td><span class="pc-pill pc-crit">2.8e-4</span></td>
+              </tr>
+              <tr class="row-high" onclick="location.href='conjunction.html'">
+                <td class="sat-id">SAT-078</td><td class="obj-id">OBJ-3421</td>
+                <td>11:15:42</td><td>1.2 km</td><td><span class="pc-pill pc-high">7.6e-6</span></td>
+              </tr>
+              <tr class="row-med">
+                <td class="sat-id">SAT-021</td><td class="obj-id">OBJ-1123</td>
+                <td>15:42:09</td><td>3.8 km</td><td><span class="pc-pill pc-med">1.2e-6</span></td>
+              </tr>
+              <tr>
+                <td class="sat-id">SAT-109</td><td class="obj-id">OBJ-7781</td>
+                <td>02d 01:33</td><td>5.6 km</td><td><span class="pc-pill pc-low">2.3e-6</span></td>
+              </tr>
+              <tr>
+                <td class="sat-id">SAT-033</td><td class="obj-id">OBJ-9912</td>
+                <td>2d 06:55</td><td>8.1 km</td><td><span class="pc-pill pc-low">3.1e-6</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-foot">
+          <span class="card-sub">Screened against 21,430 catalogued objects</span>
+          <a class="btn btn-sm" href="conjunction.html">View All Conjunctions →</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Next Maneuver</span>
+          <span class="badge badge-info">PLANNED</span>
+        </div>
+        <div class="card-body">
+          <div class="maneuver-hero">
+            <svg class="sat-illustration" viewBox="0 0 96 96" fill="none" aria-hidden="true">
+              <ellipse cx="48" cy="52" rx="44" ry="16" stroke="#38BDF8" stroke-opacity=".35" transform="rotate(-16 48 52)"/>
+              <circle cx="82" cy="38" r="3" fill="#38BDF8"/>
+              <rect x="36" y="36" width="24" height="22" rx="3" fill="#142238" stroke="#38BDF8"/>
+              <rect x="12" y="41" width="20" height="12" rx="2" fill="#0C4A6E" stroke="#38BDF8"/>
+              <rect x="64" y="41" width="20" height="12" rx="2" fill="#0C4A6E" stroke="#38BDF8"/>
+              <path d="M48 30v-8M44 22h8" stroke="#94A3B8" stroke-width="2"/>
+            </svg>
+            <div>
+              <div style="font-family:var(--mono);font-size:17px;font-weight:700;color:var(--accent);">SAT-042</div>
+              <div class="card-sub" style="margin-top:2px;">Collision Avoidance Burn</div>
+            </div>
+          </div>
+          <div class="kv-grid">
+            <div class="kv accent"><div class="k">Window</div><div class="v">May 26, 02:10–02:45 UTC</div></div>
+            <div class="kv accent"><div class="k">Delta-V</div><div class="v">0.42 m/s</div></div>
+            <div class="kv"><div class="k">Purpose</div><div class="v">Collision Avoidance</div></div>
+            <div class="kv"><div class="k">Impact on Fuel</div><div class="v">−0.08% <small>(12.4 kg)</small></div></div>
+            <div class="kv"><div class="k">Duration</div><div class="v">2m 34s</div></div>
+          </div>
+        </div>
+        <div class="card-foot" style="gap:9px;">
+          <a class="btn btn-sm btn-primary" href="maneuvers.html" style="flex:1;">View Maneuver Plan</a>
+          <a class="btn btn-sm" href="maneuvers.html">Simulate</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><span class="card-title">System Feed</span></div>
+        <div class="feed">
+          <div class="feed-item"><span class="sev-dot sev-red"></span><div><div class="feed-text">Conjunction Alert: <b>SAT-042 ↔ OBJ-8821</b></div><div class="feed-time">2 min ago</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-yellow"></span><div><div class="feed-text">Tracking Update: OBJ-3421</div><div class="feed-time">7 min ago</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-blue"></span><div><div class="feed-text">Maneuver Completed: SAT-017</div><div class="feed-time">18 min ago</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-green"></span><div><div class="feed-text">New TLE Data Received</div><div class="feed-time">21 min ago</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-blue"></span><div><div class="feed-text">Weather Update: KSAT Ground Station</div><div class="feed-time">32 min ago</div></div></div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- ============ COVERAGE / TIMELINE / FUEL ============ -->
+    <section class="dash-row3">
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Orbital Coverage</span>
+          <span class="live-dot" style="margin-left:auto;">NETWORK</span>
+        </div>
+        <div class="card-body">
+          <div class="coverage-map">
+            <svg viewBox="0 0 720 340" role="img" aria-label="World map showing ground station coverage">
+              <g class="graticule">
+                <line x1="0" y1="85" x2="720" y2="85"/><line x1="0" y1="170" x2="720" y2="170"/><line x1="0" y1="255" x2="720" y2="255"/>
+                <line x1="120" y1="0" x2="120" y2="340"/><line x1="240" y1="0" x2="240" y2="340"/><line x1="360" y1="0" x2="360" y2="340"/><line x1="480" y1="0" x2="480" y2="340"/><line x1="600" y1="0" x2="600" y2="340"/>
+                <ellipse cx="360" cy="170" rx="360" ry="170"/>
+              </g>
+              <g class="land">
+                <path d="M60 62 Q100 38 165 46 Q215 40 232 66 Q250 84 228 104 Q238 128 214 140 L196 168 Q178 176 166 158 Q136 148 118 122 Q76 108 60 84 Z"/>
+                <path d="M212 190 Q244 178 258 204 Q268 236 252 272 Q240 310 222 314 Q206 296 208 262 Q198 224 212 190 Z"/>
+                <path d="M332 60 Q360 42 396 54 Q412 68 396 86 Q372 98 348 92 Q330 80 332 60 Z"/>
+                <path d="M330 118 Q380 104 416 124 Q438 152 424 192 Q408 240 384 262 Q362 268 350 236 Q330 196 326 156 Z"/>
+                <path d="M420 52 Q480 28 560 44 Q622 52 636 84 Q648 116 606 132 Q560 150 512 138 Q462 144 436 118 Q414 84 420 52 Z"/>
+                <path d="M560 218 Q606 202 646 222 Q664 244 644 264 Q606 280 572 266 Q550 244 560 218 Z"/>
+              </g>
+              <g>
+                <g transform="translate(370,48)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(96,74)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(216,132)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(184,138)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(214,268)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(248,196)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(336,106)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(398,208)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(468,178)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(524,112)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(578,118)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(588,248)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(652,284)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(108,148)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
+                <g transform="translate(304,232)"><circle class="station offline" r="3.4"/></g>
+                <g transform="translate(636,92)"><circle class="station offline" r="3.4"/></g>
+              </g>
+            </svg>
+          </div>
+          <div class="coverage-stats">
+            <div class="cs-pill online"><div class="v">32</div><div class="k">Stations Online</div></div>
+            <div class="cs-pill offline"><div class="v">2</div><div class="k">Offline</div></div>
+            <div class="cs-pill cov"><div class="v">98.7%</div><div class="k">Global Coverage</div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Conjunction Timeline</span>
+          <span class="card-sub" style="margin-left:auto;">±12 h</span>
+        </div>
+        <div class="cx-timeline">
+          <div class="tl-scale">
+            <span class="tick" style="left:0%;">-12h</span>
+            <span class="tick" style="left:25%;">-6h</span>
+            <span class="tick now" style="left:50%;">NOW</span>
+            <span class="tick" style="left:75%;">+6h</span>
+            <span class="tick" style="left:99%;">+12h</span>
+          </div>
+          <div class="tl-track">
+            <span class="tl-name">SAT-042</span>
+            <div class="tl-lane"><span class="now-line" style="left:50%;"></span>
+              <span class="tl-event ev-med" style="left:18%;" data-label="-7.6h · Pc 4.1e-7"></span>
+              <span class="tl-event ev-crit" style="left:57%;" data-label="TCA 04:32 · Pc 2.8e-4"></span>
+            </div>
+          </div>
+          <div class="tl-track">
+            <span class="tl-name">SAT-078</span>
+            <div class="tl-lane"><span class="now-line" style="left:50%;"></span>
+              <span class="tl-event ev-high" style="left:71%;" data-label="+5.1h · Pc 7.6e-6"></span>
+            </div>
+          </div>
+          <div class="tl-track">
+            <span class="tl-name">SAT-021</span>
+            <div class="tl-lane"><span class="now-line" style="left:50%;"></span>
+              <span class="tl-event ev-med" style="left:83%;" data-label="+7.9h · Pc 1.2e-6"></span>
+              <span class="tl-event ev-low" style="left:36%;" data-label="-3.4h · Pc 8e-8"></span>
+            </div>
+          </div>
+          <div class="tl-track">
+            <span class="tl-name">SAT-033</span>
+            <div class="tl-lane"><span class="now-line" style="left:50%;"></span>
+              <span class="tl-event ev-low" style="left:92%;" data-label="+10.1h · Pc 3.1e-6"></span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><span class="card-title">Fuel Status</span><span class="badge badge-nominal">NOMINAL</span></div>
+        <div class="card-body fuel-wrap">
+          <div class="fuel-ring">
+            <svg id="fuelGauge" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Fuel remaining 78 percent"></svg>
+            <div class="fuel-center"><div class="pct">78%</div><div class="lbl">Remaining</div></div>
+          </div>
+          <div class="fuel-stats">
+            <div class="fuel-stat"><span>Total Fuel</span><b>154.8 kg</b></div>
+            <div class="fuel-stat"><span>Usable Fuel</span><b>121.0 kg</b></div>
+            <div class="fuel-stat"><span>Reserved</span><b>33.8 kg</b></div>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Alert actions modal -->
+    <div class="modal-backdrop" id="alertMenuModal" role="dialog" aria-modal="true" aria-labelledby="alertMenuTitle">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="modal-title" id="alertMenuTitle">Alert Actions · SAT-042 ↔ OBJ-8821</span>
+          <button class="x-btn" data-modal-close aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          Choose an action for this critical conjunction. All actions are logged.
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-modal-close>Add to Watchlist</button>
+          <button class="btn btn-danger" data-modal-close>Acknowledge &amp; Silence</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/orbital.js"></script>
+</body>
+</html>

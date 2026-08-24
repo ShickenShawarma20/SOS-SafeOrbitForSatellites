@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT-042 ↔ OBJ-8821 · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="conjunctions">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- Header -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Conjunctions / CD-2024-0526-0417</div>
+        <h1>
+          SAT-042 <span style="color:var(--crit);">↔</span> OBJ-8821
+          <span class="badge badge-crit">HIGH RISK</span>
+        </h1>
+        <div class="card-sub num" style="margin-top:5px;">TCA: 04:32:18 · May 26, 2024 00:14 UTC</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn">+ Add to Watchlist</button>
+        <a class="btn btn-primary" href="maneuvers.html">Analyze Maneuver →</a>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="card" aria-label="Conjunction sections">
+      <div class="tabs">
+        <button class="tab active">Overview</button>
+        <button class="tab">Analysis</button>
+        <button class="tab">History <span class="cnt">6</span></button>
+        <button class="tab">Maneuver Options</button>
+      </div>
+    </nav>
+
+    <section class="two-col">
+
+      <!-- Close approach visualization -->
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Close Approach Geometry</span>
+          <span class="live-dot" style="margin-left:auto;">PROPAGATING</span>
+        </div>
+        <div class="approach-viz">
+          <canvas id="approachCanvas" role="img" aria-label="Close approach visualization showing nominal trajectories of SAT-042 and OBJ-8821, uncertainty regions and the TCA point"></canvas>
+        </div>
+        <div class="viz-legend">
+          <span class="vl-item"><span class="vl-swatch" style="background:#38BDF8;"></span>SAT-042 nominal trajectory</span>
+          <span class="vl-item"><span class="vl-swatch" style="background:#EF4444;"></span>OBJ-8821 nominal trajectory</span>
+          <span class="vl-item"><span class="vl-swatch" style="border:1px dashed #38BDF8;background:rgba(56,189,248,.15);"></span>SAT covariance (3σ)</span>
+          <span class="vl-item"><span class="vl-swatch" style="border:1px dashed #EF4444;background:rgba(239,68,68,.15);"></span>OBJ covariance (3σ)</span>
+          <span class="vl-item"><span class="vl-swatch" style="background:#EF4444;border-radius:50%;"></span>TCA point</span>
+        </div>
+      </article>
+
+      <!-- Risk metrics -->
+      <div class="stack">
+        <article class="card">
+          <div class="card-head"><span class="card-title">Risk Metrics</span><span class="badge badge-crit" style="margin-left:auto;">HIGH RISK</span></div>
+          <div class="card-body">
+            <div class="detail-grid">
+              <div class="info-tile"><div class="k">Probability of Collision</div><div class="v" style="color:var(--crit);">2.8 × 10⁻⁴</div></div>
+              <div class="info-tile"><div class="k">Miss Distance</div><div class="v" style="color:var(--high);">742 m</div></div>
+              <div class="info-tile"><div class="k">Relative Velocity</div><div class="v">13.7 km/s</div></div>
+              <div class="info-tile"><div class="k">Relative Speed</div><div class="v">27,650 km/h</div></div>
+              <div class="info-tile"><div class="k">Combined Uncertainty</div><div class="v">1.28 km</div></div>
+              <div class="info-tile"><div class="k">Screening Volume</div><div class="v">10 × 10 × 10 <small>km</small></div></div>
+            </div>
+            <div style="margin-top:14px;padding:11px 13px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);font-size:12.5px;">
+              <b>Assessment:</b> Pc exceeds the 10⁻⁴ maneuver threshold. Collision-avoidance maneuver
+              recommended before TCA. <a href="maneuvers.html">Review candidate plans →</a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Orbital information -->
+        <article class="card">
+          <div class="card-head"><span class="card-title">Orbital Information</span></div>
+          <div class="card-body orbit-cols">
+            <div class="orbit-block">
+              <h4 class="sat">SAT-042</h4>
+              <div class="fuel-stats">
+                <div class="fuel-stat"><span>Altitude</span><b>450 km</b></div>
+                <div class="fuel-stat"><span>Inclination</span><b>97.6°</b></div>
+                <div class="fuel-stat"><span>Period</span><b>92.67 min</b></div>
+                <div class="fuel-stat"><span>Eccentricity</span><b>0.000126</b></div>
+              </div>
+            </div>
+            <div class="orbit-block">
+              <h4 class="obj">OBJ-8821</h4>
+              <div class="fuel-stats">
+                <div class="fuel-stat"><span>Altitude</span><b>448 km</b></div>
+                <div class="fuel-stat"><span>Inclination</span><b>97.4°</b></div>
+                <div class="fuel-stat"><span>Period</span><b>92.58 min</b></div>
+                <div class="fuel-stat"><span>Type</span><b>Frag.</b></div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="two-col" style="grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);">
+      <article class="card">
+        <div class="card-head"><span class="card-title">Event History</span></div>
+        <div class="feed">
+          <div class="feed-item"><span class="sev-dot sev-red"></span><div><div class="feed-text">Pc updated to <b>2.8 × 10⁻⁴</b> after CDM-06</div><div class="feed-time">Today, 19:12 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-yellow"></span><div><div class="feed-text">Miss distance reduced to 742 m in CDM-05</div><div class="feed-time">Today, 13:40 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-yellow"></span><div><div class="feed-text">Event entered 10 km screening volume</div><div class="feed-time">May 24, 08:02 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-blue"></span><div><div class="feed-text">First screening — Pc 9.4 × 10⁻⁷</div><div class="feed-time">May 21, 22:15 UTC</div></div></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Probability Evolution</span>
+          <span class="card-sub" style="margin-left:auto;">Last 6 CDMs</span>
+        </div>
+        <div class="table-scroll">
+          <table class="cx-table">
+            <thead><tr><th>CDM</th><th>Epoch</th><th>Miss Dist.</th><th>Pc</th><th>Trend</th></tr></thead>
+            <tbody>
+              <tr><td>CDM-06</td><td>May 25 19:00</td><td>742 m</td><td><span class="pc-pill pc-crit">2.8e-4</span></td><td style="color:var(--crit);">▲ 61%</td></tr>
+              <tr><td>CDM-05</td><td>May 25 07:00</td><td>801 m</td><td><span class="pc-pill pc-crit">1.7e-4</span></td><td style="color:var(--crit);">▲ 42%</td></tr>
+              <tr><td>CDM-04</td><td>May 24 19:00</td><td>963 m</td><td><span class="pc-pill pc-high">1.2e-4</span></td><td style="color:var(--high);">▲ 18%</td></tr>
+              <tr><td>CDM-03</td><td>May 24 07:00</td><td>1.1 km</td><td><span class="pc-pill pc-high">9.8e-5</span></td><td style="color:var(--warn);">▲ 9%</td></tr>
+              <tr><td>CDM-02</td><td>May 23 19:00</td><td>1.6 km</td><td><span class="pc-pill pc-med">6.1e-6</span></td><td style="color:var(--warn);">▲ 3%</td></tr>
+              <tr><td>CDM-01</td><td>May 21 22:00</td><td>2.9 km</td><td><span class="pc-pill pc-low">9.4e-7</span></td><td style="color:var(--text-mid);">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/orbital.js"></script>
+</body>
+</html>

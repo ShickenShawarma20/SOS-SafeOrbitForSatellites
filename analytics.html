@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="analytics">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- Header -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Operations Analytics / Last 30 Days</div>
+        <h1>ANALYTICS</h1>
+        <div class="card-sub" style="margin-top:5px;">Conjunction screening performance · May 2024</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn btn-sm on f-chip">7D</button>
+        <button class="btn btn-sm">14D</button>
+        <button class="btn btn-sm">30D</button>
+        <button class="btn">Export Report</button>
+      </div>
+    </section>
+
+    <!-- Top metrics -->
+    <section class="metric-grid">
+      <article class="metric-card">
+        <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></svg></div>
+        <div>
+          <div class="metric-val num">156</div>
+          <div class="metric-key">Total Conjunctions</div>
+          <div class="metric-trend trend-down">▲ 12.3% vs prev. 7d</div>
+        </div>
+      </article>
+      <article class="metric-card warn">
+        <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+        <div>
+          <div class="metric-val num">4.2 × 10⁻⁵</div>
+          <div class="metric-key">Average Pc</div>
+          <div class="metric-trend trend-up">▼ 8.1% vs prev. 7d</div>
+        </div>
+      </article>
+      <article class="metric-card ok">
+        <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19c6 0 4-11 10-11h4"/><path d="m15.5 5 3 3-3 3"/></svg></div>
+        <div>
+          <div class="metric-val num">7</div>
+          <div class="metric-key">Maneuvers Executed</div>
+          <div class="metric-trend trend-down">▲ 2 vs prev. 7d</div>
+        </div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <div>
+          <div class="metric-val num" style="color:var(--nominal);">94.6%</div>
+          <div class="metric-key">Risk Reduction</div>
+          <div class="metric-trend trend-down">▲ 1.9 pts vs prev. 7d</div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Charts row 1 -->
+    <section class="two-col">
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Conjunctions Over Time</span>
+          <span class="card-sub" style="margin-left:auto;">Screened events per week</span>
+        </div>
+        <div class="card-body chart-box">
+          <canvas id="chartTime" role="img" aria-label="Line chart of conjunctions over time, trending upward from about 14 to about 26 events"></canvas>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Conjunctions by Severity</span>
+          <span class="badge badge-neutral" style="margin-left:auto;">By orbit regime</span>
+        </div>
+        <div class="card-body chart-box">
+          <canvas id="chartSeverity" role="img" aria-label="Grouped bar chart of conjunction counts by severity across LEO, MEO, GEO and HEO orbit regimes"></canvas>
+        </div>
+      </article>
+    </section>
+
+    <!-- Charts row 2 -->
+    <section class="two-col">
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Top Objects by Conjunctions</span>
+          <span class="card-sub" style="margin-left:auto;">Last 30 days</span>
+        </div>
+        <div class="card-body chart-box tall">
+          <canvas id="chartTopObjects" role="img" aria-label="Horizontal bar chart of top conjunction-generating objects, led by OBJ-8821 with 14 events"></canvas>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Conjunctions by Orbit Altitude</span>
+          <span class="badge badge-high" style="margin-left:auto;">400–550 km peak</span>
+        </div>
+        <div class="card-body chart-box tall">
+          <canvas id="chartAltitude" role="img" aria-label="Bar chart of conjunctions by altitude band with a peak of 34 events in the 400 to 550 kilometer band"></canvas>
+        </div>
+      </article>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/charts.js"></script>
+</body>
+</html>

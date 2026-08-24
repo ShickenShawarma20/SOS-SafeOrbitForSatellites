@@ -1,0 +1,9 @@
+{
+  "name": "sos-safeorbitforsattelites",
+  "version": "1.0.0",
+  "description": "SOS · SafeOrbitForSattelites — Satellite Collision Avoidance System frontend",
+  "scripts": {
+    "start": "npx --yes serve -l 3030 .",
+    "dev": "npx --yes serve -l 3030 ."
+  }
+}

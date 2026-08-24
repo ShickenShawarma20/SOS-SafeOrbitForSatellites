@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT-042 · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="satellites">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- Header -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Satellite Registry / Earth Observation</div>
+        <h1>
+          SAT-042
+          <span class="badge badge-nominal">OPERATIONAL</span>
+          <span class="badge badge-crit">1 CRITICAL CONJUNCTION</span>
+        </h1>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn">Download TLE</button>
+        <a class="btn btn-primary" href="conjunction.html">View Critical Conjunction →</a>
+      </div>
+    </section>
+
+    <!-- Identity strip -->
+    <article class="card">
+      <div class="card-body maneuver-hero" style="align-items:center;">
+        <svg class="sat-illustration" viewBox="0 0 96 96" fill="none" aria-hidden="true" style="width:110px;height:110px;">
+          <ellipse cx="48" cy="52" rx="44" ry="16" stroke="#38BDF8" stroke-opacity=".35" transform="rotate(-16 48 52)"/>
+          <circle cx="84" cy="40" r="3" fill="#38BDF8"/>
+          <rect x="34" y="34" width="28" height="26" rx="4" fill="#142238" stroke="#38BDF8"/>
+          <path d="M38 60v10M58 60v10" stroke="#94A3B8" stroke-width="2"/>
+          <rect x="8" y="40" width="24" height="14" rx="2" fill="#0C4A6E" stroke="#38BDF8"/>
+          <path d="M12 43v8M17 43v8M22 43v8M27 43v8M64 43v8M69 43v8M74 43v8M79 43v8" stroke="#38BDF8" stroke-opacity=".5"/>
+          <rect x="64" y="40" width="24" height="14" rx="2" fill="#0C4A6E" stroke="#38BDF8"/>
+          <path d="M48 34v-9M43 25h10" stroke="#94A3B8" stroke-width="2"/>
+          <circle cx="48" cy="47" r="5" stroke="#F59E0B" stroke-width="1.6"/>
+        </svg>
+        <div style="flex:1;">
+          <div class="detail-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+            <div class="info-tile"><div class="k">Satellite Type</div><div class="v">Earth Observation</div></div>
+            <div class="info-tile"><div class="k">Operator</div><div class="v">SafeOrbit Systems</div></div>
+            <div class="info-tile"><div class="k">Launch Date</div><div class="v">May 12, 2021</div></div>
+            <div class="info-tile"><div class="k">Mass</div><div class="v">1,200 kg</div></div>
+            <div class="info-tile"><div class="k">NORAD ID</div><div class="v">48621</div></div>
+            <div class="info-tile"><div class="k">Mission Elapsed</div><div class="v">3y 2m 14d</div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Tabs -->
+    <nav class="card" aria-label="Satellite sections">
+      <div class="tabs">
+        <button class="tab active">Overview</button>
+        <button class="tab">Telemetry</button>
+        <button class="tab">Orbit</button>
+        <button class="tab">History</button>
+        <button class="tab">Files <span class="cnt">23</span></button>
+      </div>
+    </nav>
+
+    <section class="three-col">
+
+      <!-- Subsystem status -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Subsystem Status</span><span class="live-dot" style="margin-left:auto;">TELEMED</span></div>
+        <div class="card-body status-list">
+          <div class="status-row"><span class="sys-name">Power System</span><span class="status-ok">Nominal</span></div>
+          <div class="status-row"><span class="sys-name">Propulsion</span><span class="status-ok">Nominal</span></div>
+          <div class="status-row"><span class="sys-name">Attitude Control</span><span class="status-ok">Nominal</span></div>
+          <div class="status-row"><span class="sys-name">Communications</span><span class="status-ok">Nominal</span></div>
+          <div class="status-row"><span class="sys-name">Payload</span><span class="status-ok">Nominal</span></div>
+        </div>
+      </article>
+
+      <!-- Fuel -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Fuel</span><span class="badge badge-nominal" style="margin-left:auto;">NOMINAL</span></div>
+        <div class="card-body fuel-wrap">
+          <div class="fuel-ring">
+            <svg id="satFuelGauge" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Fuel remaining 78 percent"></svg>
+            <div class="fuel-center"><div class="pct">78%</div><div class="lbl">Remaining</div></div>
+          </div>
+          <div class="fuel-stats">
+            <div class="fuel-stat"><span>Total Fuel</span><b>154.8 kg</b></div>
+            <div class="fuel-stat"><span>Usable Fuel</span><b>121.0 kg</b></div>
+            <div class="fuel-stat"><span>Reserved</span><b>33.8 kg</b></div>
+            <div class="fuel-stat"><span>Est. End of Life</span><b>2029 Q3</b></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Current orbit -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Current Orbit</span><span class="card-sub" style="margin-left:auto;">SSO · Sun-synchronous</span></div>
+        <div class="card-body">
+          <div class="detail-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div class="info-tile"><div class="k">Altitude</div><div class="v">450 km</div></div>
+            <div class="info-tile"><div class="k">Inclination</div><div class="v">97.6°</div></div>
+            <div class="info-tile"><div class="k">RAAN</div><div class="v">132.4°</div></div>
+            <div class="info-tile"><div class="k">Eccentricity</div><div class="v">0.000126</div></div>
+            <div class="info-tile"><div class="k">Period</div><div class="v">92.67 min</div></div>
+            <div class="info-tile"><div class="k">Arg. of Perigee</div><div class="v">91.2°</div></div>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <section class="two-col">
+
+      <!-- Recent events -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Recent Events</span></div>
+        <div class="feed">
+          <div class="feed-item"><span class="sev-dot sev-red"></span><div><div class="feed-text">Critical conjunction flagged: OBJ-8821 — Pc 2.8 × 10⁻⁴</div><div class="feed-time">Today, 19:12 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-blue"></span><div><div class="feed-text">Station keeping burn completed (ΔV 0.11 m/s)</div><div class="feed-time">May 22, 03:41 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-green"></span><div><div class="feed-text">Payload calibration cycle passed</div><div class="feed-time">May 20, 14:08 UTC</div></div></div>
+          <div class="feed-item"><span class="sev-dot sev-blue"></span><div><div class="feed-text">TLE updated from KSAT Svalbard pass</div><div class="feed-time">May 20, 06:55 UTC</div></div></div>
+        </div>
+      </article>
+
+      <!-- Next passes -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Upcoming Ground Passes</span></div>
+        <div class="table-scroll">
+          <table class="cx-table">
+            <thead><tr><th>AOS</th><th>Station</th><th>Duration</th><th>Max Elev.</th></tr></thead>
+            <tbody>
+              <tr><td>23:04:11</td><td>KSAT Svalbard</td><td>9m 12s</td><td>78°</td></tr>
+              <tr><td>00:41:36</td><td>Fairbanks</td><td>7m 48s</td><td>54°</td></tr>
+              <tr><td>02:19:02</td><td>Wallops</td><td>6m 30s</td><td>41°</td></tr>
+              <tr><td>03:56:44</td><td>Santiago</td><td>8m 05s</td><td>66°</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+    </section>
+
+  </main>
+</div>
+
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/orbital.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.renderFuelGauge) renderFuelGauge("satFuelGauge", 78);
+  });
+</script>
+</body>
+</html>

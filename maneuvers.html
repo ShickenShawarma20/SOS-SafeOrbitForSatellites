@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maneuver Planner · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="maneuvers">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- Header -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Maneuver Planner / SAT-042</div>
+        <h1>
+          MANEUVER PLANNER
+          <span class="badge badge-info">CD-2024-0526-0417</span>
+        </h1>
+        <div class="card-sub num" style="margin-top:5px;">Target: SAT-042 ↔ OBJ-8821 · TCA 04:32:18 UTC · Pc 2.8 × 10⁻⁴</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn">Export Plan</button>
+        <button class="btn btn-primary" data-modal-open="simulateModal">Simulate Plan</button>
+      </div>
+    </section>
+
+    <!-- Maneuver window -->
+    <article class="card">
+      <div class="window-bar">
+        <div class="win-box">
+          <div class="k">Earliest</div>
+          <div class="v">May 26, 02:10 UTC</div>
+        </div>
+        <div class="range-slider">
+          <span style="position:absolute;top:-16px;left:12%;font-family:var(--mono);font-size:9.5px;color:var(--text-low);">BURN START</span>
+          <span style="position:absolute;top:-16px;right:8%;font-family:var(--mono);font-size:9.5px;color:var(--text-low);">BURN END</span>
+          <div class="rail"></div>
+          <div class="sel" id="planSel" style="left:12%;right:8%;"></div>
+          <input type="range" min="0" max="100" value="12" aria-label="Earliest burn time">
+          <input type="range" min="0" max="100" value="92" aria-label="Latest burn time">
+        </div>
+        <div class="win-box">
+          <div class="k">Latest</div>
+          <div class="v">May 26, 02:45 UTC</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Candidate plans -->
+    <section aria-label="Candidate maneuvers">
+      <div class="plan-cards">
+
+        <button class="plan-card selected" data-plan="A">
+          <div class="plan-head">
+            <span class="plan-name" style="color:#4ADE80;">PLAN A</span>
+            <span class="rec-badge">RECOMMENDED</span>
+          </div>
+          <div class="plan-stats">
+            <div class="plan-stat"><span class="k">ΔV</span><span class="v num">0.42 m/s</span></div>
+            <div class="plan-stat"><span class="k">Fuel Impact</span><span class="v num">−0.08%</span></div>
+            <div class="plan-stat"><span class="k">New Miss Distance</span><span class="v num" style="color:var(--nominal);">2.45 km</span></div>
+            <div class="plan-stat"><span class="k">Risk Reduction</span><span class="v num" style="color:var(--nominal);">92.1%</span></div>
+          </div>
+        </button>
+
+        <button class="plan-card" data-plan="B">
+          <div class="plan-head">
+            <span class="plan-name" style="color:var(--warn);">PLAN B</span>
+          </div>
+          <div class="plan-stats">
+            <div class="plan-stat"><span class="k">ΔV</span><span class="v num">0.31 m/s</span></div>
+            <div class="plan-stat"><span class="k">Fuel Impact</span><span class="v num">−0.06%</span></div>
+            <div class="plan-stat"><span class="k">New Miss Distance</span><span class="v num">1.82 km</span></div>
+            <div class="plan-stat"><span class="k">Risk Reduction</span><span class="v num">84.7%</span></div>
+          </div>
+        </button>
+
+        <button class="plan-card" data-plan="C">
+          <div class="plan-head">
+            <span class="plan-name" style="color:#A78BFA;">PLAN C</span>
+          </div>
+          <div class="plan-stats">
+            <div class="plan-stat"><span class="k">ΔV</span><span class="v num">0.51 m/s</span></div>
+            <div class="plan-stat"><span class="k">Fuel Impact</span><span class="v num">−0.11%</span></div>
+            <div class="plan-stat"><span class="k">New Miss Distance</span><span class="v num" style="color:var(--nominal);">3.12 km</span></div>
+            <div class="plan-stat"><span class="k">Risk Reduction</span><span class="v num" style="color:var(--nominal);">95.8%</span></div>
+          </div>
+        </button>
+
+      </div>
+    </section>
+
+    <section class="two-col">
+
+      <!-- Orbital comparison -->
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Orbital Comparison</span>
+          <span class="live-dot" style="margin-left:auto;">SIMULATION</span>
+        </div>
+        <div class="approach-viz">
+          <canvas id="planCanvas" role="img" aria-label="Orbital comparison of current orbit and candidate maneuver plans A, B and C against the conjunction corridor"></canvas>
+        </div>
+      </article>
+
+      <!-- Plan details -->
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Plan A Details</span>
+          <span class="badge badge-nominal" style="margin-left:auto;">RECOMMENDED</span>
+        </div>
+        <div class="card-body">
+          <div class="detail-grid">
+            <div class="info-tile"><div class="k">Burn Direction</div><div class="v">Prograde</div></div>
+            <div class="info-tile"><div class="k">Burn Duration</div><div class="v">2m 34s</div></div>
+            <div class="info-tile"><div class="k">Thrust</div><div class="v">1.1 N</div></div>
+            <div class="info-tile"><div class="k">Altitude Change</div><div class="v">+0.62 km</div></div>
+            <div class="info-tile"><div class="k">Post-Burn Pc</div><div class="v" style="color:var(--nominal);">2.2 × 10⁻⁶</div></div>
+            <div class="info-tile"><div class="k">Ground Track Shift</div><div class="v">14.2 km</div></div>
+          </div>
+          <div style="margin-top:14px;padding:11px 13px;border-radius:8px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.3);font-size:12.5px;">
+            <b>Note:</b> Burn window keeps SAT-042 inside KSAT Svalbard visibility for real-time
+            monitoring. Recovery to nominal orbit can be executed within 14 days.
+          </div>
+        </div>
+        <div class="card-foot" style="gap:9px;">
+          <a class="btn btn-sm" href="satellite.html">SAT-042 Profile</a>
+          <a class="btn btn-sm" href="conjunction.html">Back to Conjunction</a>
+        </div>
+      </article>
+    </section>
+
+    <!-- Bottom summary -->
+    <article class="card">
+      <div class="summary-bar">
+        <div class="sum-cell"><div class="k">Selected Plan</div><div class="v blue" id="sumPlan">PLAN A</div></div>
+        <div class="sum-cell"><div class="k">Delta-V</div><div class="v" id="sumDv">0.42 m/s</div></div>
+        <div class="sum-cell"><div class="k">Burn Duration</div><div class="v" id="sumDur">2m 34s</div></div>
+        <div class="sum-cell"><div class="k">Fuel Impact</div><div class="v" id="sumFuel">−0.08% (12.4 kg)</div></div>
+        <div class="sum-cell"><div class="k">New Miss Distance</div><div class="v" id="sumMiss">2.45 km</div></div>
+        <div class="sum-cell"><div class="k">Risk Reduction</div><div class="v green" id="sumRisk">92.1%</div></div>
+      </div>
+      <div class="card-foot" style="justify-content:flex-end;gap:10px;">
+        <button class="btn btn-primary" data-modal-open="simulateModal">Simulate Plan</button>
+        <button class="btn" data-modal-open="saveModal">Save Plan</button>
+      </div>
+    </article>
+
+    <!-- Simulate modal (critical action confirmation) -->
+    <div class="modal-backdrop" id="simulateModal" role="dialog" aria-modal="true" aria-labelledby="simTitle">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="modal-title" id="simTitle">Confirm Simulation</span>
+          <button class="x-btn" data-modal-close aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          Run high-fidelity propagation for <b id="simPlanLabel">Plan A</b>?<br><br>
+          This will simulate the burn against the latest CDM ephemeris for
+          <b>SAT-042 ↔ OBJ-8821</b>. Estimated completion: <b>45 s</b>.
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-modal-close>Cancel</button>
+          <button class="btn btn-primary" data-modal-close>Run Simulation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save plan modal -->
+    <div class="modal-backdrop" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="modal-title" id="saveTitle">Save Maneuver Plan</span>
+          <button class="x-btn" data-modal-close aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          Save <b id="savePlanLabel">Plan A</b> for SAT-042? The plan will be queued for
+          mission-director approval and uploaded to the command scheduler after sign-off.
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-modal-close>Cancel</button>
+          <button class="btn btn-danger" data-modal-close>Submit for Approval</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/orbital.js"></script>
+<script>
+  document.addEventListener("planselect", function (e) {
+    const p = e.detail || "A";
+    const data = {
+      A: { dv: "0.42 m/s", dur: "2m 34s", fuel: "−0.08% (12.4 kg)", miss: "2.45 km", risk: "92.1%" },
+      B: { dv: "0.31 m/s", dur: "1m 58s", fuel: "−0.06% (9.3 kg)", miss: "1.82 km", risk: "84.7%" },
+      C: { dv: "0.51 m/s", dur: "3m 11s", fuel: "−0.11% (16.6 kg)", miss: "3.12 km", risk: "95.8%" },
+    }[p];
+    document.getElementById("sumPlan").textContent = "PLAN " + p;
+    document.getElementById("sumDv").textContent = data.dv;
+    document.getElementById("sumDur").textContent = data.dur;
+    document.getElementById("sumFuel").textContent = data.fuel;
+    document.getElementById("sumMiss").textContent = data.miss;
+    document.getElementById("sumRisk").textContent = data.risk;
+    ["simPlanLabel", "savePlanLabel"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = "Plan " + p;
+    });
+  });
+</script>
+</body>
+</html>
