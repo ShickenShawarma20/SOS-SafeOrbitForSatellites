@@ -35,20 +35,6 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M7 19h8a4 4 0 0 0 4-4V7"/></svg>',
     health:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg>',
-    clock:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-    zoom_in:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>',
-    zoom_out:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6"/></svg>',
-    target:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>',
-    fullscreen:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
-    layers:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 13 9 5 9-5"/></svg>',
-    x:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
   };
 
   const NAV = [
@@ -56,11 +42,11 @@
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
     { id: "maneuvers", label: "Maneuvers", href: "maneuvers.html", icon: I.maneuver },
-    { id: "orbits", label: "Orbits", href: "#orbits", icon: I.orbit },
-    { id: "groundstations", label: "Ground Stations", href: "#groundstations", icon: I.ground },
+    { id: "orbits", label: "Orbits", href: "orbits.html", icon: I.orbit },
+    { id: "groundstations", label: "Ground Stations", href: "groundstations.html", icon: I.ground },
     { id: "analytics", label: "Analytics", href: "analytics.html", icon: I.analytics },
     { id: "reports", label: "Reports", href: "#reports", icon: I.reports },
-    { id: "settings", label: "Settings", href: "#settings", icon: I.settings },
+    { id: "settings", label: "Settings", href: "settings.html", icon: I.settings },
   ];
 
   function sidebar(active) {
@@ -80,23 +66,23 @@
         <a class="nav-item${n.id === active ? " active" : ""}" href="${n.href}" ${
           n.id === active ? 'aria-current="page"' : ""
         }>
-          ${n.icon}<span>${n.label}</span>${n.badge ? `<span class="nav-badge">${n.badge}</span>` : ""}
+          ${n.icon}<span>${n.label}</span>${n.badge ? `<span class="nav-badge" id="navConjBadge">${n.badge}</span>` : ""}
         </a>`
         ).join("")}
       </nav>
       <div class="side-bottom">
         <div class="sys-status">
           <div class="label">System Status</div>
-          <span class="sys-ok"><span class="dot"></span>NOMINAL</span>
-          <div class="sys-row"><span>Tracking Sources</span><b>32 Online</b></div>
-          <div class="sys-row"><span>Data Latency</span><b>1.2 s</b></div>
-          <div class="sys-row"><span>Coverage</span><b>98.7%</b></div>
+          <span class="sys-ok" id="sysStatus"><span class="dot"></span><span id="sysStatusText">NOMINAL</span></span>
+          <div class="sys-row"><span>Tracking Sources</span><b id="sysTracking">32 Online</b></div>
+          <div class="sys-row"><span>Data Latency</span><b id="sysLatency">1.2 s</b></div>
+          <div class="sys-row"><span>Coverage</span><b id="sysCoverage">98.7%</b></div>
         </div>
         <div class="operator">
-          <div class="avatar">AM</div>
+          <div class="avatar" id="opAvatar">AM</div>
           <div class="who">
-            <div class="name">Alex Morgan</div>
-            <div class="role">Mission Controller</div>
+            <div class="name" id="opName">Alex Morgan</div>
+            <div class="role" id="opRole">Mission Controller</div>
           </div>
         </div>
       </div>
@@ -106,35 +92,34 @@
   function topbar() {
     return `
     <header class="topbar">
-      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Toggle navigation">${I.settings.replace(
-        'stroke-width="1.8"',
-        'stroke-width="1.8"'
-      )}</button>
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Toggle navigation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <div class="clock">
         <div class="t num" id="utcTime">--:--:-- UTC</div>
         <div class="d" id="utcDate"></div>
       </div>
       <div class="search" role="search">
         ${I.search}
-        <input type="search" placeholder="Search satellites, objects, TCA…" aria-label="Search">
+        <input type="search" id="globalSearch" placeholder="Search satellites, objects, TCA\u2026" aria-label="Search">
         <kbd>Ctrl K</kbd>
       </div>
       <div class="top-metrics">
         <div class="top-metric">${I.sat_metric}
-          <div><div class="v num">124</div><div class="k">Active Satellites</div></div>
+          <div><div class="v num" id="kpiSats">124</div><div class="k">Active Satellites</div></div>
         </div>
         <div class="top-metric crit">${I.alert}
-          <div><div class="v num">12</div><div class="k">Conjunction Alerts</div></div>
+          <div><div class="v num" id="kpiAlerts">12</div><div class="k">Conjunction Alerts</div></div>
         </div>
         <div class="top-metric warn">${I.route}
-          <div><div class="v num">3</div><div class="k">Maneuvers Planned</div></div>
+          <div><div class="v num" id="kpiManeuvers">3</div><div class="k">Maneuvers Planned</div></div>
         </div>
         <div class="top-metric">${I.health}
-          <div><div class="v num">98%</div><div class="k">System Health</div></div>
+          <div><div class="v num" id="kpiHealth">98%</div><div class="k">System Health</div></div>
         </div>
       </div>
-      <button class="icon-btn ping" aria-label="Notifications">${I.bell}</button>
-      <a class="icon-btn" href="#settings" aria-label="Settings">${I.settings}</a>
+      <button class="icon-btn ping" aria-label="Notifications" id="notifBtn">${I.bell}<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+      <a class="icon-btn" href="settings.html" aria-label="Settings">${I.settings}</a>
     </header>`;
   }
 
@@ -151,5 +136,48 @@
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
       document.dispatchEvent(new CustomEvent("shellready"));
     }
+
+    /* Fetch KPIs from API */
+    if (window.SOS && SOS.api) {
+      SOS.api("/dashboard/kpis").then(function (data) {
+        setText("kpiSats", data.activeSatellites);
+        setText("kpiAlerts", data.conjunctionAlerts);
+        setText("kpiManeuvers", data.maneuversPlanned);
+        setText("kpiHealth", data.systemHealthPct + "%");
+        setText("sysTracking", data.trackingSourcesOnline + " Online");
+        setText("sysLatency", data.dataLatencySec + " s");
+        setText("sysCoverage", data.coveragePct + "%");
+        setText("navConjBadge", data.conjunctionAlerts);
+      }).catch(function () {});
+
+      /* Fetch network status */
+      SOS.api("/network/status").then(function (data) {
+        setText("sysTracking", data.stationsOnline + " Online");
+        setText("sysCoverage", data.coveragePct + "%");
+        setText("sysLatency", data.latencySec + " s");
+      }).catch(function () {});
+
+      /* Fetch auth/me */
+      SOS.api("/auth/me").then(function (data) {
+        if (data && data.name) setText("opName", data.name);
+        if (data && data.role) setText("opRole", data.role);
+        if (data && data.initials) setText("opAvatar", data.initials);
+      }).catch(function () {});
+
+      /* Fetch notifications */
+      SOS.api("/notifications?unread=true").then(function (data) {
+        var unread = Array.isArray(data) ? data.length : 0;
+        var dot = document.getElementById("notifDot");
+        if (dot) dot.style.display = unread > 0 ? "inline-block" : "none";
+      }).catch(function () {});
+
+      /* Connect WebSocket */
+      SOS.ws.connect();
+    }
   });
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
 })();

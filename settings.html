@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+<style>
+  .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 14px; }
+  .setting-section { padding: 16px; }
+  .setting-section h3 { font-size: 12.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 14px; color: var(--accent); }
+  .form-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .form-row:last-child { border-bottom: none; }
+  .form-row label { font-size: 12.5px; color: var(--text-mid); }
+  .form-row input[type="number"],
+  .form-row input[type="text"] {
+    width: 110px; padding: 6px 10px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text-hi); font-family: var(--mono); font-size: 12.5px;
+    text-align: right;
+  }
+  .form-row input:focus { outline: none; border-color: var(--accent); }
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+  .toggle {
+    position: relative; width: 38px; height: 20px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px;
+    cursor: pointer; transition: background .2s;
+  }
+  .toggle.on { background: rgba(56,189,248,.25); border-color: rgba(56,189,248,.5); }
+  .toggle::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text-mid); transition: transform .2s, background .2s;
+  }
+  .toggle.on::after { transform: translateX(18px); background: var(--accent); }
+  .audit-log { max-height: 300px; overflow-y: auto; }
+  .audit-item { padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+  .audit-item:last-child { border-bottom: none; }
+  .audit-item .action { color: var(--text-hi); font-weight: 600; }
+  .audit-item .time { color: var(--text-low); font-family: var(--mono); font-size: 11px; }
+  .audit-item .op { color: var(--accent); }
+</style>
+</head>
+<body data-page="settings">
+<div class="shell" id="shell">
+  <main class="page">
+
+    <section class="page-head">
+      <div>
+        <div class="crumb">System / Configuration</div>
+        <h1>SETTINGS</h1>
+        <div class="card-sub" style="margin-top:5px;">Alert thresholds, screening volumes, notifications, and display preferences</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn" id="resetBtn">Reset Defaults</button>
+        <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      </div>
+    </section>
+
+    <div class="settings-grid">
+
+      <!-- Alert Thresholds -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Alert Thresholds</span><span class="badge badge-crit" style="margin-left:auto;">CRITICAL</span></div>
+        <div class="setting-section">
+          <div class="form-row"><label>Critical Pc Threshold</label><input type="number" id="critPc" step="1e-6" min="0"></div>
+          <div class="form-row"><label>High Pc Threshold</label><input type="number" id="highPc" step="1e-6" min="0"></div>
+          <div class="form-row"><label>Medium Pc Threshold</label><input type="number" id="medPc" step="1e-6" min="0"></div>
+          <div class="form-row"><label>Low Pc Threshold</label><input type="number" id="lowPc" step="1e-7" min="0"></div>
+          <div class="form-row"><label>Miss Distance Warning (m)</label><input type="number" id="missWarn" min="0"></div>
+          <div class="form-row"><label>Miss Distance Critical (m)</label><input type="number" id="missCrit" min="0"></div>
+        </div>
+      </article>
+
+      <!-- Screening Volumes -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Screening Volumes</span><span class="badge badge-info" style="margin-left:auto;">BY REGIME</span></div>
+        <div class="setting-section">
+          <div class="form-row"><label>LEO (x, y, z km)</label><input type="text" id="volLeo" placeholder="10,10,10"></div>
+          <div class="form-row"><label>MEO (x, y, z km)</label><input type="text" id="volMeo" placeholder="25,25,25"></div>
+          <div class="form-row"><label>GEO (x, y, z km)</label><input type="text" id="volGeo" placeholder="50,50,50"></div>
+          <div class="form-row"><label>HEO (x, y, z km)</label><input type="text" id="volHeo" placeholder="30,30,30"></div>
+        </div>
+      </article>
+
+      <!-- Notification Preferences -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Notifications</span><span class="badge badge-nominal" style="margin-left:auto;">PREFS</span></div>
+        <div class="setting-section">
+          <div class="form-row">
+            <label>Email Notifications</label>
+            <div class="toggle-wrap"><div class="toggle on" id="notifEmail" data-key="email"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Desktop Alerts</label>
+            <div class="toggle-wrap"><div class="toggle on" id="notifDesktop" data-key="desktop"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Critical Only</label>
+            <div class="toggle-wrap"><div class="toggle" id="notifCritOnly" data-key="criticalOnly"></div></div>
+          </div>
+          <div class="form-row"><label>Digest Interval (hours)</label><input type="number" id="notifDigest" min="1" max="48"></div>
+        </div>
+      </article>
+
+      <!-- Layer Defaults -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">Display Layers</span><span class="badge badge-neutral" style="margin-left:auto;">MAP</span></div>
+        <div class="setting-section">
+          <div class="form-row">
+            <label>Show Trajectories</label>
+            <div class="toggle-wrap"><div class="toggle on" id="layerTraj" data-key="showTrajectory"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Show Debris</label>
+            <div class="toggle-wrap"><div class="toggle on" id="layerDebris" data-key="showDebris"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Show Conjunctions</label>
+            <div class="toggle-wrap"><div class="toggle on" id="layerConj" data-key="showConjunction"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Show Ground Stations</label>
+            <div class="toggle-wrap"><div class="toggle on" id="layerGS" data-key="showGroundStations"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Show Coverage</label>
+            <div class="toggle-wrap"><div class="toggle" id="layerCov" data-key="showCoverage"></div></div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Audit Log -->
+    <article class="card" style="margin-top:14px;">
+      <div class="card-head"><span class="card-title">Audit Log</span><span class="card-sub" style="margin-left:auto;">Recent system actions</span></div>
+      <div class="card-body audit-log" id="auditLog">
+        <div style="color:var(--text-low);font-size:12px;">Loading audit entries...</div>
+      </div>
+    </article>
+
+    <!-- Save confirmation modal -->
+    <div class="modal-backdrop" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+      <div class="modal">
+        <div class="modal-head">
+          <span class="modal-title" id="saveModalTitle">Settings Saved</span>
+          <button class="x-btn" data-modal-close aria-label="Close">&#10005;</button>
+        </div>
+        <div class="modal-body">All settings have been updated successfully.</div>
+        <div class="modal-foot"><button class="btn btn-primary" data-modal-close>OK</button></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/pages/settings.js"></script>
+</body>
+</html>

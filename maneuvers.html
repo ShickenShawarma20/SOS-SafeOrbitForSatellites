@@ -193,28 +193,11 @@
   </main>
 </div>
 
+<script src="js/api.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/app.js"></script>
 <script src="js/orbital.js"></script>
-<script>
-  document.addEventListener("planselect", function (e) {
-    const p = e.detail || "A";
-    const data = {
-      A: { dv: "0.42 m/s", dur: "2m 34s", fuel: "−0.08% (12.4 kg)", miss: "2.45 km", risk: "92.1%" },
-      B: { dv: "0.31 m/s", dur: "1m 58s", fuel: "−0.06% (9.3 kg)", miss: "1.82 km", risk: "84.7%" },
-      C: { dv: "0.51 m/s", dur: "3m 11s", fuel: "−0.11% (16.6 kg)", miss: "3.12 km", risk: "95.8%" },
-    }[p];
-    document.getElementById("sumPlan").textContent = "PLAN " + p;
-    document.getElementById("sumDv").textContent = data.dv;
-    document.getElementById("sumDur").textContent = data.dur;
-    document.getElementById("sumFuel").textContent = data.fuel;
-    document.getElementById("sumMiss").textContent = data.miss;
-    document.getElementById("sumRisk").textContent = data.risk;
-    ["simPlanLabel", "savePlanLabel"].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.textContent = "Plan " + p;
-    });
-  });
-</script>
+<script src="js/pages/maneuvers.js"></script>
+
 </body>
 </html>

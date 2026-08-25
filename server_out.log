@@ -1,0 +1,4 @@
+SOS Backend running on http://localhost:3000
+API base: http://localhost:3000/api/v1
+WebSocket: ws://localhost:3000/ws
+Static files: Z:\SOS-SafeOrbitForSattelites
