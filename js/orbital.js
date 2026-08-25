@@ -40,6 +40,8 @@
       this.zoom = 1;
       this.playing = true;
       this.t = 0;
+      this.speedMult = 1;
+      this.layers = { satellites: true, debris: true, orbits: true };
       this.satellites = [
         { name: "SAT-042", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
         { name: "SAT-078", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
@@ -90,7 +92,7 @@
 
     loop() {
       if (!this.w) this.resize();
-      if (this.playing) this.t += 16;
+      if (this.playing) this.t += 16 * this.speedMult;
       this.draw();
       requestAnimationFrame(() => this.loop());
     }
@@ -167,13 +169,17 @@
 
       /* orbit lines + satellites */
       this.satellites.forEach((sat) => {
+        const isDebris = sat.debris || sat.danger;
+        if (isDebris && this.layers && this.layers.debris === false) return;
+        if (!isDebris && this.layers && this.layers.satellites === false) return;
+        const showOrbit = !this.layers || this.layers.orbits !== false;
         const col = sat.color;
         ctx.save();
         ctx.strokeStyle = col;
         ctx.globalAlpha = sat.danger ? 0.75 : 0.3;
         ctx.lineWidth = sat.danger ? 1.6 : 1;
         if (sat.danger) ctx.setLineDash([7, 5]);
-        this.drawOrbitPath(sat, cx, cy, R);
+        if (showOrbit) this.drawOrbitPath(sat, cx, cy, R);
         ctx.restore();
 
         const pnt = this.pointAt(sat, (this.t * sat.speed * 1000) % TAU, cx, cy, R);
@@ -421,7 +427,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     const orb = document.getElementById("orbitalCanvas");
-    if (orb) new OrbitalViewer(orb);
+    if (orb) window.sosOrbitalViewer = new OrbitalViewer(orb);
     initApproach(document.getElementById("approachCanvas"));
     initPlanCompare(document.getElementById("planCanvas"));
   });

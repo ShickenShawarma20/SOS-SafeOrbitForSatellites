@@ -1,9 +1,15 @@
 {
   "name": "sos-safeorbitforsattelites",
   "version": "1.0.0",
-  "description": "SOS · SafeOrbitForSattelites — Satellite Collision Avoidance System frontend",
+  "description": "SOS · SafeOrbitForSattelites — Satellite Collision Avoidance System (frontend + backend prototype)",
+  "main": "server/index.js",
   "scripts": {
-    "start": "npx --yes serve -l 3030 .",
-    "dev": "npx --yes serve -l 3030 ."
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "serve:static": "npx --yes serve -l 3030 ."
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.21.3"
   }
 }
