@@ -1,0 +1,67 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const http_1 = require("http");
+const path_1 = __importDefault(require("path"));
+const server_1 = require("./ws/server");
+const error_1 = require("./middleware/error");
+const satellites_1 = __importDefault(require("./routes/satellites"));
+const conjunctions_1 = __importDefault(require("./routes/conjunctions"));
+const maneuvers_1 = __importDefault(require("./routes/maneuvers"));
+const dashboard_1 = __importDefault(require("./routes/dashboard"));
+const events_1 = __importDefault(require("./routes/events"));
+const network_1 = __importDefault(require("./routes/network"));
+const search_1 = __importDefault(require("./routes/search"));
+const notifications_1 = __importDefault(require("./routes/notifications"));
+const analytics_1 = __importDefault(require("./routes/analytics"));
+const weather_1 = __importDefault(require("./routes/weather"));
+const catalog_1 = __importDefault(require("./routes/catalog"));
+const jobs_1 = __importDefault(require("./routes/jobs"));
+const settings_1 = __importDefault(require("./routes/settings"));
+const auth_1 = __importDefault(require("./routes/auth"));
+const audit_1 = __importDefault(require("./routes/audit"));
+const ai_1 = __importDefault(require("./routes/ai"));
+const app = (0, express_1.default)();
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+app.use((0, cors_1.default)({ origin: true, credentials: true }));
+app.use(express_1.default.json());
+const staticRoot = path_1.default.resolve(__dirname, "../..");
+app.use(express_1.default.static(staticRoot));
+app.use("/api/v1/satellites", satellites_1.default);
+app.use("/api/v1/conjunctions", conjunctions_1.default);
+app.use("/api/v1/maneuvers", maneuvers_1.default);
+app.use("/api/v1/dashboard", dashboard_1.default);
+app.use("/api/v1/events", events_1.default);
+app.use("/api/v1/network", network_1.default);
+app.use("/api/v1/groundstations", network_1.default);
+app.use("/api/v1/search", search_1.default);
+app.use("/api/v1/notifications", notifications_1.default);
+app.use("/api/v1/analytics", analytics_1.default);
+app.use("/api/v1/spaceweather", weather_1.default);
+app.use("/api/v1/catalog", catalog_1.default);
+app.use("/api/v1/jobs", jobs_1.default);
+app.use("/api/v1/settings", settings_1.default);
+app.use("/api/v1/audit", audit_1.default);
+app.use("/api/v1/ai", ai_1.default);
+app.use("/auth", auth_1.default);
+app.get("/api/v1/health", (_req, res) => {
+    res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
+});
+app.use(error_1.errorHandler);
+const server = (0, http_1.createServer)(app);
+(0, server_1.setupWebSocket)(server);
+setInterval(() => {
+    const now = new Date().toISOString();
+    (0, server_1.broadcast)("heartbeat", { timestamp: now }, "*");
+}, 30000);
+server.listen(PORT, () => {
+    console.log(`SOS Backend running on http://localhost:${PORT}`);
+    console.log(`API base: http://localhost:${PORT}/api/v1`);
+    console.log(`WebSocket: ws://localhost:${PORT}/ws`);
+    console.log(`Static files: ${staticRoot}`);
+});
+//# sourceMappingURL=index.js.map

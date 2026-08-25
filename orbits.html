@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbital Registry · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+<style>
+  .orbit-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .orbit-table th { text-align: left; padding: 9px 14px; font-size: 10px; color: var(--text-mid); text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--panel-1); z-index: 1; }
+  .orbit-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .orbit-table tr:hover td { background: rgba(56,189,248,.04); }
+  .orbit-table .mono { font-family: var(--mono); }
+  .orbit-table .sat-link { color: var(--accent); cursor: pointer; font-weight: 600; }
+  .orbit-table .sat-link:hover { text-decoration: underline; }
+  .orbit-canvas-wrap { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: radial-gradient(900px 400px at 50% 120%, #0D2136 0%, var(--bg-1) 55%, #030710 100%); border: 1px solid var(--border); }
+  .orbit-canvas-wrap canvas { display: block; width: 100%; height: 400px; }
+</style>
+</head>
+<body data-page="orbits">
+<div class="shell" id="shell">
+  <main class="page">
+
+    <section class="page-head">
+      <div>
+        <div class="crumb">Fleet / Orbital Elements</div>
+        <h1>ORBITAL REGISTRY</h1>
+        <div class="card-sub" style="margin-top:5px;">Keplerian elements for all tracked satellites</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn btn-sm on f-chip" data-filter="all">ALL</button>
+        <button class="btn btn-sm f-chip" data-filter="LEO">LEO</button>
+        <button class="btn btn-sm f-chip" data-filter="MEO">MEO</button>
+        <button class="btn btn-sm f-chip" data-filter="GEO">GEO</button>
+      </div>
+    </section>
+
+    <!-- Orbital viewer canvas -->
+    <article class="orbit-canvas-wrap" style="margin-bottom:14px;">
+      <canvas id="orbitCanvas" role="img" aria-label="Animated orbital visualization of all fleet satellites"></canvas>
+      <div style="position:absolute;top:12px;left:16px;pointer-events:none;">
+        <div style="font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;">Fleet Orbital View</div>
+      </div>
+    </article>
+
+    <!-- Elements table -->
+    <article class="card">
+      <div class="card-head">
+        <span class="card-title">Orbital Elements</span>
+        <span class="card-sub" style="margin-left:auto;" id="orbitCount">-- satellites</span>
+      </div>
+      <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+        <table class="orbit-table">
+          <thead>
+            <tr>
+              <th>Satellite</th>
+              <th>NORAD</th>
+              <th>Altitude (km)</th>
+              <th>Inclination</th>
+              <th>RAAN</th>
+              <th>Eccentricity</th>
+              <th>Period (min)</th>
+              <th>Arg. Perigee</th>
+              <th>Regime</th>
+            </tr>
+          </thead>
+          <tbody id="orbitTableBody"></tbody>
+        </table>
+      </div>
+    </article>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/orbital.js"></script>
+<script src="js/pages/orbits.js"></script>
+</body>
+</html>

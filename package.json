@@ -1,6 +1,7 @@
-{
+{ 
   "name": "sos-safeorbitforsattelites",
   "version": "1.0.0",
+<<<<<<< HEAD
   "description": "SOS · SafeOrbitForSattelites — Satellite Collision Avoidance System (frontend + backend prototype)",
   "main": "server/index.js",
   "scripts": {
@@ -11,5 +12,27 @@
   "dependencies": {
     "express": "^4.19.2",
     "ws": "^8.21.3"
+=======
+  "description": "SOS SafeOrbitForSattelites — Satellite Collision Avoidance System",
+  "scripts": {
+    "start": "node server/dist/index.js",
+    "dev": "npx tsx server/src/index.ts",
+    "build": "tsc -p server/tsconfig.json",
+    "serve:static": "npx --yes serve -l 3030 ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.12",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+>>>>>>> 9d5f73c (fixed routes)
   }
 }

@@ -102,14 +102,7 @@
       `<title>Fuel remaining ${pct}%</title></circle>`;
   };
 
-  renderDonut("alertDonut", [
-    { v: 1, color: "#EF4444", label: "Critical" },
-    { v: 3, color: "#F97316", label: "High" },
-    { v: 8, color: "#F59E0B", label: "Medium" },
-    { v: 0, color: "#38BDF8", label: "Low" },
-  ]);
-
-  renderFuelGauge("fuelGauge", 78);
+  /* Initial renders are handled by page-specific loaders via API */
 
   /* Plan card selection */
   $$(".plan-card").forEach((card) => {
@@ -125,4 +118,43 @@
       document.dispatchEvent(new CustomEvent("planselect", { detail: card.dataset.plan }));
     });
   });
+
+  /* Search */
+  const searchInput = document.getElementById("globalSearch");
+  if (searchInput) {
+    let searchTimer = null;
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const q = searchInput.value.trim();
+        if (q) {
+          if (window.SOS && SOS.api) {
+            SOS.api("/search?q=" + encodeURIComponent(q)).then((results) => {
+              /* Simple alert-based results display */
+              const parts = [];
+              if (results.satellites && results.satellites.length) parts.push("Satellites: " + results.satellites.map(s => s.id).join(", "));
+              if (results.objects && results.objects.length) parts.push("Objects: " + results.objects.map(o => o.id).join(", "));
+              if (results.conjunctions && results.conjunctions.length) parts.push("Conjunctions: " + results.conjunctions.map(c => c.id).join(", "));
+              if (parts.length) alert(parts.join("\n\n"));
+              else alert("No results found for '" + q + "'");
+            });
+          }
+        }
+      }
+    });
+    /* Ctrl+K shortcut */
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+  }
+
+  /* WebSocket: live notification badge */
+  if (window.SOS && SOS.ws) {
+    SOS.ws.on("conjunction.new", () => {
+      const dot = document.getElementById("notifDot");
+      if (dot) dot.style.display = "inline-block";
+    });
+  }
 })();
