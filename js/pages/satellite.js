@@ -9,7 +9,78 @@
 
   onReady(function () {
     var S = window.SOS;
-    var satId = S.param("id") || "SAT-51656";
+    var satId = S.param("id");
+
+    /* ---- List view (no id) ---- */
+    if (!satId) {
+      document.getElementById("satListView").removeAttribute("hidden");
+      document.getElementById("satDetailView").setAttribute("hidden", "");
+      document.title = "Satellite Registry · SOS SafeOrbitForSattelites";
+      var allSats = [];
+      var statusFilter = "all";
+      var query = "";
+
+      S.api("/satellites?page=1&limit=100").then(function (data) {
+        if (!data || !Array.isArray(data.items)) return;
+        allSats = data.items;
+        setText("satListCount", allSats.length + " satellites");
+        renderTable();
+      }).catch(function (err) {
+        console.error("sat list load failed:", err && err.message);
+        var tb = document.getElementById("satTableBody");
+        if (tb) tb.innerHTML = '<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--crit);">Failed to load satellites.</td></tr>';
+      });
+
+      function renderTable() {
+        var tb = document.getElementById("satTableBody");
+        if (!tb) return;
+        var list = allSats;
+        if (statusFilter !== "all") list = list.filter(function (s) { return s.status === statusFilter; });
+        if (query) {
+          var q = query.toLowerCase();
+          list = list.filter(function (s) {
+            return (s.id + " " + s.name + " " + s.noradId).toLowerCase().indexOf(q) !== -1;
+          });
+        }
+        if (!list.length) {
+          tb.innerHTML = '<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-low);">No satellites match the current filter.</td></tr>';
+          return;
+        }
+        tb.innerHTML = list.map(function (s) {
+          var e = s.elements || {};
+          var badge = s.status === "operational" ? "nominal" : s.status === "degraded" ? "high" : s.status === "standby" ? "medium" : "crit";
+          return '<tr style="cursor:pointer;" onclick="location.href=\'satellite.html?id=' + encodeURIComponent(s.id) + '\'">' +
+            '<td class="sat-id" style="color:var(--accent);font-weight:600;">' + s.id + '</td>' +
+            '<td>' + s.name + '</td>' +
+            '<td class="mono" style="font-family:var(--mono);">' + s.noradId + '</td>' +
+            '<td style="color:var(--text-mid);">' + s.type + '</td>' +
+            '<td>' + s.operator + '</td>' +
+            '<td><span class="badge badge-' + badge + '">' + s.status.toUpperCase() + '</span></td>' +
+            '<td class="mono" style="font-family:var(--mono);">' + (e.altitudeKm != null ? e.altitudeKm.toLocaleString() + " km" : "—") + '</td>' +
+            '<td class="mono" style="font-family:var(--mono);">' + (e.inclinationDeg != null ? e.inclinationDeg + "\u00B0" : "—") + '</td>' +
+            '<td style="color:var(--text-mid);">' + (s.orbitClass || "—") + '</td>' +
+            '</tr>';
+        }).join("");
+      }
+
+      document.querySelectorAll("[data-satfilter]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll("[data-satfilter]").forEach(function (b) { b.classList.remove("on"); });
+          btn.classList.add("on");
+          statusFilter = btn.getAttribute("data-satfilter");
+          renderTable();
+        });
+      });
+
+      var search = document.getElementById("satSearch");
+      if (search) search.addEventListener("input", function () { query = search.value.trim(); renderTable(); });
+
+      return;
+    }
+
+    /* ---- Detail view (id present) ---- */
+    document.getElementById("satDetailView").removeAttribute("hidden");
+    document.getElementById("satListView").setAttribute("hidden", "");
 
     /* ---- Satellite Profile ---- */
     S.api("/satellites/" + encodeURIComponent(satId)).then(function (sat) {
@@ -140,4 +211,9 @@
       }).join("");
     }).catch(function () {});
   });
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
 })();

@@ -15,6 +15,58 @@
 
   <main class="page">
 
+    <!-- ============ LIST VIEW (no ?id) ============ -->
+    <section id="satListView">
+      <section class="page-head">
+        <div>
+          <div class="crumb">Fleet / Satellite Registry</div>
+          <h1>SATELLITE REGISTRY</h1>
+          <div class="card-sub" style="margin-top:5px;">All monitored spacecraft in the SOS catalog</div>
+        </div>
+        <div class="page-head-actions">
+          <div class="search" role="search" style="position:relative;">
+            <input type="search" id="satSearch" placeholder="Search name, ID, NORAD…" aria-label="Search satellites" style="width:240px;padding:7px 12px 7px 30px;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-hi);font-size:12.5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-low);"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <div class="filter-bar" style="border-radius:var(--radius);background:linear-gradient(180deg,var(--panel-2),var(--panel-1));border:1px solid var(--border);margin-bottom:14px;">
+        <button class="f-chip on" data-satfilter="all">ALL</button>
+        <button class="f-chip" data-satfilter="operational">OPERATIONAL</button>
+        <button class="f-chip" data-satfilter="degraded">DEGRADED</button>
+        <button class="f-chip" data-satfilter="standby">STANDBY</button>
+        <span style="flex:1"></span>
+        <span class="card-sub" id="satListCount">— satellites</span>
+      </div>
+
+      <article class="card">
+        <div style="overflow-x:auto; max-height:560px; overflow-y:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead>
+              <tr>
+                <th>Satellite</th>
+                <th>Name</th>
+                <th>NORAD</th>
+                <th>Type</th>
+                <th>Operator</th>
+                <th>Status</th>
+                <th>Altitude</th>
+                <th>Inclination</th>
+                <th>Orbit Class</th>
+              </tr>
+            </thead>
+            <tbody id="satTableBody">
+              <tr><td colspan="9" style="padding:24px;text-align:center;color:var(--text-low);">Loading satellites…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ DETAIL VIEW (?id=) ============ -->
+    <div id="satDetailView" hidden>
+
     <!-- Header -->
     <section class="page-head">
       <div>
@@ -26,6 +78,7 @@
         </h1>
       </div>
       <div class="page-head-actions">
+        <a class="btn" href="satellite.html">← All Satellites</a>
         <button class="btn">Download TLE</button>
         <a class="btn btn-primary" href="conjunction.html">View Critical Conjunction →</a>
       </div>
@@ -147,6 +200,8 @@
       </article>
 
     </section>
+
+    </div><!-- /satDetailView -->
 
   </main>
 </div>
