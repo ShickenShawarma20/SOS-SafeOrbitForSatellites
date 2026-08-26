@@ -520,8 +520,12 @@
         this.simTimeSec += (dt / 1000) * this.simSpeed * this.speedMult * BASE_TIME_ACCEL;
         this.t += dt * this.speedMult;
       }
-      if (this.useThree) this.render3d(dt);
-      else this.draw();
+      try {
+        if (this.useThree) this.render3d(dt);
+        else this.draw();
+      } catch (e) {
+        if (!this._renderErr) { this._renderErr = true; console.error("OrbitalViewer render error:", e); }
+      }
       requestAnimationFrame((nn) => this.loop(nn));
     }
 
@@ -594,7 +598,7 @@
       this.zoom += (this._zoomTarget - this.zoom) * 0.08;
 
       // look-at target follows focused satellite or origin
-      const tgt = (this._camFollow && focusPos) ? focusPos : THREE.Object3D.DEFAULT_UP.clone().set(0, 0, 0);
+      const tgt = (this._camFollow && focusPos) ? focusPos : new THREE.Vector3(0, 0, 0);
       this._camTarget.lerp(tgt, 0.05);
 
       const dist = Math.max(7.5, Math.min(50, this.cameraDist / this.zoom));
