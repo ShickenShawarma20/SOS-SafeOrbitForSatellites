@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autopilot Engine · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+<link rel="stylesheet" href="css/autopilot.css">
+</head>
+<body data-page="autopilot">
+<div class="shell" id="shell">
+
+  <main class="page ap-page">
+
+    <!-- ============ PAGE HEADER ============ -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Autonomy / Closed-Loop Engine</div>
+        <h1>AUTONOMOUS AUTOPILOT ENGINE
+          <span class="badge badge-nominal" id="apModeBadge">ARMED</span>
+        </h1>
+        <div class="ap-head-summary">
+          <div class="ap-head-stat"><span class="k">FLEET</span><span class="v" id="hsFleet">6</span></div>
+          <div class="ap-head-stat"><span class="k">ACTIVE THREATS</span><span class="v crit" id="hsThreats">4</span></div>
+          <div class="ap-head-stat"><span class="k">QUEUED</span><span class="v warn" id="hsQueued">0</span></div>
+          <div class="ap-head-stat"><span class="k">RESOLVED</span><span class="v ok" id="hsResolved">0</span></div>
+          <div class="ap-head-stat"><span class="k">ΔV BUDGET</span><span class="v" id="hsDv">2,341 m/s</span></div>
+        </div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn" id="apBatchScan">Batch Scan Fleet</button>
+        <button class="btn btn-primary" id="apExecute">⚡ Execute Automated Fleet Clearance</button>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 1 · TRIGGER RULES CONFIGURATION ============ -->
+    <article class="ap-module">
+      <div class="ap-mod-head">
+        <span class="ap-mod-tag">S1</span>
+        <span class="ap-mod-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>
+          Autonomous Trigger Rules Configuration
+        </span>
+        <span style="margin-left:auto;" class="badge badge-info" id="policyStatusBadge">POLICY ARMED</span>
+      </div>
+      <div class="ap-mod-body">
+        <div class="policy-grid">
+
+          <!-- 1. Pc Trigger Threshold (logarithmic) -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">Pc Trigger Threshold</span>
+              <span class="pc-value" id="pcThresholdVal">1.0 × 10⁻⁴</span>
+            </div>
+            <div class="pc-desc">Collision probability above this value triggers autonomous avoidance burn. Aligned with NASA CARA red threshold (1×10⁻⁴).</div>
+            <div class="log-slider">
+              <div class="ls-ticks"><span>10⁻⁶</span><span>10⁻⁵</span><span>10⁻⁴</span><span>10⁻³</span></div>
+              <input type="range" id="pcSlider" min="0" max="1000" value="667" aria-label="Pc threshold">
+            </div>
+          </div>
+
+          <!-- 2. Minimum Miss Distance -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">Min Miss Distance</span>
+              <span class="pc-value" id="missThresholdVal">2.5 km</span>
+            </div>
+            <div class="pc-desc">Hard keep-out floor. Any conjunction with miss distance below this triggers avoidance planning regardless of Pc.</div>
+            <div class="lin-slider">
+              <input type="range" id="missSlider" min="0.5" max="10" step="0.1" value="2.5" aria-label="Miss distance threshold">
+              <div class="ls-labels"><span>0.5 km</span><span>5.0 km</span><span>10.0 km</span></div>
+            </div>
+          </div>
+
+          <!-- 3. Execution Horizon -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">Execution Horizon</span>
+              <span class="pc-value" id="horizonVal">TCA − 90 min</span>
+            </div>
+            <div class="pc-desc">Firing epoch relative to TCA. Default 90 min ≈ 1 orbital period prior for fuel-optimal phase shift.</div>
+            <div class="lin-slider">
+              <input type="range" id="horizonSlider" min="30" max="360" step="5" value="90" aria-label="Execution horizon">
+              <div class="ls-labels"><span>30 min</span><span>180 min</span><span>360 min</span></div>
+            </div>
+          </div>
+
+          <!-- 4. Propellant Optimization Policy -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">Propellant Policy</span>
+            </div>
+            <div class="radio-group" id="propPolicyGroup">
+              <div class="radio-opt sel" data-policy="FUEL_OPTIMAL_IN_TRACK">
+                <div class="ro-dot"></div>
+                <div class="ro-text"><div class="ro-name">FUEL_OPTIMAL_IN_TRACK</div><div class="ro-desc">Along-track phase shifts · minimal ΔV · ~4× efficiency</div></div>
+              </div>
+              <div class="radio-opt" data-policy="RAPID_RADIAL_CROSS_TRACK">
+                <div class="ro-dot"></div>
+                <div class="ro-text"><div class="ro-name">RAPID_RADIAL_CROSS_TRACK</div><div class="ro-desc">Fast geometric deflection · urgent near-TCA threats</div></div>
+              </div>
+              <div class="radio-opt" data-policy="CONSTELLATION_SAFE_SLOT">
+                <div class="ro-dot"></div>
+                <div class="ro-text"><div class="ro-name">CONSTELLATION_SAFE_SLOT</div><div class="ro-desc">Maintains constellation phasing geometry</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Secondary Screening Toggle -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">72-Hour Secondary Screening</span>
+            </div>
+            <div class="pc-desc">Enforce 72-hour forward catalog screening before approving any auto-burn. Blocks maneuvers that create new conjunctions.</div>
+            <div class="toggle-row">
+              <span class="tk">Enforce 72h forward screening gate</span>
+              <span class="switch on" id="screenToggle" role="switch" aria-checked="true" tabindex="0"></span>
+            </div>
+          </div>
+
+          <!-- 6. Master Autopilot State -->
+          <div class="policy-card">
+            <div class="pc-head">
+              <span class="pc-label">Master Autopilot State</span>
+            </div>
+            <div class="master-state" id="masterStateGroup">
+              <div class="ms-btn standby" data-state="STANDBY">
+                <div class="ms-name">STANDBY</div>
+                <div class="ms-desc">Manual only</div>
+              </div>
+              <div class="ms-btn armed sel" data-state="ARMED">
+                <div class="ms-name">ARMED</div>
+                <div class="ms-desc">Auto-execute</div>
+              </div>
+              <div class="ms-btn dry" data-state="SIMULATION_DRY_RUN">
+                <div class="ms-name">DRY RUN</div>
+                <div class="ms-desc">Simulate only</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ SECTION 2 · FLEET CLEARANCE QUEUE ============ -->
+    <article class="ap-module">
+      <div class="ap-mod-head">
+        <span class="ap-mod-tag">S2</span>
+        <span class="ap-mod-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M2.5 10.5h5v-3h-5zM16.5 13.5h5v3h-5zM12 3v3M12 18v3"/></svg>
+          Fleet-Wide Conjunction Clearance Queue
+        </span>
+        <span style="margin-left:auto;" class="live-dot">SCREENING</span>
+      </div>
+      <div class="fleet-actions">
+        <span class="fa-count">Eligible for auto-burn: <b id="eligibleCount">0</b> / <span id="totalCount">6</span></span>
+        <button class="btn btn-sm" id="selectAllBtn">Select All Eligible (Pc &gt; Threshold)</button>
+        <button class="btn btn-sm" id="clearSelBtn">Clear Selection</button>
+        <span class="fa-spacer"></span>
+        <span class="fa-count">Selected: <b id="selCount" style="color:var(--ap-cyan);">0</b> maneuvers</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="fcq-table">
+          <thead>
+            <tr>
+              <th class="fcq-check"></th>
+              <th>Spacecraft</th>
+              <th>Challenger Debris</th>
+              <th>Current Risk</th>
+              <th>Auto-Pilot Action Plan</th>
+              <th>Propellant</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="fleetQueueBody"></tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- ============ SECTION 3 · 5-STAGE EXECUTION PIPELINE ============ -->
+    <article class="ap-module">
+      <div class="ap-mod-head">
+        <span class="ap-mod-tag">S3</span>
+        <span class="ap-mod-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg>
+          Real-Time 5-Stage Closed-Loop Execution Pipeline
+        </span>
+        <span style="margin-left:auto;" class="live-dot" id="pipelineLive" style="display:none;">EXECUTING</span>
+      </div>
+      <div class="pipeline-rail" id="pipelineRail">
+        <div class="pl-stage" data-stage="1"><div class="pl-node">1</div><div class="pl-name">AOCS Telecommand Synthesis &amp; Crypto Signing</div></div>
+        <div class="pl-stage" data-stage="2"><div class="pl-node">2</div><div class="pl-name">Reaction Wheel Attitude Pre-Slew</div></div>
+        <div class="pl-stage" data-stage="3"><div class="pl-node">3</div><div class="pl-name">Thruster Ignition &amp; Accelerometer Loop</div></div>
+        <div class="pl-stage" data-stage="4"><div class="pl-node">4</div><div class="pl-name">Post-Burn Doppler Orbit Determination</div></div>
+        <div class="pl-stage" data-stage="5"><div class="pl-node">5</div><div class="pl-name">72-Hour Secondary Screening Confirmation</div></div>
+      </div>
+      <div id="pipelineDetail">
+        <div class="pl-idle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div>Pipeline idle. Select eligible conjunctions and click <b style="color:var(--text-mid);">Execute Automated Fleet Clearance</b> to begin closed-loop sequence.</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============ SECTION 4 · FLIGHT DIRECTOR TERMINAL LOG ============ -->
+    <article class="ap-module">
+      <div class="ap-mod-head">
+        <span class="ap-mod-tag">S4</span>
+        <span class="ap-mod-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M7 9l3 3-3 3M13 9l3 3-3 3"/></svg>
+          Flight Director Terminal Log
+        </span>
+        <span style="margin-left:auto;" class="card-sub" id="logCount">0 events</span>
+      </div>
+      <div class="terminal-wrap">
+        <div class="terminal-head">
+          <span class="th-dot" style="background:var(--ap-crimson);"></span>
+          <span class="th-dot" style="background:var(--ap-amber);"></span>
+          <span class="th-dot" style="background:var(--ap-emerald);"></span>
+          <span class="th-title">autopilot@sos-flight-director:~$</span>
+          <span class="th-spacer"></span>
+          <button class="terminal-clear" id="logClear">Clear</button>
+        </div>
+        <div class="terminal-body" id="terminalBody"></div>
+      </div>
+    </article>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/pages/autopilot.js"></script>
+</body>
+</html>
