@@ -147,6 +147,7 @@
     ]).then(function (results) {
       var stations = results[0];
       var status = results[1];
+      if (window.SOSCoverage) window.SOSCoverage.drawStations(stations);
       if (status) {
         setText("covOnline", status.stationsOnline);
         setText("covOffline", status.stationsOffline);

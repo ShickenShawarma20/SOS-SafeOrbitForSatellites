@@ -209,38 +209,23 @@
           <span class="live-dot" style="margin-left:auto;">NETWORK</span>
         </div>
         <div class="card-body">
-          <div class="coverage-map">
-            <svg viewBox="0 0 720 340" role="img" aria-label="World map showing ground station coverage">
-              <g class="graticule">
-                <line x1="0" y1="85" x2="720" y2="85"/><line x1="0" y1="170" x2="720" y2="170"/><line x1="0" y1="255" x2="720" y2="255"/>
-                <line x1="120" y1="0" x2="120" y2="340"/><line x1="240" y1="0" x2="240" y2="340"/><line x1="360" y1="0" x2="360" y2="340"/><line x1="480" y1="0" x2="480" y2="340"/><line x1="600" y1="0" x2="600" y2="340"/>
-                <ellipse cx="360" cy="170" rx="360" ry="170"/>
-              </g>
-              <g class="land">
-                <path d="M60 62 Q100 38 165 46 Q215 40 232 66 Q250 84 228 104 Q238 128 214 140 L196 168 Q178 176 166 158 Q136 148 118 122 Q76 108 60 84 Z"/>
-                <path d="M212 190 Q244 178 258 204 Q268 236 252 272 Q240 310 222 314 Q206 296 208 262 Q198 224 212 190 Z"/>
-                <path d="M332 60 Q360 42 396 54 Q412 68 396 86 Q372 98 348 92 Q330 80 332 60 Z"/>
-                <path d="M330 118 Q380 104 416 124 Q438 152 424 192 Q408 240 384 262 Q362 268 350 236 Q330 196 326 156 Z"/>
-                <path d="M420 52 Q480 28 560 44 Q622 52 636 84 Q648 116 606 132 Q560 150 512 138 Q462 144 436 118 Q414 84 420 52 Z"/>
-                <path d="M560 218 Q606 202 646 222 Q664 244 644 264 Q606 280 572 266 Q550 244 560 218 Z"/>
-              </g>
-              <g>
-                <g transform="translate(370,48)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(96,74)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(216,132)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(184,138)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(214,268)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(248,196)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(336,106)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(398,208)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(468,178)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(524,112)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(578,118)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(588,248)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(652,284)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(108,148)"><circle class="station-glow" r="10"/><circle class="station" r="3.4"/></g>
-                <g transform="translate(304,232)"><circle class="station offline" r="3.4"/></g>
-                <g transform="translate(636,92)"><circle class="station offline" r="3.4"/></g>
+          <div class="coverage-map" id="coverageMap">
+            <img class="coverage-earth" alt="" src="https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg" loading="lazy" onerror="this.remove()">
+            <svg id="coverageSvg" viewBox="0 0 720 360" preserveAspectRatio="xMidYMid meet" role="img" aria-label="World map showing ground station and satellite orbital coverage">
+              <defs>
+                <clipPath id="covClip"><rect x="0" y="0" width="720" height="360"/></clipPath>
+                <radialGradient id="gsGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.40"/>
+                  <stop offset="60%" stop-color="#38BDF8" stop-opacity="0.13"/>
+                  <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <g clip-path="url(#covClip)">
+                <rect class="cov-tint" x="0" y="0" width="720" height="360"/>
+                <g class="cov-grat"></g>
+                <g class="cov-tracks"></g>
+                <g class="cov-stations"></g>
+                <g class="cov-sat"></g>
               </g>
             </svg>
           </div>
@@ -339,6 +324,7 @@
 <script src="js/actions.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/orbital.js"></script>
+<script src="js/coverage.js"></script>
 <script src="js/pages/dashboard.js"></script>
 </body>
 </html>

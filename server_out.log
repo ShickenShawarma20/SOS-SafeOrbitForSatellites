@@ -1,4 +1,8 @@
+
+> sos-safeorbitforsattelites@1.0.0 dev
+> npx tsx server/src/index.ts
+
 SOS Backend running on http://localhost:3000
 API base: http://localhost:3000/api/v1
 WebSocket: ws://localhost:3000/ws
-Static files: Z:\SOS-SafeOrbitForSattelites
+Static files: D:\SOS-SafeOrbitForSattelites
