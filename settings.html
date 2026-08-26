@@ -134,6 +134,45 @@
         </div>
       </article>
 
+      <!-- AI Engine -->
+      <article class="card" id="ai">
+        <div class="card-head"><span class="card-title">AI Collision Avoidance</span><span class="badge badge-info" style="margin-left:auto;">DECISION SUPPORT</span></div>
+        <div class="setting-section">
+          <div class="form-row">
+            <label>Conjunction Screening</label>
+            <div class="toggle-wrap"><div class="toggle on" id="aiScreening"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Continuous Risk Assessment</label>
+            <div class="toggle-wrap"><div class="toggle on" id="aiRiskAssess"></div></div>
+          </div>
+          <div class="form-row">
+            <label>AI Maneuver Recommendations</label>
+            <div class="toggle-wrap"><div class="toggle on" id="aiRecs"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Automatic Simulation</label>
+            <div class="toggle-wrap"><div class="toggle on" id="aiAutoSim"></div></div>
+          </div>
+          <div class="form-row">
+            <label>Autonomous Maneuver Execution</label>
+            <div class="toggle-wrap"><div class="toggle" id="aiAutonomous"></div></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- AI Thresholds -->
+      <article class="card">
+        <div class="card-head"><span class="card-title">AI Thresholds</span><span class="badge badge-high" style="margin-left:auto;">SAFETY</span></div>
+        <div class="setting-section">
+          <div class="form-row"><label>Critical Pc Threshold</label><input type="number" id="aiCritPc" step="1e-6" min="0"></div>
+          <div class="form-row"><label>High Risk Pc Threshold</label><input type="number" id="aiHighPc" step="1e-6" min="0"></div>
+          <div class="form-row"><label>Minimum Miss Distance (m)</label><input type="number" id="aiMinMiss" min="0"></div>
+          <div class="form-row"><label>Maximum Prediction Horizon (h)</label><input type="number" id="aiHorizon" min="1"></div>
+          <div class="form-row"><label>Minimum Data Confidence (0–1)</label><input type="number" id="aiMinConf" step="0.01" min="0" max="1"></div>
+        </div>
+      </article>
+
     </div>
 
     <!-- Audit Log -->

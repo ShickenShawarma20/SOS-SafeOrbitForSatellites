@@ -31,6 +31,8 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 8h4V5H3zM17 16h4v3h-4z"/><path d="M7 6.5 9 8.5M17 17.5l-2-2"/></svg>',
     alert:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9.5v4.5M12 17.2v.3" stroke-linecap="round"/></svg>',
+    ai:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 1 4 4v1a4 4 0 0 1-1 2.6L12 14 9 10.6A4 4 0 0 1 8 8V7a4 4 0 0 1 4-4Z"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>',
     route:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M7 19h8a4 4 0 0 0 4-4V7"/></svg>',
     health:
@@ -40,6 +42,7 @@
   const NAV = [
     { id: "home", label: "Home", href: "index.html", icon: I.home },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
+    { id: "ai", label: "AI Command Center", href: "ai.html", icon: I.ai, badge: "7" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
     { id: "maneuvers", label: "Maneuvers", href: "maneuvers.html", icon: I.maneuver },
     { id: "orbits", label: "Orbits", href: "orbits.html", icon: I.orbit },
@@ -66,7 +69,7 @@
         <a class="nav-item${n.id === active ? " active" : ""}" href="${n.href}" ${
           n.id === active ? 'aria-current="page"' : ""
         }>
-          ${n.icon}<span>${n.label}</span>${n.badge ? `<span class="nav-badge" id="navConjBadge">${n.badge}</span>` : ""}
+          ${n.icon}<span>${n.label}</span>${n.badge ? `<span class="nav-badge" id="navBadge_${n.id}">${n.badge}</span>` : ""}
         </a>`
         ).join("")}
       </nav>
@@ -147,7 +150,7 @@
         setText("sysTracking", data.trackingSourcesOnline + " Online");
         setText("sysLatency", data.dataLatencySec + " s");
         setText("sysCoverage", data.coveragePct + "%");
-        setText("navConjBadge", data.conjunctionAlerts);
+        setText("navBadge_conjunctions", data.conjunctionAlerts);
       }).catch(function () {});
 
       /* Fetch network status */

@@ -30,6 +30,20 @@ let settings = {
         showGroundStations: true,
         showCoverage: false,
     },
+    aiConfig: {
+        conjunctionScreening: true,
+        continuousRiskAssessment: true,
+        maneuverRecommendations: true,
+        automaticSimulation: true,
+        autonomousExecution: false,
+        thresholds: {
+            criticalPc: 1e-4,
+            highRiskPc: 1e-5,
+            minimumMissDistanceM: 1000,
+            maximumPredictionHorizonH: 72,
+            minimumDataConfidence: 0.8,
+        },
+    },
 };
 router.get("/", (req, res) => {
     res.json(settings);

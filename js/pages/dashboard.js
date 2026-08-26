@@ -140,6 +140,26 @@
       }
     }).catch(function () {});
 
+    /* ---- AI Insight Bar ---- */
+    S.api("/ai/assessments").then(function (data) {
+      var items = (data && data.items) || [];
+      var a = items[0];
+      if (!a) return;
+      setText("aiPcPrev", S.fmtPc(a.previousPc));
+      setText("aiPcNow", S.fmtPc(a.probabilityOfCollision));
+      var driver = (a.trendDrivers && a.trendDrivers[0]) ? a.trendDrivers[0].change : "Updated tracking solution";
+      setText("aiDriver", driver);
+      setText("aiConfLvl", a.dataConfidence);
+      var lbl = document.querySelector(".ai-insight-lbl");
+      if (lbl) {
+        var trendLbl = a.riskTrend === "rapidly_increasing" ? "RISK RAPIDLY INCREASING"
+          : a.riskTrend === "increasing" ? "RISK INCREASED"
+          : a.riskTrend === "decreasing" ? "RISK DECREASING" : "RISK STABLE";
+        lbl.textContent = trendLbl;
+        lbl.style.color = a.riskTrend === "decreasing" ? "var(--nominal)" : "var(--crit)";
+      }
+    }).catch(function () {});
+
     /* ---- Orbital Coverage ---- */
     Promise.all([
       S.api("/groundstations"),
@@ -223,7 +243,7 @@
 
     /* ---- WebSocket: live conjunction updates ---- */
     S.ws.on("conjunction.new", function (data) {
-      var badge = document.getElementById("navConjBadge");
+      var badge = document.getElementById("navBadge_conjunctions");
       if (badge) {
         var current = parseInt(badge.textContent) || 0;
         badge.textContent = current + 1;

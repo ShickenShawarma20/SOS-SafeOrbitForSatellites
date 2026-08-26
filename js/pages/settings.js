@@ -52,6 +52,24 @@
         setToggle("layerGS", ld.showGroundStations);
         setToggle("layerCov", ld.showCoverage);
       }
+
+      /* AI engine config */
+      if (settings.aiConfig) {
+        var ai = settings.aiConfig;
+        setToggle("aiScreening", ai.conjunctionScreening);
+        setToggle("aiRiskAssess", ai.continuousRiskAssessment);
+        setToggle("aiRecs", ai.maneuverRecommendations);
+        setToggle("aiAutoSim", ai.automaticSimulation);
+        setToggle("aiAutonomous", ai.autonomousExecution);
+        if (ai.thresholds) {
+          var at = ai.thresholds;
+          setInput("aiCritPc", at.criticalPc);
+          setInput("aiHighPc", at.highRiskPc);
+          setInput("aiMinMiss", at.minimumMissDistanceM);
+          setInput("aiHorizon", at.maximumPredictionHorizonH);
+          setInput("aiMinConf", at.minimumDataConfidence);
+        }
+      }
     }).catch(function () {});
 
     /* ---- Load audit log ---- */
@@ -111,6 +129,20 @@
             showGroundStations: isToggleOn("layerGS"),
             showCoverage: isToggleOn("layerCov"),
           },
+          aiConfig: {
+            conjunctionScreening: isToggleOn("aiScreening"),
+            continuousRiskAssessment: isToggleOn("aiRiskAssess"),
+            maneuverRecommendations: isToggleOn("aiRecs"),
+            automaticSimulation: isToggleOn("aiAutoSim"),
+            autonomousExecution: isToggleOn("aiAutonomous"),
+            thresholds: {
+              criticalPc: getNum("aiCritPc"),
+              highRiskPc: getNum("aiHighPc"),
+              minimumMissDistanceM: getNum("aiMinMiss"),
+              maximumPredictionHorizonH: getNum("aiHorizon"),
+              minimumDataConfidence: getNum("aiMinConf"),
+            },
+          },
         };
 
         S.api("/settings", { method: "PUT", body: payload }).then(function () {
@@ -131,6 +163,7 @@
           screeningVolumes: { leo: [10, 10, 10], meo: [25, 25, 25], geo: [50, 50, 50], heo: [30, 30, 30] },
           notificationPrefs: { email: true, desktop: true, criticalOnly: false, digestIntervalHours: 4 },
           layerDefaults: { showTrajectory: true, showDebris: true, showConjunction: true, showGroundStations: true, showCoverage: false },
+          aiConfig: { conjunctionScreening: true, continuousRiskAssessment: true, maneuverRecommendations: true, automaticSimulation: true, autonomousExecution: false, thresholds: { criticalPc: 1e-4, highRiskPc: 1e-5, minimumMissDistanceM: 1000, maximumPredictionHorizonH: 72, minimumDataConfidence: 0.8 } },
         };
         S.api("/settings", { method: "PUT", body: defaults }).then(function () { location.reload(); });
       });
