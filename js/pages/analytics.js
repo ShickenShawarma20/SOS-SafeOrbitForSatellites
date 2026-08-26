@@ -84,7 +84,9 @@
     S.api("/analytics/conjunctions-over-time?range=" + currentRange + "&bucket=week").then(function (data) {
       if (data && data.series) {
         /* Store for charts.js to pick up */
-        window.__chartTimeData = data.series;
+        window.__chartTimeData = (data.series || []).map(function (v, i) {
+          return { label: (data.labels && data.labels[i]) != null ? String(data.labels[i]) : String(i), value: v };
+        });
       }
     }).catch(function () {});
 

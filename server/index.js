@@ -78,7 +78,15 @@ app.post("/api/ai/chat", (req, res) => {
   res.json({ sessionId: (req.body || {}).sessionId || null, reply, source: "deterministic_fallback" });
 });
 
+/* Clean URLs — /satellite -> /satellite.html */
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings"].forEach(
+  function (name) {
+    app.get("/" + name, (_req, res) => res.sendFile(path.join(__dirname, "..", name + ".html")));
+  }
+);
+
 /* Static frontend */
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 app.use(express.static(path.join(__dirname, "..")));
 
 /* Health + API index */
