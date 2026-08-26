@@ -5,6 +5,8 @@
   const I = {
     logo:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9" ry="4.4" transform="rotate(-28 12 12)"/><circle cx="19" cy="7.6" r="1.5" fill="currentColor" stroke="none"/></svg>',
+    console:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>',
     home:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
     conjunction:
@@ -40,6 +42,7 @@
   };
 
   const NAV = [
+    { id: "console", label: "SSA Console", href: "console.html", icon: I.console, badge: "1" },
     { id: "home", label: "Home", href: "index.html", icon: I.home },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
     { id: "ai", label: "AI Command Center", href: "ai.html", icon: I.ai, badge: "7" },

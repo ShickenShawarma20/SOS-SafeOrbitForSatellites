@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSA Tactical Console · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+<link rel="stylesheet" href="css/console.css">
+</head>
+<body data-page="console">
+<div class="shell" id="shell">
+
+  <main class="page console-page">
+
+    <!-- ============ MODULE 6 · SPACE WEATHER TELEMETRY STRIP (sticky) ============ -->
+    <section class="wx-strip" aria-label="Real-time space weather telemetry">
+      <div class="wx-cell">
+        <div class="wx-ico" style="color:var(--warn);border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>
+        </div>
+        <div>
+          <div class="wx-k">F10.7 SOLAR FLUX</div>
+          <div class="wx-v" id="wxF107">145</div>
+          <div class="wx-sub wx-tier-elev" id="wxF107Tier">ELEVATED</div>
+        </div>
+      </div>
+      <div class="wx-cell">
+        <div class="wx-ico" style="color:var(--crimson);border-color:rgba(244,63,94,.4);background:rgba(244,63,94,.08);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 10h18M5 6h14M8 14h8M10 18h4"/></svg>
+        </div>
+        <div>
+          <div class="wx-k">GEOMAGNETIC Kp</div>
+          <div class="wx-v"><span id="wxKp">6</span><span style="font-size:12px;color:var(--text-mid);"> / 9</span></div>
+          <div class="wx-sub wx-tier-storm" id="wxKpTier">G2 MODERATE</div>
+        </div>
+      </div>
+      <div class="wx-cell">
+        <div class="wx-ico" style="color:var(--cyan);border-color:rgba(6,182,212,.4);background:rgba(6,182,212,.08);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 3 5-7 4 4"/></svg>
+        </div>
+        <div>
+          <div class="wx-k">DRAG DENSITY MULT</div>
+          <div class="wx-v" id="wxDrag">+38%</div>
+          <div class="wx-sub wx-tier-elev" id="wxDragTier">DRAG SURGE</div>
+        </div>
+      </div>
+      <div class="wx-cell" style="border-right:none;">
+        <div class="wx-ico" style="color:var(--emerald);border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.08);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+          <div class="wx-k">SSN / SPACE WEATHER</div>
+          <div class="wx-v" id="wxSsn">142</div>
+          <div class="wx-sub wx-tier-low">18 SDS SYNC</div>
+        </div>
+      </div>
+      <div class="wx-actions">
+        <span class="wx-pulse storm" id="wxPulse" title="Storm conditions"></span>
+        <button class="btn btn-sm" data-modal-open="cdmExportModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="13" height="13"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          Export CCSDS CDM
+        </button>
+        <button class="btn btn-sm btn-primary" data-modal-open="autopilotPolicyModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          Autopilot Policy
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ BENTO GRID ============ -->
+    <section class="bento">
+
+      <!-- ============ MODULE 1 · CARA CONJUNCTION ASSESSMENT ============ -->
+      <article class="module m1">
+        <div class="mod-head">
+          <span class="mod-tag">M1</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+            NASA CARA Conjunction Assessment &amp; Risk Ranking
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="live-dot">SCREENING</span>
+        </div>
+        <div class="cara-strip">
+          <span class="seg"><span class="swatch" style="background:var(--crimson);"></span>CRITICAL · Pc ≥ 1e-4 or miss &lt; 100 m</span>
+          <span class="seg"><span class="swatch" style="background:var(--warn);"></span>HIGH · 1e-5 ≤ Pc &lt; 1e-4 or miss &lt; 1 km</span>
+          <span class="seg"><span class="swatch" style="background:var(--emerald);"></span>ROUTINE · Pc &lt; 1e-5 &amp; miss ≥ 1 km</span>
+          <span class="cara-sync"><span class="dot"></span>18 SDS CATALOG SYNC</span>
+        </div>
+        <div class="mod-body">
+          <div class="cx-queue" id="cxQueue"><!-- rendered by JS --></div>
+        </div>
+      </article>
+
+      <!-- ============ MODULE 2 · FLEET & PROPULSION ============ -->
+      <article class="module m2">
+        <div class="mod-head">
+          <span class="mod-tag">M2</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M2.5 10.5h5v-3h-5zM16.5 13.5h5v3h-5z"/><path d="M12 3v3M12 18v3"/></svg>
+            Constellation Fleet &amp; Propulsion Telemetry
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="badge badge-info">5 ASSETS</span>
+        </div>
+        <div class="mod-body">
+          <div class="fleet-list" id="fleetList"><!-- rendered by JS --></div>
+        </div>
+      </article>
+
+      <!-- ============ MODULE 3 · B-PLANE ENCOUNTER PLANE ============ -->
+      <article class="module m3">
+        <div class="mod-head">
+          <span class="mod-tag">M3</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
+            B-Plane Encounter Plane (ξ − ζ)
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="live-dot">PROPAGATING</span>
+        </div>
+        <div class="bplane-wrap">
+          <canvas id="bplaneCanvas" role="img" aria-label="B-plane encounter geometry with covariance ellipses, hard-body-radius keep-out circle, and nominal versus post-maneuver miss vectors"></canvas>
+          <div class="bplane-overlay">
+            <span class="ttl">CD-2024-0526-0417</span>
+            <span class="sub">SAT-51656 ↔ OBJ-8821</span>
+          </div>
+          <div class="bplane-toggle">
+            <button class="btn" id="dragToggle">☀ Drag ×<span id="dragMul">1.0</span></button>
+          </div>
+          <div class="bplane-legend">
+            <span class="vl-item"><span class="vl-swatch" style="background:var(--crimson);border-radius:50%;"></span>HBR keep-out (50 m)</span>
+            <span class="vl-item"><span class="vl-swatch" style="border:1px solid var(--warn);background:rgba(245,158,11,.12);border-radius:4px;"></span>3σ covariance</span>
+            <span class="vl-item"><span class="vl-swatch" style="border:1px solid var(--accent);background:rgba(56,189,248,.12);border-radius:4px;"></span>1σ / 2σ</span>
+            <span class="vl-item"><span class="vl-swatch" style="color:var(--crimson);">✛</span>Nominal miss</span>
+            <span class="vl-item"><span class="vl-swatch" style="color:var(--emerald);">✛</span>Post-maneuver</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ MODULE 4 · MANEUVER SIM LAB ============ -->
+      <article class="module m4">
+        <div class="mod-head">
+          <span class="mod-tag">M4</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19c6 0 4-11 10-11h4"/><path d="m15.5 5 3 3-3 3"/><circle cx="4" cy="19" r="1.6"/></svg>
+            Autonomous Maneuver Simulation &amp; Optimization Lab
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="badge badge-nominal">Tsiolkovsky Engine</span>
+        </div>
+        <div class="mod-body">
+          <div class="dv-solvers">
+            <div class="solver">
+              <div class="sh">In-Track · ΔV_T</div>
+              <div class="axis-name"><span class="greek">ΔV</span><sub>T</sub></div>
+              <div class="dir-pair" data-axis="T">
+                <button class="dir-btn sel" data-dir="prograde">PROGRADE ↑</button>
+                <button class="dir-btn" data-dir="retrograde">RETROGRADE ↓</button>
+              </div>
+              <div class="dv-range"><div class="rv-top"><span class="k">magnitude</span><span class="v" id="dvTVal">0.42 m/s</span></div>
+                <input type="range" min="0" max="300" value="42" data-axis="T"></div>
+            </div>
+            <div class="solver">
+              <div class="sh">Radial · ΔV_R</div>
+              <div class="axis-name"><span class="greek">ΔV</span><sub>R</sub></div>
+              <div class="dir-pair" data-axis="R">
+                <button class="dir-btn" data-dir="radial_in">RADIAL-IN ←</button>
+                <button class="dir-btn sel" data-dir="radial_out">RADIAL-OUT →</button>
+              </div>
+              <div class="dv-range"><div class="rv-top"><span class="k">magnitude</span><span class="v" id="dvRVal">0.00 m/s</span></div>
+                <input type="range" min="0" max="300" value="0" data-axis="R"></div>
+            </div>
+            <div class="solver">
+              <div class="sh">Cross-Track · ΔV_N</div>
+              <div class="axis-name"><span class="greek">ΔV</span><sub>N</sub></div>
+              <div class="dir-pair" data-axis="N">
+                <button class="dir-btn sel" data-dir="normal">NORMAL ↗</button>
+                <button class="dir-btn" data-dir="anti_normal">ANTI-NORMAL ↙</button>
+              </div>
+              <div class="dv-range"><div class="rv-top"><span class="k">magnitude</span><span class="v" id="dvNVal">0.00 m/s</span></div>
+                <input type="range" min="0" max="300" value="0" data-axis="N"></div>
+            </div>
+          </div>
+
+          <div class="sim-results">
+            <div class="sim-res"><div class="k">Total ΔV</div><div class="v" id="resDv">0.42 m/s</div><div class="sub" id="resVec">T+ R0 N0</div></div>
+            <div class="sim-res"><div class="k">Propellant Δm</div><div class="v ok" id="resDm">12.4 g</div><div class="sub" id="resDmSub">Tsiolkovsky · Isp 230s</div></div>
+            <div class="sim-res"><div class="k">Safe Miss Distance</div><div class="v ok" id="resMiss">2.45 km</div><div class="sub" id="resMissSub">+231% vs nominal</div></div>
+            <div class="sim-res"><div class="k">Projected Pc</div><div class="v ok" id="resPc">2.1 × 10⁻⁸</div><div class="sub" id="resPcSub">&lt; 10⁻⁷ threshold</div></div>
+          </div>
+
+          <div class="screen72">
+            <div class="sh">72-HOUR SECONDARY CONJUNCTION SCREENING <span class="ok">✓ NO SECONDARY THREATS</span></div>
+            <div id="screen72List"><!-- rendered by JS --></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ MODULE 5 · AUTOPILOT POLICY ============ -->
+      <article class="module m5a">
+        <div class="mod-head">
+          <span class="mod-tag">M5</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1"/></svg>
+            Closed-Loop Autonomous Autopilot · Policy Rules
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="badge badge-nominal" id="autopilotBadge">ARMED</span>
+        </div>
+        <div class="mod-body">
+          <div class="policy-grid">
+            <div class="policy-row">
+              <div class="k">Max Allowable Pc</div>
+              <div class="v warn" id="polPc">1.0 × 10⁻⁴</div>
+              <div class="hint">auto-execute trigger threshold</div>
+            </div>
+            <div class="policy-row">
+              <div class="k">Minimum Miss Distance</div>
+              <div class="v" id="polMiss">2.5 km</div>
+              <div class="hint">hard keep-out floor</div>
+            </div>
+            <div class="policy-row">
+              <div class="k">Execution Horizon</div>
+              <div class="v" id="polHorizon">TCA − 90 min</div>
+              <div class="hint">firing epoch · 0.85 orbits prior</div>
+            </div>
+            <div class="policy-row">
+              <div class="k">Propellant Reserve Floor</div>
+              <div class="v" id="polFuel">15.0 kg</div>
+              <div class="hint">below this → manual only</div>
+            </div>
+          </div>
+          <div class="policy-strat">
+            <b>Propellant Preservation Strategy:</b> Prioritize fuel-optimal in-track phase shifting (ΔV_T) over expensive cross-track burns (ΔV_N). Cross-track maneuvers reserved for plane-maintenance only — in-track burns yield ~4× greater miss-distance gain per gram of propellant.
+          </div>
+          <div class="autopilot-cta">
+            <button class="btn" data-modal-open="autopilotPolicyModal">Configure Policy</button>
+            <button class="btn btn-primary" id="armAutopilot">Disarm Autopilot</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ MODULE 5 · AOCS EXECUTION ============ -->
+      <article class="module m5b">
+        <div class="mod-head">
+          <span class="mod-tag">M5</span>
+          <span class="mod-title">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg>
+            Autonomous AOCS Execution Modal
+          </span>
+          <span class="mod-spacer"></span>
+          <span class="live-dot" id="aocsLive" style="display:none;">EXECUTING</span>
+        </div>
+        <div class="mod-body">
+          <div class="aocs-chain" id="aocsChain">
+            <div class="aocs-step" data-step="1"><div class="idx">1</div><div class="txt"><b>Telecommand Assembly &amp; Cryptographic Signing</b>Packet build · ECDSA-P256 signature</div><div class="st">QUEUED</div></div>
+            <div class="aocs-step" data-step="2"><div class="idx">2</div><div class="txt"><b>Reaction Wheel Attitude Pre-Slew</b>Thrust vector [x̂, ŷ, ẑ] alignment</div><div class="st">QUEUED</div></div>
+            <div class="aocs-step" data-step="3"><div class="idx">3</div><div class="txt"><b>Solar Array Feathering</b>Minimize cross-sectional drag area</div><div class="st">QUEUED</div></div>
+            <div class="aocs-step" data-step="4"><div class="idx">4</div><div class="txt"><b>Closed-Loop Thruster Burn</b>Accelerometer telemetry verification</div><div class="st">QUEUED</div></div>
+            <div class="aocs-step" data-step="5"><div class="idx">5</div><div class="txt"><b>Post-Burn Orbit Determination</b>Doppler ground-pass fix · new TLE uplink</div><div class="st">QUEUED</div></div>
+          </div>
+          <div class="autopilot-cta">
+            <button class="btn" id="resetAocs">Reset Sequence</button>
+            <button class="btn btn-primary" id="runAocs">Execute Burn Sequence</button>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- ============ CDM EXPORT MODAL ============ -->
+    <div class="modal-backdrop" id="cdmExportModal" role="dialog" aria-modal="true" aria-labelledby="cdmTitle">
+      <div class="modal wide">
+        <div class="modal-head">
+          <span class="modal-title" id="cdmTitle">Export CCSDS Conjunction Data Message</span>
+          <button class="x-btn" data-modal-close aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          Export the current conjunction (CD-2024-0526-0417 · SAT-51656 ↔ OBJ-8821) in a CCSDS 508.0-B-1 compliant format for inter-agency coordination.
+          <div class="fmt-pair" style="margin-top:14px;">
+            <button class="fmt-btn" data-fmt="xml"><div class="ext">XML</div><div class="lbl">CCSDS CDM</div><div class="desc">.xml · kaitai schema</div></button>
+            <button class="fmt-btn" data-fmt="json"><div class="ext">JSON</div><div class="lbl">CCSDS CDM</div><div class="desc">.json · REST payload</div></button>
+            <button class="fmt-btn" data-fmt="kvn"><div class="ext">KVN</div><div class="lbl">CCSDS CDM</div><div class="desc">.kvn · key-value</div></button>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-modal-close>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ AUTOPILOT POLICY MODAL ============ -->
+    <div class="modal-backdrop" id="autopilotPolicyModal" role="dialog" aria-modal="true" aria-labelledby="apTitle">
+      <div class="modal wide">
+        <div class="modal-head">
+          <span class="modal-title" id="apTitle">Autopilot Policy Configuration</span>
+          <button class="x-btn" data-modal-close aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-grid">
+            <div class="field">
+              <label>Max Allowable Pc (auto-trigger)</label>
+              <input type="number" id="cfgPc" value="1e-4" step="1e-5">
+              <span class="note">≥ this → autonomous burn authorized</span>
+            </div>
+            <div class="field">
+              <label>Minimum Miss Distance (km)</label>
+              <input type="number" id="cfgMiss" value="2.5" step="0.1">
+              <span class="note">hard keep-out floor</span>
+            </div>
+            <div class="field">
+              <label>Execution Horizon (min before TCA)</label>
+              <input type="number" id="cfgHorizon" value="90" step="5">
+              <span class="note">firing epoch = TCA − horizon</span>
+            </div>
+            <div class="field">
+              <label>Propellant Reserve Floor (kg)</label>
+              <input type="number" id="cfgFuel" value="15.0" step="0.5">
+              <span class="note">below this → manual override only</span>
+            </div>
+            <div class="field">
+              <label>Burn Axis Preference</label>
+              <select id="cfgAxis">
+                <option value="T">In-Track (fuel-optimal)</option>
+                <option value="R">Radial</option>
+                <option value="N">Cross-Track</option>
+              </select>
+              <span class="note">preferred ΔV axis for auto-burns</span>
+            </div>
+            <div class="field">
+              <label>Verification Requirement</label>
+              <select id="cfgVerify">
+                <option value="doppler">Doppler post-burn OD</option>
+                <option value="accelerometer">Accelerometer only</option>
+                <option value="both">Both (strict)</option>
+              </select>
+              <span class="note">closed-loop confirmation mode</span>
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-top:14px;">
+            <span class="tk">Enable fully autonomous execution (no operator sign-off)</span>
+            <span class="switch" id="cfgFullAuto" role="switch" aria-checked="false" tabindex="0"></span>
+          </div>
+          <div class="toggle-row">
+            <span class="tk">72-h secondary screening gate (block burn if new threat)</span>
+            <span class="switch on" id="cfgScreen" role="switch" aria-checked="true" tabindex="0"></span>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-modal-close>Cancel</button>
+          <button class="btn btn-primary" id="savePolicy" data-modal-close>Apply Policy</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/pages/console.js"></script>
+</body>
+</html>
