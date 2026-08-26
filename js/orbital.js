@@ -40,6 +40,7 @@
       this.zoom = 1;
       this.playing = true;
       this.t = 0;
+      this.lastFrame = null;
       this.speedMult = 1;
       this.layers = { satellites: true, debris: true, orbits: true };
       this.satellites = [
@@ -81,7 +82,7 @@
     }
 
     pos(sat, cx, cy, R) {
-      const a = sat.phase + this.t * sat.speed * 1000;
+      const a = sat.phase + this.t * sat.speed;
       const x = Math.cos(a) * R * sat.rx * 2.05;
       const y = Math.sin(a) * R * sat.rx * 2.05;
       return {
@@ -90,11 +91,14 @@
       };
     }
 
-    loop() {
+    loop(now) {
       if (!this.w) this.resize();
-      if (this.playing) this.t += 16 * this.speedMult;
+      if (this.lastFrame === null) this.lastFrame = now || performance.now();
+      const dt = Math.min((now || performance.now()) - this.lastFrame, 100);
+      this.lastFrame = now || performance.now();
+      if (this.playing) this.t += dt * this.speedMult;
       this.draw();
-      requestAnimationFrame(() => this.loop());
+      requestAnimationFrame((n) => this.loop(n));
     }
 
     draw() {
@@ -182,7 +186,7 @@
         if (showOrbit) this.drawOrbitPath(sat, cx, cy, R);
         ctx.restore();
 
-        const pnt = this.pointAt(sat, (this.t * sat.speed * 1000) % TAU, cx, cy, R);
+        const pnt = this.pointAt(sat, (this.t * sat.speed) % TAU, cx, cy, R);
 
         /* satellite marker */
         ctx.save();
