@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server/dist/index.js",
     "dev": "npx tsx server/src/index.ts",
-    "build": "node -e \"require('fs').existsSync('server/dist/index.js') ? console.log('server/dist is prebuilt, skipping tsc') : (require('child_process').execSync('tsc -p server/tsconfig.json', { stdio: 'inherit' }))\"",
+    "build": "node scripts/build.js",
     "build:ts": "tsc -p server/tsconfig.json",
     "serve:static": "npx --yes serve -l 3000 ."
   },
