@@ -17,8 +17,23 @@
   .orbit-table .mono { font-family: var(--mono); }
   .orbit-table .sat-link { color: var(--accent); cursor: pointer; font-weight: 600; }
   .orbit-table .sat-link:hover { text-decoration: underline; }
-  .orbit-canvas-wrap { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: radial-gradient(900px 400px at 50% 120%, #0D2136 0%, var(--bg-1) 55%, #030710 100%); border: 1px solid var(--border); }
-  .orbit-canvas-wrap canvas { display: block; width: 100%; height: 400px; }
+  .orbit-canvas-wrap { position: relative; border-radius: var(--radius-lg); overflow: hidden; background: radial-gradient(900px 400px at 50% 120%, #0D2136 0%, var(--bg-1) 55%, #030710 100%); border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .orbit-canvas-wrap canvas { display: block; width: 100%; height: 540px; }
+  .orbit-canvas-wrap .viewer-head { top: 14px; left: 16px; right: 16px; }
+  .orbit-canvas-wrap .viewer-controls { right: 14px; bottom: 14px; }
+  .orbit-canvas-wrap .layer-chips { left: 16px; bottom: 14px; }
+  .orbit-canvas-wrap .orbit-legend {
+    position: absolute; left: 16px; right: 16px; bottom: 56px;
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    background: rgba(5, 10, 18, 0.62); border: 1px solid var(--border);
+    backdrop-filter: blur(8px); z-index: 5;
+  }
+  .orbit-canvas-wrap .orbit-legend .vl-item { font: 600 10px var(--mono); letter-spacing: 0.06em; color: var(--text-mid); }
+  .orbit-canvas-wrap .orbit-legend .vl-swatch { width: 9px; height: 9px; border-radius: 2px; }
+  .orbit-canvas-wrap .orbit-play {
+    position: absolute; right: 14px; top: 14px; z-index: 6;
+  }
 </style>
 </head>
 <body data-page="orbits">
@@ -41,10 +56,31 @@
 
     <!-- Orbital viewer canvas -->
     <article class="orbit-canvas-wrap" style="margin-bottom:14px;">
-      <canvas id="orbitCanvas" role="img" aria-label="Animated orbital visualization of all fleet satellites"></canvas>
-      <div style="position:absolute;top:12px;left:16px;pointer-events:none;">
-        <div style="font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;">Fleet Orbital View</div>
+      <canvas id="orbitCanvas" role="img" aria-label="Real-time 3D globe with fleet satellites revolving on their orbital trajectories"></canvas>
+      <div class="viewer-head">
+        <div class="viewer-title">Fleet Orbital View · Live 3D Globe</div>
+        <span class="live-dot">LIVE</span>
       </div>
+      <div class="layer-chips" role="group" aria-label="Layer controls">
+        <button class="chip on" aria-pressed="true" data-layer="orbits">ORBIT TRACKS</button>
+        <button class="chip on" aria-pressed="true" data-layer="labels">LABELS</button>
+        <button class="chip on" aria-pressed="true" data-layer="satellites">SATELLITES</button>
+      </div>
+      <div class="viewer-controls">
+        <button class="vc-btn" data-zoom="in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        <button class="vc-btn" data-cam="reset" aria-label="Reset camera" title="Reset camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+        <button class="vc-btn" data-zoom="out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
+      </div>
+      <div class="orbit-legend">
+        <span class="vl-item"><span class="vl-swatch" style="background:#38BDF8;"></span>LEO</span>
+        <span class="vl-item"><span class="vl-swatch" style="background:#F59E0B;"></span>MEO</span>
+        <span class="vl-item"><span class="vl-swatch" style="background:#10B981;"></span>GEO</span>
+        <span class="vl-item"><span class="vl-swatch" style="background:#A78BFA;"></span>HEO</span>
+        <span class="vl-item" style="margin-left:auto;color:var(--text-low);">Drag to rotate · Scroll to zoom</span>
+      </div>
+      <button class="play-btn orbit-play" id="playBtn" aria-label="Pause simulation">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </button>
     </article>
 
     <!-- Elements table -->
@@ -79,6 +115,7 @@
 <script src="js/api.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/orbital.js"></script>
 <script src="js/pages/orbits.js"></script>
 </body>

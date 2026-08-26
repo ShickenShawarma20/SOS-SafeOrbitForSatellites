@@ -6,6 +6,16 @@
   const EARTH_TEXTURE_URL = "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
   const THREE_CDN_NOTE = "Three.js not loaded — falling back to flat canvas view";
 
+  // Default satellite set used by the dashboard viewer (kept for backward compat).
+  const DEFAULT_SATELLITES = [
+    { name: "EOS-04", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
+    { name: "Cartosat-3", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
+    { name: "EOS-06", color: "#22D3EE", rx: 0.34, tilt: -0.95, speed: 0.00032, phase: 0.8 },
+    { name: "OBJ-8821", color: "#F97316", rx: 0.465, tilt: -0.44, speed: 0.000205, phase: 2.05, danger: true },
+    { name: "OBJ-3421", color: "#FBBF24", rx: 0.52, tilt: 0.18, speed: 0.00018, phase: 3.4, debris: true },
+    { name: "OBJ-1123", color: "#94A3B8", rx: 0.30, tilt: 1.1, speed: 0.00037, phase: 5.6, debris: true },
+  ];
+
   function setupCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -37,22 +47,20 @@
   /* ---------- Full orbital viewer (dashboard) ---------- */
 
   class OrbitalViewer {
-    constructor(canvas) {
+    constructor(canvas, opts) {
+      opts = opts || {};
       this.canvas = canvas;
       this.zoom = 1;
       this.playing = true;
       this.t = 0;
       this.lastFrame = null;
       this.speedMult = 1;
-      this.layers = { satellites: true, debris: true, orbits: true };
-      this.satellites = [
-        { name: "EOS-04", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
-        { name: "Cartosat-3", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
-        { name: "EOS-06", color: "#22D3EE", rx: 0.34, tilt: -0.95, speed: 0.00032, phase: 0.8 },
-        { name: "OBJ-8821", color: "#F97316", rx: 0.465, tilt: -0.44, speed: 0.000205, phase: 2.05, danger: true },
-        { name: "OBJ-3421", color: "#FBBF24", rx: 0.52, tilt: 0.18, speed: 0.00018, phase: 3.4, debris: true },
-        { name: "OBJ-1123", color: "#94A3B8", rx: 0.30, tilt: 1.1, speed: 0.00037, phase: 5.6, debris: true },
-      ];
+      this.layers = { satellites: true, debris: true, orbits: true, labels: true };
+      this.satellites = (opts.satellites || DEFAULT_SATELLITES).map((s) => Object.assign({}, s));
+      this.showConjunction = opts.showConjunction !== false;
+      this.cameraDist = opts.cameraDist || 4.6;
+      this._regimeFilter = null;
+      this._focusName = null;
       this.useThree = typeof THREE !== "undefined" && !!canvas.getContext("webgl");
       if (this.useThree) this.initThree();
       else console.warn(THREE_CDN_NOTE);
@@ -128,11 +136,49 @@
       this.scene.add(this.globeGroup);
 
       /* orbit rings + satellites */
+      this._satGroups = [];
+      this._buildSatellites();
+
+      /* conjunction marker (follows SAT-51656) — only when enabled */
+      if (this.showConjunction) {
+        this.conjCore = new THREE.Mesh(
+          new THREE.SphereGeometry(0.02, 16, 12),
+          new THREE.MeshBasicMaterial({ color: 0xef4444 })
+        );
+        this.conjRing = new THREE.Mesh(
+          new THREE.RingGeometry(0.07, 0.085, 48),
+          new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, side: THREE.DoubleSide, depthWrite: false })
+        );
+        const conjLabel = this.makeLabel("TCA 04:32:18", "#FCA5A5");
+        conjLabel.scale.set(0.55, 0.14, 1);
+        this.conjLabel = conjLabel;
+        this.scene.add(this.conjCore);
+        this.scene.add(this.conjRing);
+        this.scene.add(conjLabel);
+      }
+
+      this.bindCameraControls();
+      this.resize();
+    }
+
+    /* Build (or rebuild) satellite orbit rings + markers from this.satellites. */
+    _buildSatellites() {
+      if (!this.useThree) return;
+      // tear down previous
+      (this._satGroups || []).forEach((g) => {
+        this.scene.remove(g.group);
+        this.scene.remove(g.label);
+      });
+      this._satGroups = [];
+
       this.satellites.forEach((sat) => {
-        const A = sat.rx * 2.05;
-        let hash = 0;
-        for (let i = 0; i < sat.name.length; i++) hash = (hash * 31 + sat.name.charCodeAt(i)) % 628;
-        sat.raan = (hash / 100);
+        const A = sat.A != null ? sat.A : sat.rx * 2.05;
+        let raan = sat.raan;
+        if (raan == null) {
+          let hash = 0;
+          for (let i = 0; i < sat.name.length; i++) hash = (hash * 31 + sat.name.charCodeAt(i)) % 628;
+          raan = hash / 100;
+        }
 
         const pts = [];
         for (let i = 0; i <= 160; i++) {
@@ -144,45 +190,72 @@
           new THREE.LineBasicMaterial({
             color: new THREE.Color(sat.color),
             transparent: true,
-            opacity: sat.danger ? 0.75 : 0.35,
+            opacity: sat.danger ? 0.75 : 0.4,
           })
         );
         const group = new THREE.Group();
         group.add(ring);
-        group.quaternion.setFromEuler(new THREE.Euler(sat.tilt, sat.raan, 0, "YXZ"));
+        group.quaternion.setFromEuler(new THREE.Euler(sat.tilt, raan, 0, "YXZ"));
 
+        const markerSize = sat.danger ? 0.03 : 0.022;
         const marker = new THREE.Mesh(
-          new THREE.SphereGeometry(sat.danger ? 0.03 : 0.022, 16, 12),
+          new THREE.SphereGeometry(markerSize, 16, 12),
           new THREE.MeshBasicMaterial({ color: new THREE.Color(sat.color) })
         );
         group.add(marker);
 
+        // trailing glow sprite for focus highlight
+        const haloMat = new THREE.SpriteMaterial({
+          map: this._glowTexture(sat.color),
+          transparent: true,
+          opacity: 0,
+          depthTest: false,
+          blending: THREE.AdditiveBlending,
+        });
+        const halo = new THREE.Sprite(haloMat);
+        halo.scale.set(0.22, 0.22, 1);
+        group.add(halo);
+
+        const label = this.makeLabel(sat.label || sat.name, sat.danger ? "#FDA46A" : "rgba(186,222,250,.95)");
+
         sat._A = A;
-        sat._group = group;
-        sat._marker = marker;
-        sat._label = this.makeLabel(sat.name, sat.danger ? "#FDA46A" : "rgba(186,222,250,.95)");
+        sat._raan = raan;
         this.scene.add(group);
-        this.scene.add(sat._label);
+        this.scene.add(label);
+
+        this._satGroups.push({ sat, group, marker, ring, label, halo });
       });
+    }
 
-      /* conjunction marker (follows SAT-51656) */
-      this.conjCore = new THREE.Mesh(
-        new THREE.SphereGeometry(0.02, 16, 12),
-        new THREE.MeshBasicMaterial({ color: 0xef4444 })
-      );
-      this.conjRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.07, 0.085, 48),
-        new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, side: THREE.DoubleSide, depthWrite: false })
-      );
-      const conjLabel = this.makeLabel("TCA 04:32:18", "#FCA5A5");
-      conjLabel.scale.set(0.55, 0.14, 1);
-      this.conjLabel = conjLabel;
-      this.scene.add(this.conjCore);
-      this.scene.add(this.conjRing);
-      this.scene.add(conjLabel);
+    _glowTexture(color) {
+      const c = document.createElement("canvas");
+      c.width = c.height = 64;
+      const g = c.getContext("2d");
+      const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grd.addColorStop(0, color);
+      grd.addColorStop(0.4, color);
+      grd.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, 64, 64);
+      const tex = new THREE.CanvasTexture(c);
+      tex.minFilter = THREE.LinearFilter;
+      return tex;
+    }
 
-      this.bindCameraControls();
-      this.resize();
+    /* Replace the satellite set and rebuild orbits (used by Orbital Registry). */
+    setSatellites(list) {
+      this.satellites = (list || []).map((s) => Object.assign({}, s));
+      if (this.useThree) this._buildSatellites();
+    }
+
+    /* Show only satellites whose `regime` matches (null/""/undefined = all). */
+    setRegimeFilter(regime) {
+      this._regimeFilter = regime || null;
+    }
+
+    /* Highlight a satellite by name with a pulsing halo. */
+    focusSatellite(name) {
+      this._focusName = name || null;
     }
 
     makeLabel(text, color) {
@@ -288,33 +361,60 @@
 
       this.globeGroup.rotation.y += dt * 0.00004;
 
-      this.satellites.forEach((sat) => {
+      const showLabels = this.layers.labels !== false;
+      const pulse = (Math.sin(this.t / 300) + 1) / 2;
+
+      (this._satGroups || []).forEach((g) => {
+        const sat = g.sat;
         const isDebris = sat.debris || sat.danger;
-        sat._group.visible = isDebris ? this.layers.debris !== false : this.layers.satellites !== false;
-        sat._group.children.forEach((ch) => {
+        const layerOn = isDebris ? this.layers.debris !== false : this.layers.satellites !== false;
+        const regimeOk = !this._regimeFilter || sat.regime === this._regimeFilter;
+        const visible = layerOn && regimeOk;
+        g.group.visible = visible;
+        if (!visible) {
+          g.label.visible = false;
+          return;
+        }
+        g.group.children.forEach((ch) => {
           if (ch.isLine) ch.visible = this.layers.orbits !== false;
         });
         const a = sat.phase + this.t * sat.speed;
-        sat._marker.position.set(Math.cos(a) * sat._A, 0, Math.sin(a) * sat._A);
-        sat._marker.getWorldPosition(v);
-        sat._label.position.copy(v);
-        sat._label.position.y += 0.09;
+        g.marker.position.set(Math.cos(a) * sat._A, 0, Math.sin(a) * sat._A);
+        g.marker.getWorldPosition(v);
+        g.label.visible = showLabels;
+        g.label.position.copy(v);
+        g.label.position.y += 0.09;
+
+        // focus halo
+        const focused = this._focusName && (sat.name === this._focusName || sat.label === this._focusName);
+        if (g.halo) {
+          g.halo.position.copy(g.marker.position);
+          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : 0;
+          g.halo.scale.setScalar(focused ? 0.28 + pulse * 0.12 : 0.22);
+        }
+        if (focused) {
+          g.marker.scale.setScalar(1.5);
+          g.ring.material.opacity = 0.9;
+        } else {
+          g.marker.scale.setScalar(1);
+          g.ring.material.opacity = sat.danger ? 0.75 : 0.4;
+        }
       });
 
-      /* conjunction follows SAT-51656 */
-      const conj = this.satellites[0];
-      conj._marker.getWorldPosition(v);
-      this.conjCore.position.copy(v);
-      this.conjRing.position.copy(v);
-      this.conjRing.lookAt(this.camera.position);
-      const pulse = (Math.sin(this.t / 300) + 1) / 2;
-      this.conjRing.scale.setScalar(0.8 + pulse * 0.9);
-      this.conjRing.material.opacity = 0.85 - pulse * 0.55;
-      this.conjLabel.position.copy(v);
-      this.conjLabel.position.y -= 0.11;
+      /* conjunction follows the first satellite (dashboard only) */
+      if (this.showConjunction && this.conjCore && this._satGroups && this._satGroups[0]) {
+        this._satGroups[0].marker.getWorldPosition(v);
+        this.conjCore.position.copy(v);
+        this.conjRing.position.copy(v);
+        this.conjRing.lookAt(this.camera.position);
+        this.conjRing.scale.setScalar(0.8 + pulse * 0.9);
+        this.conjRing.material.opacity = 0.85 - pulse * 0.55;
+        this.conjLabel.position.copy(v);
+        this.conjLabel.position.y -= 0.11;
+      }
 
       /* camera */
-      const dist = 4.6 / this.zoom;
+      const dist = this.cameraDist / this.zoom;
       this.camera.position.set(
         dist * Math.cos(this.pitch) * Math.sin(this.yaw),
         dist * Math.sin(this.pitch),
@@ -329,8 +429,9 @@
 
     pos(sat, cx, cy, R) {
       const a = sat.phase + this.t * sat.speed;
-      const x = Math.cos(a) * R * sat.rx * 2.05;
-      const y = Math.sin(a) * R * sat.rx * 2.05;
+      const rad = R * (sat.A != null ? sat.A : sat.rx * 2.05);
+      const x = Math.cos(a) * rad;
+      const y = Math.sin(a) * rad;
       return {
         x: cx + x * Math.cos(sat.tilt) - y * Math.sin(sat.tilt),
         y: cy + x * Math.sin(sat.tilt) + y * Math.cos(sat.tilt) * 0.62,
@@ -390,28 +491,33 @@
       }
       ctx.restore();
 
-      const conj = this.pos(this.satellites[0], cx, cy, R);
-      ctx.save();
-      ctx.globalAlpha = 0.85;
-      const cg = ctx.createRadialGradient(conj.x, conj.y, 2, conj.x, conj.y, 64 * this.zoom);
-      cg.addColorStop(0, "rgba(239,68,68,.30)");
-      cg.addColorStop(1, "rgba(239,68,68,0)");
-      ctx.fillStyle = cg;
-      ctx.beginPath();
-      ctx.arc(conj.x, conj.y, 64 * this.zoom, 0, TAU);
-      ctx.fill();
-      ctx.restore();
+      if (this.showConjunction && this.satellites[0]) {
+        const conj = this.pos(this.satellites[0], cx, cy, R);
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        const cg = ctx.createRadialGradient(conj.x, conj.y, 2, conj.x, conj.y, 64 * this.zoom);
+        cg.addColorStop(0, "rgba(239,68,68,.30)");
+        cg.addColorStop(1, "rgba(239,68,68,0)");
+        ctx.fillStyle = cg;
+        ctx.beginPath();
+        ctx.arc(conj.x, conj.y, 64 * this.zoom, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+        this._conj2d = conj;
+      }
 
       this.satellites.forEach((sat) => {
         const isDebris = sat.debris || sat.danger;
         if (isDebris && this.layers && this.layers.debris === false) return;
         if (!isDebris && this.layers && this.layers.satellites === false) return;
+        if (this._regimeFilter && sat.regime !== this._regimeFilter) return;
         const showOrbit = !this.layers || this.layers.orbits !== false;
         const col = sat.color;
+        const focused = this._focusName && (sat.name === this._focusName || sat.label === this._focusName);
         ctx.save();
         ctx.strokeStyle = col;
-        ctx.globalAlpha = sat.danger ? 0.75 : 0.3;
-        ctx.lineWidth = sat.danger ? 1.6 : 1;
+        ctx.globalAlpha = sat.danger ? 0.75 : focused ? 0.85 : 0.3;
+        ctx.lineWidth = sat.danger || focused ? 1.6 : 1;
         if (sat.danger) ctx.setLineDash([7, 5]);
         if (showOrbit) this.drawOrbitPath(sat, cx, cy, R);
         ctx.restore();
@@ -423,37 +529,43 @@
         ctx.shadowColor = col;
         ctx.shadowBlur = sat.danger ? 14 : 8;
         ctx.beginPath();
-        ctx.arc(pnt.x, pnt.y, sat.danger ? 5 : 3.6, 0, TAU);
+        ctx.arc(pnt.x, pnt.y, sat.danger ? 5 : focused ? 5 : 3.6, 0, TAU);
         ctx.fill();
         ctx.restore();
 
-        ctx.font = "600 10px 'JetBrains Mono', Consolas, monospace";
-        ctx.fillStyle = sat.danger ? "#FDA46A" : "rgba(186,222,250,.9)";
-        ctx.fillText(sat.name, pnt.x + 9, pnt.y - 7);
+        if (this.layers.labels !== false) {
+          ctx.font = "600 10px 'JetBrains Mono', Consolas, monospace";
+          ctx.fillStyle = sat.danger ? "#FDA46A" : "rgba(186,222,250,.9)";
+          ctx.fillText(sat.label || sat.name, pnt.x + 9, pnt.y - 7);
+        }
       });
 
-      const pulse = (Math.sin(this.t / 320) + 1) / 2;
-      ctx.save();
-      ctx.strokeStyle = `rgba(239,68,68,${0.85 - pulse * 0.6})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(conj.x, conj.y, 8 + pulse * 20, 0, TAU);
-      ctx.stroke();
-      ctx.fillStyle = "#EF4444";
-      ctx.shadowColor = "#EF4444";
-      ctx.shadowBlur = 16;
-      ctx.beginPath();
-      ctx.arc(conj.x, conj.y, 4.5, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      ctx.font = "700 10px 'JetBrains Mono', Consolas, monospace";
-      ctx.fillStyle = "#FCA5A5";
-      ctx.fillText("TCA 04:32:18", conj.x + 10, conj.y + 16);
+      if (this._conj2d) {
+        const conj = this._conj2d;
+        const pulse = (Math.sin(this.t / 320) + 1) / 2;
+        ctx.save();
+        ctx.strokeStyle = `rgba(239,68,68,${0.85 - pulse * 0.6})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(conj.x, conj.y, 8 + pulse * 20, 0, TAU);
+        ctx.stroke();
+        ctx.fillStyle = "#EF4444";
+        ctx.shadowColor = "#EF4444";
+        ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.arc(conj.x, conj.y, 4.5, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+        ctx.font = "700 10px 'JetBrains Mono', Consolas, monospace";
+        ctx.fillStyle = "#FCA5A5";
+        ctx.fillText("TCA 04:32:18", conj.x + 10, conj.y + 16);
+      }
     }
 
     pointAt(sat, angle, cx, cy, R) {
-      const x = Math.cos(angle) * R * sat.rx * 2.05;
-      const y = Math.sin(angle) * R * sat.rx * 2.05;
+      const rad = R * (sat.A != null ? sat.A : sat.rx * 2.05);
+      const x = Math.cos(angle) * rad;
+      const y = Math.sin(angle) * rad;
       return {
         x: cx + x * Math.cos(sat.tilt) - y * Math.sin(sat.tilt),
         y: cy + x * Math.sin(sat.tilt) + y * Math.cos(sat.tilt) * 0.62,
@@ -565,6 +677,9 @@
   }
 
   /* ---------- Bootstrapping ---------- */
+
+  // Expose the viewer class for reuse on other pages (e.g. Orbital Registry).
+  window.SOSOrbitalViewer = OrbitalViewer;
 
   document.addEventListener("DOMContentLoaded", () => {
     const orb = document.getElementById("orbitalCanvas");
