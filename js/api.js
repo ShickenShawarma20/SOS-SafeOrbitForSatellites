@@ -1,11 +1,24 @@
 /* SOS · SafeOrbitForSattelites — shared API client */
+/* API base override:
+   - window.SOS_API_BASE (set in a config script or query ?api=https://host)
+   - localStorage "sos_api_base"
+   - falls back to same-origin /api/v1 */
+(function () {
+  var qs = new URLSearchParams(location.search).get("api");
+  if (qs) { try { localStorage.setItem("sos_api_base", qs); } catch (e) {} }
+  window.SOS_API_BASE =
+    window.SOS_API_BASE ||
+    (function () { try { return localStorage.getItem("sos_api_base"); } catch (e) { return null; } })() ||
+    "/api/v1";
+})();
+
 (function () {
   "use strict";
 
-  var BASE = "/api/v1";
+  var BASE = window.SOS_API_BASE || "/api/v1";
 
   function api(path, opts) {
-    var url = BASE + path;
+    var url = path.indexOf("/auth/") === 0 ? BASE.replace(/\/api\/v1$/, "") + path : BASE + path;
     var config = { headers: { "Content-Type": "application/json" } };
     if (opts) {
       if (opts.method) config.method = opts.method;
@@ -23,8 +36,10 @@
   var wsReconnectTimer = null;
 
   function wsConnect() {
-    var protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    var url = protocol + "//" + location.host + "/ws";
+    var apiOrigin;
+    try { apiOrigin = new URL(BASE, location.href).origin; } catch (e) { apiOrigin = location.origin; }
+    var protocol = apiOrigin === location.origin ? (location.protocol === "https:" ? "wss:" : "ws:") : (apiOrigin.indexOf("https:") === 0 ? "wss:" : "ws:");
+    var url = protocol + "//" + new URL(apiOrigin).host + "/ws";
     try {
       ws = new WebSocket(url);
     } catch (e) {

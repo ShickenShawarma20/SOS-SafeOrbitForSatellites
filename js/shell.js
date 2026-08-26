@@ -157,8 +157,8 @@
         setText("sysLatency", data.latencySec + " s");
       }).catch(function () {});
 
-      /* Fetch auth/me (mounted at /auth, not /api/v1/auth) */
-      fetch("/auth/me").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (data) {
+      /* Fetch auth/me (api() routes /auth/* to the backend origin) */
+      (window.SOS ? SOS.api("/auth/me") : Promise.reject()).then(function (data) {
         if (data && data.name) setText("opName", data.name);
         if (data && data.role) setText("opRole", data.role);
         if (data && data.initials) setText("opAvatar", data.initials);

@@ -1,0 +1,8 @@
+node_modules
+server
+docs
+.git
+.gitignore
+package-lock.json
+README.md
+render.yaml
