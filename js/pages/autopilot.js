@@ -171,7 +171,7 @@
       var stLabel = item.status.replace("_", " ").toUpperCase();
       return '<tr class="' + rowCls + '" data-row="' + i + '">' +
         '<td class="fcq-check"><span class="fcq-cb ' + checked + " " + disabled + '" data-idx="' + i + '"></span></td>' +
-        '<td><div class="fcq-sat">' + esc(item.sat) + '<span class="sub">NORAD ' + item.norad + ' · ' + item.fuel.toFixed(1) + ' kg fuel</span></div></td>' +
+        '<td><div class="fcq-sat">' + esc(item.sat) + '<span class="sub">NORAD ' + item.norad + ' · ' + item.fuel.toFixed(2) + ' kg fuel</span></div></td>' +
         '<td><div class="fcq-deb">' + esc(item.debris) + '<span class="sub">v<sub>rel</sub> ' + item.relSpeed + ' km/s</span></div></td>' +
         '<td><div class="fcq-pc ' + pcClass + '">' + fmtPc(item.pc) + '</div><span class="fcq-miss">miss ' + fmtMiss(item.miss) + '</span></td>' +
         '<td><div class="fcq-dv">ΔV ' + totalDv.toFixed(3) + ' m/s<span class="sub">T ' + item.dvT.toFixed(3) + ' · R ' + item.dvR.toFixed(3) + ' · N ' + item.dvN.toFixed(3) + '</span></div></td>' +
@@ -293,7 +293,12 @@
       var item = FLEET[idx];
       item.status = "armed";
       renderFleet();
-      runStages(idx, isDry, runNext);
+      updateResolvedCount();
+      runStages(idx, isDry, function () {
+        renderFleet();
+        updateResolvedCount();
+        runNext();
+      });
     }
     runNext();
   }
