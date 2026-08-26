@@ -228,6 +228,16 @@
         y: cy + x * Math.sin(sat.tilt) + y * Math.cos(sat.tilt) * 0.62,
       };
     }
+
+    drawOrbitPath(sat, cx, cy, R) {
+      this.ctx.beginPath();
+      for (let a = 0; a <= TAU + 0.03; a += 0.04) {
+        const q = this.pointAt(sat, a, cx, cy, R);
+        if (a === 0) this.ctx.moveTo(q.x, q.y);
+        else this.ctx.lineTo(q.x, q.y);
+      }
+      this.ctx.stroke();
+    }
   }
 
   /* ---------- Plan comparison (maneuver planner) ---------- */
@@ -332,7 +342,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     const orb = document.getElementById("orbitalCanvas");
     if (orb) window.sosOrbitalViewer = new OrbitalViewer(orb);
-    initApproach(document.getElementById("approachCanvas"));
     initPlanCompare(document.getElementById("planCanvas"));
   });
 })();

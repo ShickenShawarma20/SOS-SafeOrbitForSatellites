@@ -48,6 +48,7 @@ app.use("/api/v1/settings", settings_1.default);
 app.use("/api/v1/audit", audit_1.default);
 app.use("/api/v1/ai", ai_1.default);
 app.use("/auth", auth_1.default);
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 app.get("/api/v1/health", (_req, res) => {
     res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
 });

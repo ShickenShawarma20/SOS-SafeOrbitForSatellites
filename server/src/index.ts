@@ -50,6 +50,7 @@ app.use("/api/v1/audit", auditRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/auth", authRouter);
 
+app.get("/favicon.ico", (_req, res) => res.status(204).end());
 app.get("/api/v1/health", (_req, res) => {
   res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
 });
