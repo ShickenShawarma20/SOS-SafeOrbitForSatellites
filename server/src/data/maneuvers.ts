@@ -4,7 +4,7 @@ export const maneuverPlans: ManeuverPlan[] = [
   {
     id: "MAN-001",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN A",
     recommended: true,
     direction: "prograde",
@@ -24,13 +24,13 @@ export const maneuverPlans: ManeuverPlan[] = [
     groundTrackShiftKm: 14.2,
     secondaryScreeningClear: true,
     notes:
-      "Burn window keeps SAT-042 inside KSAT Svalbard visibility for real-time monitoring. Recovery to nominal orbit can be executed within 14 days.",
+      "Burn window keeps SAT-51656 inside KSAT Svalbard visibility for real-time monitoring. Recovery to nominal orbit can be executed within 14 days.",
     approvalStatus: "draft",
   },
   {
     id: "MAN-002",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN B",
     recommended: false,
     direction: "prograde",
@@ -56,7 +56,7 @@ export const maneuverPlans: ManeuverPlan[] = [
   {
     id: "MAN-003",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN C",
     recommended: false,
     direction: "prograde",

@@ -204,7 +204,7 @@
     }).catch(function () {});
 
     /* ---- Fuel Status ---- */
-    S.api("/satellites/SAT-042").then(function (sat) {
+    S.api("/satellites/SAT-51656").then(function (sat) {
       if (!sat || !sat.fuel) return;
       var fuel = sat.fuel;
       if (window.renderFuelGauge) renderFuelGauge("fuelGauge", fuel.pctRemaining);

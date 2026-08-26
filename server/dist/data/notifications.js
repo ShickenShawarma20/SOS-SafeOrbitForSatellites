@@ -5,7 +5,7 @@ exports.notifications = [
     {
         id: "NOT-001",
         type: "conjunction",
-        message: "Critical conjunction detected: SAT-042 ↔ OBJ-8821",
+        message: "Critical conjunction detected: SAT-51656 ↔ OBJ-8821",
         severity: "critical",
         read: false,
         timestamp: "2024-05-26T04:30:00Z",
@@ -14,7 +14,7 @@ exports.notifications = [
     {
         id: "NOT-002",
         type: "conjunction",
-        message: "High-risk conjunction: SAT-078 ↔ OBJ-3421",
+        message: "High-risk conjunction: SAT-44804 ↔ OBJ-3421",
         severity: "high",
         read: false,
         timestamp: "2024-05-26T03:15:00Z",

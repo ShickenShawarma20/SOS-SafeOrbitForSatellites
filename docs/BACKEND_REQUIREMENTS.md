@@ -24,11 +24,11 @@ This document catalogs **every backend feature, API endpoint, data contract, and
 
 ```ts
 interface Satellite {
-  id: string;                 // "SAT-042"
-  noradId: number;            // 48621
+  id: string;                 // "SAT-51656"
+  noradId: number;            // 51656
   name: string;
   type: string;               // "Earth Observation"
-  operator: string;           // "SafeOrbit Systems"
+  operator: string;           // "ISRO"
   launchDate: string;         // ISO date
   massKg: number;             // 1200
   status: SatelliteStatus;
@@ -69,7 +69,7 @@ interface DebrisObject {
 
 interface Conjunction {
   id: string;                 // "CD-2024-0526-0417"
-  satelliteId: string;        // "SAT-042"
+  satelliteId: string;        // "SAT-51656"
   objectId: string;           // "OBJ-8821"
   severity: Severity;
   tca: string;                // time of closest approach
@@ -117,10 +117,10 @@ interface ManeuverPlan {
 
 | Feature | Endpoint |
 |---|---|
-| Critical alert banner (SAT-042 ↔ OBJ-8821: TCA, Pc 3.2e-4, miss 742 m, rel. velocity 15.29 km/s) | `GET /api/v1/conjunctions/critical` → highest-severity active `Conjunction` |
+| Critical alert banner (SAT-51656 ↔ OBJ-8821: TCA, Pc 3.2e-4, miss 742 m, rel. velocity 15.29 km/s) | `GET /api/v1/conjunctions/critical` → highest-severity active `Conjunction` |
 | Alert summary donut (12 alerts: 1 crit / 3 high / 8 med / 0 low, last 48 h) | `GET /api/v1/conjunctions/summary?window=48h` → counts by severity |
 | Upcoming conjunctions table (5 rows + total screened count 21,430) | `GET /api/v1/conjunctions/upcoming?limit=5` and catalog size from `GET /api/v1/catalog/stats` |
-| Next maneuver card (SAT-042 window, ΔV 0.42 m/s, fuel −0.08%/12.4 kg, duration 2m34s) | `GET /api/v1/maneuvers/next` |
+| Next maneuver card (SAT-51656 window, ΔV 0.42 m/s, fuel −0.08%/12.4 kg, duration 2m34s) | `GET /api/v1/maneuvers/next` |
 | System feed (alert/tracking/maneuver/TLE/weather events with timestamps) | `GET /api/v1/events/feed?limit=20` (also via WS push) |
 | Ground-station coverage map (station positions lat/lon, online/offline, coverage %) | `GET /api/v1/groundstations` → `[{id,name,lat,lon,status}]`, `GET /api/v1/network/status` → `{stationsOnline:32, stationsOffline:2, coveragePct:98.7, latencySec:1.2}` |
 | Conjunction timeline (±12 h events per satellite with Pc labels) | `GET /api/v1/conjunctions/timeline?window=±12h` → per-satellite event offsets |
@@ -154,7 +154,7 @@ Close Approach Geometry canvas: RK4 propagation, golden-section TCA search,
 conjunction-plane (B-plane) kinematics, and numerical Pc integration over the
 combined covariance with a spherical hard-body radius. The reference scenario is:
 
-| Parameter | SAT-042 | OBJ-8821 |
+| Parameter | SAT-51656 | OBJ-8821 |
 |---|---|---|
 | Orbit | circular, 450 km, prograde | circular, 449.258 km, retrograde |
 | Covariance (B-plane) | σ₁ = 1.05 km (along rel-velocity), σ₂ = 0.74 km (perpendicular), combined |
@@ -267,7 +267,7 @@ Backend requirements to stay consistent with the client sim:
 | `job.progress {jobId, pct, stage}` | simulation progress | Simulate Plan modal |
 | `maneuver.status` | plan approval/execution state changes | planner summary bar |
 
-Client sends subscribe messages: `{ "subscribe": ["conjunction", "telemetry.SAT-042", …] }`.
+Client sends subscribe messages: `{ "subscribe": ["conjunction", "telemetry.SAT-51656", …] }`.
 
 ## 12. Space Weather & Catalog (supporting features)
 

@@ -45,7 +45,7 @@ router.get("/events/feed", (req, res) => {
 });
 
 router.get("/fleet/fuel-summary", (_req, res) => {
-  const s = findSat("SAT-042");
+  const s = findSat("SAT-51656");
   res.json(s.fuel);
 });
 
@@ -81,7 +81,7 @@ router.get("/conjunctions/timeline", (_req, res) => {
   const windowH = 12;
   const nowMs = Date.now();
   const tcaRef = new Date(conjunctions[0].tca).getTime();
-  const lanes = ["SAT-042", "SAT-078", "SAT-021", "SAT-033"].map((sid) => ({
+  const lanes = ["SAT-51656", "SAT-44804", "SAT-54361", "SAT-58990"].map((sid) => ({
     satelliteId: sid,
     events: conjunctions
       .filter((c) => c.satelliteId === sid)

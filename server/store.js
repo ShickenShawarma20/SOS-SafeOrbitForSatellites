@@ -6,9 +6,9 @@ const { conjunctions, cdmSeries, historyEvents, maneuverPlans } = require("./dat
 
 const state = {
   feed: [
-    { id: "E-1", severity: "critical", text: "Conjunction Alert: SAT-042 \u2194 OBJ-8821", time: minutesAgo(2) },
+    { id: "E-1", severity: "critical", text: "Conjunction Alert: SAT-51656 \u2194 OBJ-8821", time: minutesAgo(2) },
     { id: "E-2", severity: "medium", text: "Tracking Update: OBJ-3421", time: minutesAgo(7) },
-    { id: "E-3", severity: "info", text: "Maneuver Completed: SAT-017", time: minutesAgo(18) },
+    { id: "E-3", severity: "info", text: "Maneuver Completed: SAT-40930", time: minutesAgo(18) },
     { id: "E-4", severity: "nominal", text: "New TLE Data Received", time: minutesAgo(21) },
     { id: "E-5", severity: "info", text: "Weather Update: KSAT Ground Station", time: minutesAgo(32) },
   ],

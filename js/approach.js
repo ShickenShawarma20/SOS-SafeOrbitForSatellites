@@ -1,7 +1,7 @@
 /* SOS · SafeOrbitForSattelites — accurate close-approach visualization
-   Two dummy satellites propagated with RK4 two-body dynamics (js/sim-core.js).
-   SAT-042: circular, 450 km, prograde. OBJ-8821: circular, 449.258 km, retrograde.
-   Rendered in SAT-042's relative-motion frame with adaptive zoom; TCA, miss
+   EOS-04 (RISAT-1A) vs debris object propagated with RK4 two-body dynamics (js/sim-core.js).
+   SAT-51656: circular, 529 km, prograde. OBJ-8821: circular, 449.258 km, retrograde.
+   Rendered in SAT-51656's relative-motion frame with adaptive zoom; TCA, miss
    distance, relative velocity, combined covariance and Pc are all computed,
    not mocked, and written back into the page metrics. */
 (function () {
@@ -13,7 +13,7 @@
   /* ---------- Scenario (tuned dummy constellation) ---------- */
 
   const CFG = {
-    altAKm: 450,
+    altAKm: 529,
     altBKm: 449.258,
     retrogradeB: true,
     hbrKm: 0.06,
@@ -171,7 +171,7 @@
       const X = (wx) => cx + wx * scale;
       const Y = (wy) => cy - wy * scale;
 
-      /* reference grid (1 nice-step) centered on SAT-042 */
+      /* reference grid (1 nice-step) centered on SAT-51656 */
       const step = niceStep(scale);
       ctx.strokeStyle = "rgba(148,163,184,.09)";
       ctx.lineWidth = 1;
@@ -242,7 +242,7 @@
       /* labels + velocity vectors */
       ctx.font = "600 11px 'JetBrains Mono', monospace";
       ctx.fillStyle = "#7DD3FC";
-      ctx.fillText("SAT-042", cx + 10, cy - 8);
+      ctx.fillText("SAT-51656", cx + 10, cy - 8);
       ctx.fillStyle = "#FDBA74";
       ctx.fillText("OBJ-8821", X(st.rx) + 10, Y(st.ry) - 8);
       arrow(cx, cy, st.avx, st.avy, "#38BDF8");

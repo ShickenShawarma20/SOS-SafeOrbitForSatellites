@@ -226,7 +226,7 @@
     if (btn && !btn.dataset.wired) {
       btn.dataset.wired = "1";
       btn.addEventListener("click", async () => {
-        const satId = ($("h1").textContent.match(/SAT-\d+/) || ["SAT-042"])[0];
+        const satId = ($("h1").textContent.match(/SAT-\d+/) || ["SAT-51656"])[0];
         const ok = await UI().downloadFromApi(`/api/v1/satellites/${satId}/tle`, `${satId}.tle`);
         if (ok) UI().toast(`TLE for ${satId} downloaded`, "success");
       });
@@ -239,7 +239,7 @@
         tab.addEventListener("click", async () => {
           if (!API()) return;
           try {
-            const satId = ($("h1").textContent.match(/SAT-\d+/) || ["SAT-042"])[0];
+            const satId = ($("h1").textContent.match(/SAT-\d+/) || ["SAT-51656"])[0];
             const { items } = await API().get(`/satellites/${satId}/files`);
             const box = document.createElement("div");
             box.innerHTML =

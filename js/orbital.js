@@ -46,9 +46,9 @@
       this.speedMult = 1;
       this.layers = { satellites: true, debris: true, orbits: true };
       this.satellites = [
-        { name: "SAT-042", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
-        { name: "SAT-078", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
-        { name: "SAT-021", color: "#22D3EE", rx: 0.34, tilt: -0.95, speed: 0.00032, phase: 0.8 },
+        { name: "EOS-04", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
+        { name: "Cartosat-3", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
+        { name: "EOS-06", color: "#22D3EE", rx: 0.34, tilt: -0.95, speed: 0.00032, phase: 0.8 },
         { name: "OBJ-8821", color: "#F97316", rx: 0.465, tilt: -0.44, speed: 0.000205, phase: 2.05, danger: true },
         { name: "OBJ-3421", color: "#FBBF24", rx: 0.52, tilt: 0.18, speed: 0.00018, phase: 3.4, debris: true },
         { name: "OBJ-1123", color: "#94A3B8", rx: 0.30, tilt: 1.1, speed: 0.00037, phase: 5.6, debris: true },
@@ -165,7 +165,7 @@
         this.scene.add(sat._label);
       });
 
-      /* conjunction marker (follows SAT-042) */
+      /* conjunction marker (follows SAT-51656) */
       this.conjCore = new THREE.Mesh(
         new THREE.SphereGeometry(0.02, 16, 12),
         new THREE.MeshBasicMaterial({ color: 0xef4444 })
@@ -301,7 +301,7 @@
         sat._label.position.y += 0.09;
       });
 
-      /* conjunction follows SAT-042 */
+      /* conjunction follows SAT-51656 */
       const conj = this.satellites[0];
       conj._marker.getWorldPosition(v);
       this.conjCore.position.copy(v);

@@ -9,7 +9,7 @@
 
   onReady(function () {
     var S = window.SOS;
-    var satId = S.param("id") || "SAT-042";
+    var satId = S.param("id") || "SAT-51656";
 
     /* ---- Satellite Profile ---- */
     S.api("/satellites/" + encodeURIComponent(satId)).then(function (sat) {

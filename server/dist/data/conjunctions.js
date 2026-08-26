@@ -4,7 +4,7 @@ exports.cdmRecords = exports.conjunctions = void 0;
 exports.conjunctions = [
     {
         id: "CD-2024-0526-0417",
-        satelliteId: "SAT-042",
+        satelliteId: "SAT-51656",
         objectId: "OBJ-8821",
         severity: "critical",
         tca: "2024-05-26T04:32:18Z",
@@ -23,7 +23,7 @@ exports.conjunctions = [
     },
     {
         id: "CD-2024-0526-0418",
-        satelliteId: "SAT-078",
+        satelliteId: "SAT-44804",
         objectId: "OBJ-3421",
         severity: "high",
         tca: "2024-05-26T11:15:42Z",
@@ -42,7 +42,7 @@ exports.conjunctions = [
     },
     {
         id: "CD-2024-0526-0419",
-        satelliteId: "SAT-021",
+        satelliteId: "SAT-54361",
         objectId: "OBJ-1123",
         severity: "medium",
         tca: "2024-05-26T15:42:09Z",
@@ -59,7 +59,7 @@ exports.conjunctions = [
     },
     {
         id: "CD-2024-0528-0420",
-        satelliteId: "SAT-109",
+        satelliteId: "SAT-58694",
         objectId: "OBJ-7781",
         severity: "low",
         tca: "2024-05-28T01:33:00Z",
@@ -76,7 +76,7 @@ exports.conjunctions = [
     },
     {
         id: "CD-2024-0528-0421",
-        satelliteId: "SAT-033",
+        satelliteId: "SAT-58990",
         objectId: "OBJ-9912",
         severity: "low",
         tca: "2024-05-28T06:55:00Z",

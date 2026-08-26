@@ -68,12 +68,12 @@ app.post("/api/ai/chat", (req, res) => {
   const message = String((req.body || {}).message || "").toLowerCase();
   let reply =
     "Deterministic advisor: I can analyze conjunctions, maneuver plans and risk. Ask about a specific event ID or satellite.";
-  if (message.includes("sat-042") || message.includes("cd-2024")) {
+  if (message.includes("sat-51656") || message.includes("cd-2024")) {
     reply =
-      "SAT-042 \u2194 OBJ-8821 (CD-2024-0526-0417): Pc 2.8\u00d710\u207b\u2074 exceeds the 1e-4 maneuver threshold. PLAN A (prograde, \u0394V 0.42 m/s) raises miss distance to 2.45 km with 92.1% risk reduction at a fuel cost of 12.4 kg.";
+      "SAT-51656 \u2194 OBJ-8821 (CD-2024-0526-0417): Pc 2.8\u00d710\u207b\u2074 exceeds the 1e-4 maneuver threshold. PLAN A (prograde, \u0394V 0.42 m/s) raises miss distance to 2.45 km with 92.1% risk reduction at a fuel cost of 12.4 kg.";
   } else if (message.includes("fuel") || message.includes("\u0394v") || message.includes("dv")) {
     reply =
-      "Propellant model: \u0394m = m\u2080(1 \u2212 e^(\u2212\u0394V/(Isp\u00b7g\u2080))). SAT-042 has 121 kg usable propellant, Isp 220 s \u2014 sufficient for all candidate plans plus station-keeping reserve.";
+      "Propellant model: \u0394m = m\u2080(1 \u2212 e^(\u2212\u0394V/(Isp\u00b7g\u2080))). SAT-51656 has 220 kg usable propellant, Isp 228 s \u2014 sufficient for all candidate plans plus station-keeping reserve.";
   }
   res.json({ sessionId: (req.body || {}).sessionId || null, reply, source: "deterministic_fallback" });
 });

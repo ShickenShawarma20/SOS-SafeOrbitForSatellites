@@ -4,7 +4,7 @@
 const conjunctions = [
   {
     id: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     objectId: "OBJ-8821",
     severity: "critical",
     tca: "2024-05-26T04:32:18Z",
@@ -24,7 +24,7 @@ const conjunctions = [
   },
   {
     id: "CD-2024-0526-0512",
-    satelliteId: "SAT-078",
+    satelliteId: "SAT-44804",
     objectId: "OBJ-3421",
     severity: "high",
     tca: "2024-05-26T11:15:42Z",
@@ -44,7 +44,7 @@ const conjunctions = [
   },
   {
     id: "CD-2024-0526-0638",
-    satelliteId: "SAT-021",
+    satelliteId: "SAT-54361",
     objectId: "OBJ-1123",
     severity: "medium",
     tca: "2024-05-26T15:42:09Z",
@@ -63,7 +63,7 @@ const conjunctions = [
   },
   {
     id: "CD-2024-0527-0102",
-    satelliteId: "SAT-109",
+    satelliteId: "SAT-58694",
     objectId: "OBJ-7781",
     severity: "low",
     tca: "2024-05-27T01:33:00Z",
@@ -82,7 +82,7 @@ const conjunctions = [
   },
   {
     id: "CD-2024-0528-0233",
-    satelliteId: "SAT-033",
+    satelliteId: "SAT-58990",
     objectId: "OBJ-9912",
     severity: "low",
     tca: "2024-05-28T06:55:00Z",
@@ -125,7 +125,7 @@ const maneuverPlans = [
   {
     id: "MP-0417-A",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN A",
     recommended: true,
     direction: "prograde",
@@ -142,13 +142,13 @@ const maneuverPlans = [
     groundTrackShiftKm: 14.2,
     secondaryScreeningClear: true,
     notes:
-      "Burn window keeps SAT-042 inside KSAT Svalbard visibility for real-time monitoring. Recovery to nominal orbit can be executed within 14 days.",
+      "Burn window keeps SAT-51656 inside KSAT Svalbard visibility for real-time monitoring. Recovery to nominal orbit can be executed within 14 days.",
     approvalStatus: "draft",
   },
   {
     id: "MP-0417-B",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN B",
     recommended: false,
     direction: "radial_out",
@@ -170,7 +170,7 @@ const maneuverPlans = [
   {
     id: "MP-0417-C",
     conjunctionId: "CD-2024-0526-0417",
-    satelliteId: "SAT-042",
+    satelliteId: "SAT-51656",
     label: "PLAN C",
     recommended: false,
     direction: "prograde",
