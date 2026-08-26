@@ -1,4 +1,11 @@
-/* SOS · SafeOrbitForSattelites — canvas / WebGL orbital visualizations */
+/* SOS · SafeOrbitForSattelites — canvas / WebGL orbital visualizations
+ *
+ * OrbitalViewer: 3D Earth globe + full-constellation Keplerian orbital tracks.
+ * Realistic scale: 1 km → 0.001 units, Earth radius ≈ 6.378 units.
+ * Color hierarchy: selected (cyan glow) · fleet (translucent) · debris (dashed
+ * crimson) · post-maneuver (dashed emerald). Period-based true-anomaly motion
+ * (T = 2π√(a³/μ)), billboarded labels, GPU disposal, camera damping + focus pivot.
+ */
 (function () {
   "use strict";
 
@@ -6,15 +13,54 @@
   const EARTH_TEXTURE_URL = "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg";
   const THREE_CDN_NOTE = "Three.js not loaded — falling back to flat canvas view";
 
-  // Default satellite set used by the dashboard viewer (kept for backward compat).
-  const DEFAULT_SATELLITES = [
-    { name: "EOS-04", color: "#38BDF8", rx: 0.46, tilt: -0.42, speed: 0.00021, phase: 2.05 },
-    { name: "Cartosat-3", color: "#60A5FA", rx: 0.40, tilt: 0.5, speed: 0.00026, phase: 4.3 },
-    { name: "EOS-06", color: "#22D3EE", rx: 0.34, tilt: -0.95, speed: 0.00032, phase: 0.8 },
-    { name: "OBJ-8821", color: "#F97316", rx: 0.465, tilt: -0.44, speed: 0.000205, phase: 2.05, danger: true },
-    { name: "OBJ-3421", color: "#FBBF24", rx: 0.52, tilt: 0.18, speed: 0.00018, phase: 3.4, debris: true },
-    { name: "OBJ-1123", color: "#94A3B8", rx: 0.30, tilt: 1.1, speed: 0.00037, phase: 5.6, debris: true },
-  ];
+  // Astrodynamics + scale constants
+  const EARTH_R_KM = 6378.0;          // mean Earth radius (km)
+  const KM_TO_UNITS = 0.001;          // 1 km → 0.001 Three.js units → Earth radius ≈ 6.378 units
+  const MU_KM = 398600.4418;         // Earth gravitational parameter (km³/s²)
+  const EARTH_R_U = EARTH_R_KM * KM_TO_UNITS;   // 6.378 units
+  const BASE_TIME_ACCEL = 100;        // sim-seconds per real-second at 1× (LEO orbit ≈ 57 s real)
+
+  const DEG = Math.PI / 180;
+  const d2r = (d) => d * DEG;
+
+  /* ---------- Keplerian → ECI Cartesian (km, Z = polar axis) ---------- */
+  // Returns [X, Y, Z] in ECI km given (a, e, i, Ω, ω, ν) all in radians.
+  function keplerToECI(a_km, e, inc, raan, omega, nu) {
+    const r = (a_km * (1 - e * e)) / (1 + e * Math.cos(nu));   // orbital radius (km)
+    const xOrb = r * Math.cos(nu);
+    const yOrb = r * Math.sin(nu);
+    // R_z(ω) in the orbital plane
+    const x1 = xOrb * Math.cos(omega) - yOrb * Math.sin(omega);
+    const y1 = xOrb * Math.sin(omega) + yOrb * Math.cos(omega);
+    // R_x(i): (x1, y1·cos i, y1·sin i)
+    const y2 = y1 * Math.cos(inc);
+    const z2 = y1 * Math.sin(inc);
+    // R_z(Ω)
+    const X = x1 * Math.cos(raan) - y2 * Math.sin(raan);
+    const Y = x1 * Math.sin(raan) + y2 * Math.cos(raan);
+    const Z = z2;
+    return [X, Y, Z];
+  }
+
+  // Solve Kepler's equation M = E − e·sinE (Newton-Raphson) → true anomaly ν.
+  function meanToTrue(M, e) {
+    let E = M;
+    for (let k = 0; k < 8; k++) {
+      const f = E - e * Math.sin(E) - M;
+      const fp = 1 - e * Math.cos(E);
+      E -= f / fp;
+    }
+    return 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2));
+  }
+
+  // ECI (km, Z polar) → Three.js world (Y up, right-handed). 1 km = KM_TO_UNITS.
+  function eciToThree(X, Y, Z) {
+    return new THREE.Vector3(X * KM_TO_UNITS, Z * KM_TO_UNITS, -Y * KM_TO_UNITS);
+  }
+
+  function periodFromA(a_km) {
+    return TAU * Math.sqrt(Math.pow(a_km, 3) / MU_KM); // seconds
+  }
 
   function setupCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
@@ -44,23 +90,49 @@
     ctx.restore();
   }
 
-  /* ---------- Full orbital viewer (dashboard) ---------- */
+  // Default constellation for the dashboard (real Keplerian elements).
+  const DEFAULT_SATELLITES = [
+    { name: "EOS-04", norad: 51656, selected: true, color: "#06b6d4",
+      kepler: { a_km: EARTH_R_KM + 529, e: 0.00019, i_deg: 97.5, raanDeg: 305.2, argPerigeeDeg: 178.4, periodMin: 95.2, meanAnomaly0Deg: 120 } },
+    { name: "Cartosat-3", norad: 44804, color: "#60A5FA",
+      kepler: { a_km: EARTH_R_KM + 508, e: 0.00013, i_deg: 97.4, raanDeg: 132.4, argPerigeeDeg: 45.3, periodMin: 94.8, meanAnomaly0Deg: 200 } },
+    { name: "EOS-06", norad: 54361, color: "#22D3EE",
+      kepler: { a_km: EARTH_R_KM + 743, e: 0.00020, i_deg: 98.4, raanDeg: 245.8, argPerigeeDeg: 112.5, periodMin: 99.3, meanAnomaly0Deg: 45 } },
+    { name: "OBJ-8821", norad: 8821, kind: "debris", danger: true, color: "#ef4444",
+      kepler: { a_km: EARTH_R_KM + 448, e: 0.00214, i_deg: 97.4, raanDeg: 131.9, argPerigeeDeg: 105.6, periodMin: 92.58, meanAnomaly0Deg: 118 } },
+    { name: "OBJ-3421", norad: 3421, kind: "debris", color: "#f59e0b",
+      kepler: { a_km: EARTH_R_KM + 515, e: 0.00312, i_deg: 97.5, raanDeg: 208.7, argPerigeeDeg: 61.3, periodMin: 94.69, meanAnomaly0Deg: 195 } },
+    { name: "OBJ-1123", norad: 1123, kind: "debris", color: "#94A3B8",
+      kepler: { a_km: EARTH_R_KM + 618, e: 0.00188, i_deg: 86.2, raanDeg: 90.2, argPerigeeDeg: 14.9, periodMin: 96.95, meanAnomaly0Deg: 40 } },
+    { name: "EOS-04 (post-burn)", norad: 51656, kind: "post-maneuver", color: "#10b981",
+      kepler: { a_km: EARTH_R_KM + 529.62, e: 0.00019, i_deg: 97.5, raanDeg: 305.2, argPerigeeDeg: 178.4, periodMin: 95.21, meanAnomaly0Deg: 124 } },
+  ];
+
+  /* ---------- Full orbital viewer ---------- */
 
   class OrbitalViewer {
     constructor(canvas, opts) {
       opts = opts || {};
       this.canvas = canvas;
       this.zoom = 1;
+      this._zoomTarget = 1;
       this.playing = true;
       this.t = 0;
+      this.simTimeSec = 0;
+      this.simSpeed = 1;            // HUD multiplier: 1×, 10×, 60×, 300×
+      this.speedMult = 1;           // legacy 2× button multiplier (actions.js)
       this.lastFrame = null;
-      this.speedMult = 1;
-      this.layers = { satellites: true, debris: true, orbits: true, labels: true };
-      this.satellites = (opts.satellites || DEFAULT_SATELLITES).map((s) => Object.assign({}, s));
+      this.layers = { satellites: true, debris: true, orbits: true, labels: true, graticule: true, postManeuver: true };
+      this.satellites = (opts.satellites || DEFAULT_SATELLITES).map((s) => this._normalizeSat(s));
       this.showConjunction = opts.showConjunction !== false;
-      this.cameraDist = opts.cameraDist || 4.6;
+      this.cameraDist = opts.cameraDist || 18;
       this._regimeFilter = null;
       this._focusName = null;
+      this._camFollow = false;
+      // camera spherical targets (damped)
+      this.yaw = 0.6; this._yawTarget = 0.6;
+      this.pitch = 0.45; this._pitchTarget = 0.45;
+      this._camTarget = new THREE.Vector3(0, 0, 0);
       this.useThree = typeof THREE !== "undefined" && !!canvas.getContext("webgl");
       if (this.useThree) this.initThree();
       else console.warn(THREE_CDN_NOTE);
@@ -74,27 +146,23 @@
     initThree() {
       const canvas = this.canvas;
       this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      if (THREE.sRGBEncoding !== undefined) {
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-      }
+      if (THREE.sRGBEncoding !== undefined) this.renderer.outputEncoding = THREE.sRGBEncoding;
       this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 300);
-      this.yaw = 0.6;
-      this.pitch = 0.32;
+      this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 4000);
 
       /* lights */
-      this.scene.add(new THREE.AmbientLight(0x8899bb, 0.5));
-      const sun = new THREE.DirectionalLight(0xffffff, 1.25);
+      this.scene.add(new THREE.AmbientLight(0x8899bb, 0.55));
+      const sun = new THREE.DirectionalLight(0xffffff, 1.3);
       sun.position.set(-5, 2, 3);
       this.scene.add(sun);
 
       /* starfield */
-      const starCount = 1400;
+      const starCount = 1600;
       const pos = new Float32Array(starCount * 3);
       let sd = 13;
       const rnd = () => ((sd = (sd * 16807) % 2147483647), sd / 2147483647);
       for (let i = 0; i < starCount; i++) {
-        const r = 40 + rnd() * 60;
+        const r = 200 + rnd() * 600;             // far, in world units (Earth=6.378)
         const th = rnd() * TAU, ph = Math.acos(rnd() * 2 - 1);
         pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
         pos[i * 3 + 1] = r * Math.cos(ph);
@@ -102,11 +170,9 @@
       }
       const starGeo = new THREE.BufferGeometry();
       starGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      this.scene.add(
-        new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xbfd8ff, size: 0.12, transparent: true, opacity: 0.85 }))
-      );
+      this.scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xbfd8ff, size: 1.4, transparent: true, opacity: 0.85 })));
 
-      /* Earth */
+      /* Earth (realistic radius 6.378 units) */
       this.globeGroup = new THREE.Group();
       const loader = new THREE.TextureLoader();
       loader.setCrossOrigin("anonymous");
@@ -117,40 +183,36 @@
       });
       if (THREE.sRGBEncoding !== undefined) dayTex.encoding = THREE.sRGBEncoding;
       this.earth = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 64, 48),
+        new THREE.SphereGeometry(EARTH_R_U, 64, 48),
         new THREE.MeshPhongMaterial({ map: dayTex, specular: new THREE.Color(0x223344), shininess: 12 })
       );
       const atmo = new THREE.Mesh(
-        new THREE.SphereGeometry(1.045, 64, 48),
-        new THREE.MeshBasicMaterial({
-          color: 0x38bdf8,
-          transparent: true,
-          opacity: 0.14,
-          side: THREE.BackSide,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
+        new THREE.SphereGeometry(EARTH_R_U * 1.045, 64, 48),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.14, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
       );
       this.globeGroup.add(this.earth);
       this.globeGroup.add(atmo);
       this.scene.add(this.globeGroup);
 
+      /* equatorial graticule */
+      this._buildGraticule();
+
       /* orbit rings + satellites */
       this._satGroups = [];
       this._buildSatellites();
 
-      /* conjunction marker (follows SAT-51656) — only when enabled */
+      /* conjunction marker (follows the selected/first satellite) */
       if (this.showConjunction) {
         this.conjCore = new THREE.Mesh(
-          new THREE.SphereGeometry(0.02, 16, 12),
+          new THREE.SphereGeometry(0.12, 16, 12),
           new THREE.MeshBasicMaterial({ color: 0xef4444 })
         );
         this.conjRing = new THREE.Mesh(
-          new THREE.RingGeometry(0.07, 0.085, 48),
+          new THREE.RingGeometry(0.35, 0.42, 48),
           new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, side: THREE.DoubleSide, depthWrite: false })
         );
-        const conjLabel = this.makeLabel("TCA 04:32:18", "#FCA5A5");
-        conjLabel.scale.set(0.55, 0.14, 1);
+        const conjLabel = this.makeLabel(["TCA 04:32:18"], "#FCA5A5");
+        conjLabel.scale.set(1.4, 0.35, 1);
         this.conjLabel = conjLabel;
         this.scene.add(this.conjCore);
         this.scene.add(this.conjRing);
@@ -161,70 +223,178 @@
       this.resize();
     }
 
+    _buildGraticule() {
+      const grp = new THREE.Group();
+      const r = EARTH_R_U * 1.002;
+      const mat = new THREE.LineBasicMaterial({ color: 0x4f7ca8, transparent: true, opacity: 0.22 });
+      // parallels (latitude)
+      for (let lat = -75; lat <= 75; lat += 15) {
+        const ph = d2r(90 - lat);
+        const rr = r * Math.sin(ph);
+        const y = r * Math.cos(ph);
+        const pts = [];
+        for (let i = 0; i <= 64; i++) {
+          const a = (i / 64) * TAU;
+          pts.push(new THREE.Vector3(Math.cos(a) * rr, y, Math.sin(a) * rr));
+        }
+        grp.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), mat));
+      }
+      // meridians (longitude)
+      for (let lon = 0; lon < 360; lon += 15) {
+        const th = d2r(lon);
+        const pts = [];
+        for (let i = 0; i <= 64; i++) {
+          const ph = (i / 64) * Math.PI;
+          const rr = r * Math.sin(ph);
+          pts.push(new THREE.Vector3(Math.cos(th) * rr, r * Math.cos(ph), Math.sin(th) * rr));
+        }
+        grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+      }
+      this.graticule = grp;
+      this.globeGroup.add(grp);
+    }
+
+    /* Normalize any satellite spec (legacy rx/tilt or new kepler) into a unified
+       internal record with Kepler elements + 2D-fallback fields. */
+    _normalizeSat(s) {
+      const sat = Object.assign({}, s);
+      if (sat.kepler) {
+        const k = sat.kepler;
+        sat.a_km = k.a_km;
+        sat.e = k.e || 0;
+        sat.i_rad = d2r(k.i_deg || 0);
+        sat.raan_rad = d2r(k.raanDeg || 0);
+        sat.omega_rad = d2r(k.argPerigeeDeg || 0);
+        sat.M0 = d2r(k.meanAnomaly0Deg || 0);
+        sat.periodSec = (k.periodMin || periodFromA(sat.a_km) / 60) * 60;
+      } else {
+        // legacy simplified spec → derive pseudo-Kepler
+        const A = sat.A != null ? sat.A : (sat.rx || 0.4) * 2.05;   // Earth radii (compressed)
+        sat.a_km = Math.max(EARTH_R_KM + 250, A * EARTH_R_KM);
+        sat.e = 0;
+        sat.i_rad = sat.tilt || 0;
+        sat.raan_rad = sat.raan || 0;
+        sat.omega_rad = 0;
+        sat.M0 = sat.phase || 0;
+        sat.periodSec = periodFromA(sat.a_km);
+      }
+      sat.kind = sat.kind || (sat.debris || sat.danger ? "debris" : "satellite");
+      if (sat.danger) sat.kind = "debris";
+      if (sat.postManeuver) sat.kind = "post-maneuver";
+      sat.color = sat.color || (sat.kind === "debris" ? "#ef4444" : "#06b6d4");
+      // 2D-fallback compressed geometry
+      sat.A2d = 1 + Math.sqrt(Math.max(sat.a_km - EARTH_R_KM, 0) / EARTH_R_KM) * 0.9;
+      sat.tilt = sat.i_rad;
+      sat.raan = sat.raan_rad;
+      sat.phase = sat.M0;
+      sat.speed = 0.02 / Math.max(sat.periodSec / 60, 10);
+      sat.altKm = Math.max(0, sat.a_km - EARTH_R_KM);
+      return sat;
+    }
+
     /* Build (or rebuild) satellite orbit rings + markers from this.satellites. */
     _buildSatellites() {
       if (!this.useThree) return;
-      // tear down previous
-      (this._satGroups || []).forEach((g) => {
-        this.scene.remove(g.group);
-        this.scene.remove(g.label);
-      });
+      // dispose previous
+      (this._satGroups || []).forEach((g) => this._disposeGroup(g));
       this._satGroups = [];
 
       this.satellites.forEach((sat) => {
-        const A = sat.A != null ? sat.A : sat.rx * 2.05;
-        let raan = sat.raan;
-        if (raan == null) {
-          let hash = 0;
-          for (let i = 0; i < sat.name.length; i++) hash = (hash * 31 + sat.name.charCodeAt(i)) % 628;
-          raan = hash / 100;
-        }
+        const ring = this._buildOrbitLine(sat);
+        const marker = sat.kind === "satellite" ? this._makeSatelliteMesh(sat) : this._makeDebrisMesh(sat);
+        const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: this._glowTexture(sat.color), transparent: true, opacity: 0,
+          depthTest: false, blending: THREE.AdditiveBlending,
+        }));
+        halo.scale.set(1.2, 1.2, 1);
 
-        const pts = [];
-        for (let i = 0; i <= 160; i++) {
-          const a = (i / 160) * TAU;
-          pts.push(new THREE.Vector3(Math.cos(a) * A, 0, Math.sin(a) * A));
-        }
-        const ring = new THREE.LineLoop(
-          new THREE.BufferGeometry().setFromPoints(pts),
-          new THREE.LineBasicMaterial({
-            color: new THREE.Color(sat.color),
-            transparent: true,
-            opacity: sat.danger ? 0.75 : 0.4,
-          })
-        );
         const group = new THREE.Group();
         group.add(ring);
-        group.quaternion.setFromEuler(new THREE.Euler(sat.tilt, raan, 0, "YXZ"));
-
-        const markerSize = sat.danger ? 0.03 : 0.022;
-        const marker = new THREE.Mesh(
-          new THREE.SphereGeometry(markerSize, 16, 12),
-          new THREE.MeshBasicMaterial({ color: new THREE.Color(sat.color) })
-        );
         group.add(marker);
-
-        // trailing glow sprite for focus highlight
-        const haloMat = new THREE.SpriteMaterial({
-          map: this._glowTexture(sat.color),
-          transparent: true,
-          opacity: 0,
-          depthTest: false,
-          blending: THREE.AdditiveBlending,
-        });
-        const halo = new THREE.Sprite(haloMat);
-        halo.scale.set(0.22, 0.22, 1);
         group.add(halo);
+        const label = this.makeLabel(
+          [sat.name, "NORAD " + sat.norad, Math.round(sat.altKm) + " km"],
+          sat.kind === "debris" ? "#FCA5A5" : (sat.selected ? "#67E8F9" : "rgba(186,222,250,.95)")
+        );
+        if (sat.selected) label.scale.set(1.6, 0.66, 1); else label.scale.set(1.3, 0.54, 1);
 
-        const label = this.makeLabel(sat.label || sat.name, sat.danger ? "#FDA46A" : "rgba(186,222,250,.95)");
-
-        sat._A = A;
-        sat._raan = raan;
         this.scene.add(group);
         this.scene.add(label);
-
         this._satGroups.push({ sat, group, marker, ring, label, halo });
       });
+    }
+
+    // 128-sample closed orbit path in ECI → Three.js world coordinates.
+    _buildOrbitLine(sat) {
+      const pts = [];
+      const N = 128;
+      for (let i = 0; i <= N; i++) {
+        const nu = (i / N) * TAU;
+        const eci = keplerToECI(sat.a_km, sat.e, sat.i_rad, sat.raan_rad, sat.omega_rad, nu);
+        const p = eciToThree(eci[0], eci[1], eci[2]);
+        // numerical safety guard against NaN buffer geometry
+        if (Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)) pts.push(p);
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      geo.computeBoundingSphere();
+
+      let line, mat;
+      if (sat.kind === "debris") {
+        mat = new THREE.LineDashedMaterial({ color: new THREE.Color(sat.color), dashSize: 0.3, gapSize: 0.15, transparent: true, opacity: 0.45 });
+        line = new THREE.Line(geo, mat);          // open path (first==last point) for continuous dashes
+        line.computeLineDistances();
+      } else if (sat.kind === "post-maneuver") {
+        mat = new THREE.LineDashedMaterial({ color: new THREE.Color(sat.color), dashSize: 0.3, gapSize: 0.15, transparent: true, opacity: 0.7 });
+        line = new THREE.Line(geo, mat);
+        line.computeLineDistances();
+      } else if (sat.selected) {
+        mat = new THREE.LineBasicMaterial({ color: new THREE.Color(sat.color), transparent: true, opacity: 0.85 });
+        line = new THREE.LineLoop(geo, mat);
+      } else {
+        mat = new THREE.LineBasicMaterial({ color: new THREE.Color(sat.color), transparent: true, opacity: 0.42 });
+        line = new THREE.LineLoop(geo, mat);
+      }
+      return line;
+    }
+
+    _makeSatelliteMesh(sat) {
+      const grp = new THREE.Group();
+      const col = new THREE.Color(sat.color);
+      const bodyMat = new THREE.MeshPhongMaterial({ color: col, emissive: col, emissiveIntensity: sat.selected ? 0.7 : 0.35, shininess: 60 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), bodyMat);
+      grp.add(body);
+      const panelMat = new THREE.MeshPhongMaterial({ color: 0x0a2540, emissive: col, emissiveIntensity: 0.18, transparent: true, opacity: 0.9 });
+      const lp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.02, 0.12), panelMat); lp.position.x = -0.26; grp.add(lp);
+      const rp = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.02, 0.12), panelMat); rp.position.x = 0.26; grp.add(rp);
+      grp.scale.setScalar(sat.selected ? 1.0 : 0.7);
+      grp.userData.disposable = [bodyMat, body.geometry, panelMat, lp.geometry, rp.geometry];
+      return grp;
+    }
+
+    _makeDebrisMesh(sat) {
+      const grp = new THREE.Group();
+      const col = new THREE.Color(sat.color);
+      const mat = new THREE.MeshPhongMaterial({ color: col, emissive: col, emissiveIntensity: 0.3 });
+      const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(sat.danger ? 0.1 : 0.07, 0), mat);
+      grp.add(mesh);
+      grp.userData.disposable = [mat, mesh.geometry];
+      return grp;
+    }
+
+    _disposeGroup(g) {
+      this.scene.remove(g.group);
+      this.scene.remove(g.label);
+      const disp = (g.ring && g.ring.geometry) || null;
+      if (g.ring) { if (g.ring.geometry) g.ring.geometry.dispose(); if (g.ring.material) g.ring.material.dispose(); }
+      // marker children
+      g.marker.traverse((c) => {
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+      });
+      if (g.halo) { if (g.halo.material.map) g.halo.material.map.dispose(); g.halo.material.dispose(); }
+      if (g.label) { if (g.label.material.map) g.label.material.map.dispose(); g.label.material.dispose(); }
+      // suppress unused-var warning for disp
+      void disp;
     }
 
     _glowTexture(color) {
@@ -244,33 +414,43 @@
 
     /* Replace the satellite set and rebuild orbits (used by Orbital Registry). */
     setSatellites(list) {
-      this.satellites = (list || []).map((s) => Object.assign({}, s));
+      this.satellites = (list || []).map((s) => this._normalizeSat(s));
       if (this.useThree) this._buildSatellites();
     }
-
-    /* Show only satellites whose `regime` matches (null/""/undefined = all). */
-    setRegimeFilter(regime) {
-      this._regimeFilter = regime || null;
-    }
-
-    /* Highlight a satellite by name with a pulsing halo. */
-    focusSatellite(name) {
+    setRegimeFilter(regime) { this._regimeFilter = regime || null; }
+    setLayer(key, on) { if (this.layers) this.layers[key] = on !== false; }
+    setSpeed(v) { this.simSpeed = v; }
+    focusSatellite(name, follow) {
       this._focusName = name || null;
+      if (follow) this._camFollow = !!name;
+      else if (!name) this._camFollow = false;
     }
 
-    makeLabel(text, color) {
+    /* Smooth camera pivot to the selected satellite (HUD 🎯 button). */
+    focusSelected() {
+      const sel = this.satellites.find((s) => s.selected) || this.satellites.find((s) => s.kind === "satellite");
+      if (sel) {
+        this._focusName = sel.name;
+        this._camFollow = true;
+        this._zoomTarget = 1.6;
+      }
+    }
+
+    makeLabel(lines, color) {
+      const arr = Array.isArray(lines) ? lines : [lines];
       const c = document.createElement("canvas");
-      c.width = 256;
-      c.height = 64;
+      c.width = 320; c.height = 32 + arr.length * 26;
       const g = c.getContext("2d");
-      g.font = "600 28px 'JetBrains Mono', Consolas, monospace";
-      g.fillStyle = color;
       g.textBaseline = "middle";
-      g.fillText(text, 4, 34);
+      arr.forEach((ln, i) => {
+        g.font = i === 0 ? "700 26px 'JetBrains Mono', Consolas, monospace" : "500 18px 'JetBrains Mono', Consolas, monospace";
+        g.fillStyle = i === 0 ? color : "rgba(148,163,184,.85)";
+        g.fillText(ln, 6, 22 + i * 26);
+      });
       const tex = new THREE.CanvasTexture(c);
       tex.minFilter = THREE.LinearFilter;
       const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
-      spr.scale.set(0.42, 0.105, 1);
+      spr.scale.set(1.3, (32 + arr.length * 26) / 320 * 1.3, 1);
       return spr;
     }
 
@@ -279,28 +459,21 @@
       let dragging = false, lx = 0, ly = 0;
       cv.style.cursor = "grab";
       cv.addEventListener("pointerdown", (e) => {
-        dragging = true;
-        lx = e.clientX;
-        ly = e.clientY;
-        cv.style.cursor = "grabbing";
-        cv.setPointerCapture(e.pointerId);
+        dragging = true; lx = e.clientX; ly = e.clientY;
+        cv.style.cursor = "grabbing"; cv.setPointerCapture(e.pointerId);
       });
       cv.addEventListener("pointermove", (e) => {
         if (!dragging) return;
-        this.yaw -= (e.clientX - lx) * 0.005;
-        this.pitch = Math.max(-1.35, Math.min(1.35, this.pitch + (e.clientY - ly) * 0.005));
-        lx = e.clientX;
-        ly = e.clientY;
+        this._yawTarget -= (e.clientX - lx) * 0.005;
+        this._pitchTarget = Math.max(-1.35, Math.min(1.35, this._pitchTarget + (e.clientY - ly) * 0.005));
+        lx = e.clientX; ly = e.clientY;
       });
-      const endDrag = () => {
-        dragging = false;
-        cv.style.cursor = "grab";
-      };
+      const endDrag = () => { dragging = false; cv.style.cursor = "grab"; };
       cv.addEventListener("pointerup", endDrag);
       cv.addEventListener("pointercancel", endDrag);
       cv.addEventListener("wheel", (e) => {
         e.preventDefault();
-        this.zoom = Math.max(0.65, Math.min(2.4, this.zoom * Math.exp(-e.deltaY * 0.001)));
+        this._zoomTarget = Math.max(0.4, Math.min(3.2, this._zoomTarget * Math.exp(-e.deltaY * 0.001)));
       }, { passive: false });
     }
 
@@ -314,9 +487,7 @@
         this.renderer.setSize(rect.width, rect.height, false);
       } else {
         const s = setupCanvas(this.canvas);
-        this.ctx = s.ctx;
-        this.w = s.w;
-        this.h = s.h;
+        this.ctx = s.ctx; this.w = s.w; this.h = s.h;
       }
     }
 
@@ -325,111 +496,123 @@
       const zoomOut = document.querySelector("[data-zoom='out']");
       const reset = document.querySelector("[data-cam='reset']");
       const play = document.getElementById("playBtn");
-      if (zoomIn) zoomIn.addEventListener("click", () => (this.zoom = Math.min(this.zoom * 1.18, 2.4)));
-      if (zoomOut) zoomOut.addEventListener("click", () => (this.zoom = Math.max(this.zoom / 1.18, 0.65)));
-      if (reset)
-        reset.addEventListener("click", () => {
-          this.zoom = 1;
-          if (this.useThree) {
-            this.yaw = 0.6;
-            this.pitch = 0.32;
-          }
-        });
-      if (play)
-        play.addEventListener("click", () => {
-          this.playing = !this.playing;
-          play.innerHTML = this.playing
-            ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
-            : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-          play.setAttribute("aria-label", this.playing ? "Pause simulation" : "Play simulation");
-        });
+      if (zoomIn) zoomIn.addEventListener("click", () => (this._zoomTarget = Math.min(this._zoomTarget * 1.18, 3.2)));
+      if (zoomOut) zoomOut.addEventListener("click", () => (this._zoomTarget = Math.max(this._zoomTarget / 1.18, 0.4)));
+      if (reset) reset.addEventListener("click", () => {
+        this._zoomTarget = 1; this._yawTarget = 0.6; this._pitchTarget = 0.45; this._camFollow = false;
+      });
+      if (play) play.addEventListener("click", () => {
+        this.playing = !this.playing;
+        play.innerHTML = this.playing
+          ? '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+        play.setAttribute("aria-label", this.playing ? "Pause simulation" : "Play simulation");
+      });
     }
 
     loop(now) {
       if (!this.w && !this.useThree) this.resize();
-      if (this.lastFrame === null) this.lastFrame = now || performance.now();
-      const dt = Math.min((now || performance.now()) - this.lastFrame, 100);
-      this.lastFrame = now || performance.now();
-      if (this.playing) this.t += dt * this.speedMult;
+      const n = now || performance.now();
+      if (this.lastFrame === null) this.lastFrame = n;
+      const dt = Math.min(n - this.lastFrame, 100);
+      this.lastFrame = n;
+      if (this.playing) {
+        this.simTimeSec += (dt / 1000) * this.simSpeed * this.speedMult * BASE_TIME_ACCEL;
+        this.t += dt * this.speedMult;
+      }
       if (this.useThree) this.render3d(dt);
       else this.draw();
-      requestAnimationFrame((n) => this.loop(n));
+      requestAnimationFrame((nn) => this.loop(nn));
     }
 
     render3d(dt) {
       const v = new THREE.Vector3();
-
+      // gentle Earth rotation
       this.globeGroup.rotation.y += dt * 0.00004;
 
+      if (this.graticule) this.graticule.visible = this.layers.graticule !== false;
       const showLabels = this.layers.labels !== false;
       const pulse = (Math.sin(this.t / 300) + 1) / 2;
 
+      let focusPos = null;
+
       (this._satGroups || []).forEach((g) => {
         const sat = g.sat;
-        const isDebris = sat.debris || sat.danger;
-        const layerOn = isDebris ? this.layers.debris !== false : this.layers.satellites !== false;
+        const layerOn =
+          sat.kind === "debris" ? this.layers.debris !== false :
+          sat.kind === "post-maneuver" ? this.layers.postManeuver !== false :
+          this.layers.satellites !== false;
         const regimeOk = !this._regimeFilter || sat.regime === this._regimeFilter;
         const visible = layerOn && regimeOk;
         g.group.visible = visible;
-        if (!visible) {
-          g.label.visible = false;
-          return;
+        if (!visible) { g.label.visible = false; return; }
+        // ring visibility tied to the orbits layer
+        g.ring.visible = this.layers.orbits !== false;
+
+        // period-based true anomaly advance
+        const n = TAU / sat.periodSec;                      // mean motion (rad/s)
+        const M = sat.M0 + n * this.simTimeSec;
+        const nu = meanToTrue(M, sat.e);
+        const eci = keplerToECI(sat.a_km, sat.e, sat.i_rad, sat.raan_rad, sat.omega_rad, nu);
+        const pos = eciToThree(eci[0], eci[1], eci[2]);
+        if (Number.isFinite(pos.x) && Number.isFinite(pos.y) && Number.isFinite(pos.z)) {
+          g.marker.position.copy(pos);
         }
-        g.group.children.forEach((ch) => {
-          if (ch.isLine) ch.visible = this.layers.orbits !== false;
-        });
-        const a = sat.phase + this.t * sat.speed;
-        g.marker.position.set(Math.cos(a) * sat._A, 0, Math.sin(a) * sat._A);
         g.marker.getWorldPosition(v);
         g.label.visible = showLabels;
         g.label.position.copy(v);
-        g.label.position.y += 0.09;
+        g.label.position.y += 0.22;
+        g.halo.position.copy(g.marker.position);
 
-        // focus halo
-        const focused = this._focusName && (sat.name === this._focusName || sat.label === this._focusName);
+        const focused = this._focusName && (sat.name === this._focusName);
         if (g.halo) {
-          g.halo.position.copy(g.marker.position);
-          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : 0;
-          g.halo.scale.setScalar(focused ? 0.28 + pulse * 0.12 : 0.22);
+          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : (sat.selected ? 0.25 + pulse * 0.15 : 0);
+          g.halo.scale.setScalar(focused ? 1.6 + pulse * 0.4 : (sat.selected ? 1.2 : 1.0));
         }
-        if (focused) {
-          g.marker.scale.setScalar(1.5);
-          g.ring.material.opacity = 0.9;
-        } else {
-          g.marker.scale.setScalar(1);
-          g.ring.material.opacity = sat.danger ? 0.75 : 0.4;
-        }
+        g.marker.scale.setScalar(focused ? 1.4 : (sat.selected ? 1.0 : 0.7));
+        if (focused) focusPos = v.clone();
       });
 
-      /* conjunction follows the first satellite (dashboard only) */
-      if (this.showConjunction && this.conjCore && this._satGroups && this._satGroups[0]) {
-        this._satGroups[0].marker.getWorldPosition(v);
-        this.conjCore.position.copy(v);
-        this.conjRing.position.copy(v);
-        this.conjRing.lookAt(this.camera.position);
-        this.conjRing.scale.setScalar(0.8 + pulse * 0.9);
-        this.conjRing.material.opacity = 0.85 - pulse * 0.55;
-        this.conjLabel.position.copy(v);
-        this.conjLabel.position.y -= 0.11;
+      /* conjunction marker follows the selected/first satellite */
+      if (this.showConjunction && this.conjCore && this._satGroups) {
+        const lead = this._satGroups.find((g) => g.sat.selected) || this._satGroups[0];
+        if (lead) {
+          lead.marker.getWorldPosition(v);
+          this.conjCore.position.copy(v);
+          this.conjRing.position.copy(v);
+          this.conjRing.lookAt(this.camera.position);
+          this.conjRing.scale.setScalar(0.8 + pulse * 0.9);
+          this.conjRing.material.opacity = 0.85 - pulse * 0.55;
+          this.conjLabel.position.copy(v);
+          this.conjLabel.position.y -= 0.35;
+        }
       }
 
-      /* camera */
-      const dist = this.cameraDist / this.zoom;
+      /* camera damping (dampingFactor ≈ 0.05 → lerp ~0.08/frame) */
+      this.yaw += (this._yawTarget - this.yaw) * 0.08;
+      this.pitch += (this._pitchTarget - this.pitch) * 0.08;
+      this.zoom += (this._zoomTarget - this.zoom) * 0.08;
+
+      // look-at target follows focused satellite or origin
+      const tgt = (this._camFollow && focusPos) ? focusPos : THREE.Object3D.DEFAULT_UP.clone().set(0, 0, 0);
+      this._camTarget.lerp(tgt, 0.05);
+
+      const dist = Math.max(7.5, Math.min(50, this.cameraDist / this.zoom));
       this.camera.position.set(
-        dist * Math.cos(this.pitch) * Math.sin(this.yaw),
-        dist * Math.sin(this.pitch),
-        dist * Math.cos(this.pitch) * Math.cos(this.yaw)
+        this._camTarget.x + dist * Math.cos(this.pitch) * Math.sin(this.yaw),
+        this._camTarget.y + dist * Math.sin(this.pitch),
+        this._camTarget.z + dist * Math.cos(this.pitch) * Math.cos(this.yaw)
       );
-      this.camera.lookAt(0, 0, 0);
+      this.camera.lookAt(this._camTarget);
 
       this.renderer.render(this.scene, this.camera);
     }
 
-    /* ===== 2D fallback (original flat view) ===== */
+    /* ===== 2D fallback (flat canvas view) ===== */
 
     pos(sat, cx, cy, R) {
       const a = sat.phase + this.t * sat.speed;
-      const rad = R * (sat.A != null ? sat.A : sat.rx * 2.05);
+      const rad = R * (sat.A2d != null ? sat.A2d : (sat.rx || 0.4) * 2.05);
       const x = Math.cos(a) * rad;
       const y = Math.sin(a) * rad;
       return {
@@ -448,27 +631,13 @@
       const R = (Math.min(w, h) * 0.26) * this.zoom;
 
       const g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
-      g.addColorStop(0, "#14304A");
-      g.addColorStop(0.55, "#0C2036");
-      g.addColorStop(1, "#050E19");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, TAU);
-      ctx.fill();
+      g.addColorStop(0, "#14304A"); g.addColorStop(0.55, "#0C2036"); g.addColorStop(1, "#050E19");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "rgba(56,189,248,.28)"; ctx.lineWidth = 1.6;
+      ctx.shadowColor = "rgba(56,189,248,.5)"; ctx.shadowBlur = 18; ctx.stroke(); ctx.shadowBlur = 0;
 
-      ctx.strokeStyle = "rgba(56,189,248,.28)";
-      ctx.lineWidth = 1.6;
-      ctx.shadowColor = "rgba(56,189,248,.5)";
-      ctx.shadowBlur = 18;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, TAU);
-      ctx.clip();
-      ctx.strokeStyle = "rgba(120,170,220,.13)";
-      ctx.lineWidth = 1;
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+      ctx.strokeStyle = "rgba(120,170,220,.13)"; ctx.lineWidth = 1;
       for (let i = 1; i < 6; i++) {
         const ry = (R * 2 * i) / 6 - R;
         ctx.beginPath();
@@ -477,66 +646,44 @@
       }
       for (let i = 1; i < 8; i++) {
         const rx = R * Math.cos((i * Math.PI) / 8);
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, Math.abs(rx), R, 0, 0, TAU);
-        ctx.stroke();
-      }
-      let sd = 31;
-      const rnd = () => ((sd = (sd * 16807) % 2147483647), sd / 2147483647);
-      for (let i = 0; i < 70; i++) {
-        const ang = rnd() * TAU, rad = Math.sqrt(rnd()) * R * 0.96;
-        const x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad * 0.9;
-        ctx.fillStyle = `rgba(255,196,110,${0.12 + rnd() * 0.3})`;
-        ctx.fillRect(x, y, 1.3, 1.3);
+        ctx.beginPath(); ctx.ellipse(cx, cy, Math.abs(rx), R, 0, 0, TAU); ctx.stroke();
       }
       ctx.restore();
 
       if (this.showConjunction && this.satellites[0]) {
         const conj = this.pos(this.satellites[0], cx, cy, R);
-        ctx.save();
-        ctx.globalAlpha = 0.85;
+        ctx.save(); ctx.globalAlpha = 0.85;
         const cg = ctx.createRadialGradient(conj.x, conj.y, 2, conj.x, conj.y, 64 * this.zoom);
-        cg.addColorStop(0, "rgba(239,68,68,.30)");
-        cg.addColorStop(1, "rgba(239,68,68,0)");
-        ctx.fillStyle = cg;
-        ctx.beginPath();
-        ctx.arc(conj.x, conj.y, 64 * this.zoom, 0, TAU);
-        ctx.fill();
+        cg.addColorStop(0, "rgba(239,68,68,.30)"); cg.addColorStop(1, "rgba(239,68,68,0)");
+        ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(conj.x, conj.y, 64 * this.zoom, 0, TAU); ctx.fill();
         ctx.restore();
         this._conj2d = conj;
       }
 
       this.satellites.forEach((sat) => {
-        const isDebris = sat.debris || sat.danger;
+        const isDebris = sat.kind === "debris";
         if (isDebris && this.layers && this.layers.debris === false) return;
         if (!isDebris && this.layers && this.layers.satellites === false) return;
+        if (sat.kind === "post-maneuver" && this.layers && this.layers.postManeuver === false) return;
         if (this._regimeFilter && sat.regime !== this._regimeFilter) return;
         const showOrbit = !this.layers || this.layers.orbits !== false;
         const col = sat.color;
-        const focused = this._focusName && (sat.name === this._focusName || sat.label === this._focusName);
+        const focused = this._focusName && sat.name === this._focusName;
         ctx.save();
-        ctx.strokeStyle = col;
-        ctx.globalAlpha = sat.danger ? 0.75 : focused ? 0.85 : 0.3;
-        ctx.lineWidth = sat.danger || focused ? 1.6 : 1;
-        if (sat.danger) ctx.setLineDash([7, 5]);
+        ctx.strokeStyle = col; ctx.globalAlpha = sat.selected ? 0.85 : focused ? 0.8 : (isDebris ? 0.45 : 0.35);
+        ctx.lineWidth = sat.selected || focused ? 1.6 : 1;
+        if (isDebris || sat.kind === "post-maneuver") ctx.setLineDash([7, 5]);
         if (showOrbit) this.drawOrbitPath(sat, cx, cy, R);
         ctx.restore();
 
         const pnt = this.pos(sat, cx, cy, R);
-
-        ctx.save();
-        ctx.fillStyle = col;
-        ctx.shadowColor = col;
-        ctx.shadowBlur = sat.danger ? 14 : 8;
-        ctx.beginPath();
-        ctx.arc(pnt.x, pnt.y, sat.danger ? 5 : focused ? 5 : 3.6, 0, TAU);
-        ctx.fill();
+        ctx.save(); ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = sat.selected || focused ? 14 : 8;
+        ctx.beginPath(); ctx.arc(pnt.x, pnt.y, sat.selected || focused ? 5 : 3.6, 0, TAU); ctx.fill();
         ctx.restore();
-
         if (this.layers.labels !== false) {
           ctx.font = "600 10px 'JetBrains Mono', Consolas, monospace";
-          ctx.fillStyle = sat.danger ? "#FDA46A" : "rgba(186,222,250,.9)";
-          ctx.fillText(sat.label || sat.name, pnt.x + 9, pnt.y - 7);
+          ctx.fillStyle = isDebris ? "#FCA5A5" : (sat.selected ? "#67E8F9" : "rgba(186,222,250,.9)");
+          ctx.fillText(sat.name, pnt.x + 9, pnt.y - 7);
         }
       });
 
@@ -544,26 +691,18 @@
         const conj = this._conj2d;
         const pulse = (Math.sin(this.t / 320) + 1) / 2;
         ctx.save();
-        ctx.strokeStyle = `rgba(239,68,68,${0.85 - pulse * 0.6})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(conj.x, conj.y, 8 + pulse * 20, 0, TAU);
-        ctx.stroke();
-        ctx.fillStyle = "#EF4444";
-        ctx.shadowColor = "#EF4444";
-        ctx.shadowBlur = 16;
-        ctx.beginPath();
-        ctx.arc(conj.x, conj.y, 4.5, 0, TAU);
-        ctx.fill();
+        ctx.strokeStyle = `rgba(239,68,68,${0.85 - pulse * 0.6})`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(conj.x, conj.y, 8 + pulse * 20, 0, TAU); ctx.stroke();
+        ctx.fillStyle = "#EF4444"; ctx.shadowColor = "#EF4444"; ctx.shadowBlur = 16;
+        ctx.beginPath(); ctx.arc(conj.x, conj.y, 4.5, 0, TAU); ctx.fill();
         ctx.restore();
-        ctx.font = "700 10px 'JetBrains Mono', Consolas, monospace";
-        ctx.fillStyle = "#FCA5A5";
+        ctx.font = "700 10px 'JetBrains Mono', Consolas, monospace"; ctx.fillStyle = "#FCA5A5";
         ctx.fillText("TCA 04:32:18", conj.x + 10, conj.y + 16);
       }
     }
 
     pointAt(sat, angle, cx, cy, R) {
-      const rad = R * (sat.A != null ? sat.A : sat.rx * 2.05);
+      const rad = R * (sat.A2d != null ? sat.A2d : (sat.rx || 0.4) * 2.05);
       const x = Math.cos(angle) * rad;
       const y = Math.sin(angle) * rad;
       return {
@@ -580,6 +719,65 @@
         else this.ctx.lineTo(q.x, q.y);
       }
       this.ctx.stroke();
+    }
+  }
+
+  /* ============================================================
+     OrbitalHUD — floating dark-glassmorphism control panel.
+     ============================================================ */
+  class OrbitalHUD {
+    constructor(viewer, container) {
+      this.viewer = viewer;
+      this.container = container || viewer.canvas.parentElement;
+      this.el = document.createElement("div");
+      this.el.className = "orbital-hud";
+      this.el.setAttribute("role", "group");
+      this.el.setAttribute("aria-label", "Orbital viewer controls");
+      this.el.innerHTML =
+        '<div class="oh-title">ORBITAL HUD</div>' +
+        '<button class="oh-btn on" data-layer="orbits" aria-pressed="true">🛰 All Satellite Orbits</button>' +
+        '<button class="oh-btn on" data-layer="debris" aria-pressed="true">💥 Debris Clouds</button>' +
+        '<button class="oh-btn on" data-layer="postManeuver" aria-pressed="true">↗ Post-Burn Orbit</button>' +
+        '<button class="oh-btn on" data-layer="graticule" aria-pressed="true">⭕ Equatorial Graticule</button>' +
+        '<button class="oh-btn on" data-layer="labels" aria-pressed="true">🏷 Labels</button>' +
+        '<button class="oh-btn oh-focus" data-action="focus">🎯 Focus Selected</button>' +
+        '<div class="oh-speed">' +
+          '<div class="oh-speed-label">⏱ Simulation Speed</div>' +
+          '<div class="oh-speed-row" role="group" aria-label="Simulation speed">' +
+            '<button class="oh-sp on" data-speed="1">1×</button>' +
+            '<button class="oh-sp" data-speed="10">10×</button>' +
+            '<button class="oh-sp" data-speed="60">60×</button>' +
+            '<button class="oh-sp" data-speed="300">300×</button>' +
+          '</div>' +
+        '</div>';
+      this.container.appendChild(this.el);
+      this._wire();
+    }
+
+    _wire() {
+      const v = this.viewer;
+      this.el.querySelectorAll(".oh-btn[data-layer]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const on = !btn.classList.contains("on");
+          btn.classList.toggle("on", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          v.setLayer(btn.dataset.layer, on);
+        });
+      });
+      const focusBtn = this.el.querySelector(".oh-focus");
+      if (focusBtn) focusBtn.addEventListener("click", () => {
+        v.focusSelected();
+        focusBtn.classList.add("on");
+        setTimeout(() => focusBtn.classList.remove("on"), 1200);
+      });
+      const spBtns = this.el.querySelectorAll(".oh-sp");
+      spBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          spBtns.forEach((b) => b.classList.remove("on"));
+          btn.classList.add("on");
+          v.setSpeed(parseInt(btn.dataset.speed, 10));
+        });
+      });
     }
   }
 
@@ -678,12 +876,18 @@
 
   /* ---------- Bootstrapping ---------- */
 
-  // Expose the viewer class for reuse on other pages (e.g. Orbital Registry).
   window.SOSOrbitalViewer = OrbitalViewer;
+  window.SOSOrbitalHUD = OrbitalHUD;
 
   document.addEventListener("DOMContentLoaded", () => {
     const orb = document.getElementById("orbitalCanvas");
-    if (orb) window.sosOrbitalViewer = new OrbitalViewer(orb);
+    if (orb) {
+      const viewer = new OrbitalViewer(orb);
+      window.sosOrbitalViewer = viewer;
+      // attach the floating HUD to the dashboard orbital viewer
+      const wrap = orb.closest(".orbital-viewer");
+      if (wrap) window.sosOrbitalHUD = new OrbitalHUD(viewer, wrap);
+    }
     initPlanCompare(document.getElementById("planCanvas"));
   });
 })();

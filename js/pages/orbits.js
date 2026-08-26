@@ -44,25 +44,27 @@
   function hashId(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
-  /* Convert a satellite (API shape) into 3D viewer orbit parameters derived
-     from its real Keplerian elements: altitude -> orbit radius, inclination ->
-     plane tilt, RAAN -> plane rotation, period -> angular speed. */
+  /* Convert a satellite (API shape) into a 3D viewer spec carrying its real
+     Keplerian elements {a, e, i, Ω, ω, period}. The OrbitalViewer converts these
+     to ECI Cartesian (1 km → 0.001 units, Earth radius ≈ 6.378 units). */
   function satTo3D(sat) {
     var e = sat.elements;
-    var alt = e.altitudeKm;
     var regime = normalizeRegime(sat);
-    var A = 1.0 + Math.sqrt(Math.max(alt, 0) / EARTH_R) * 0.9; // sqrt-compressed Earth radii
     var h = hashId(sat.id || sat.name || "");
     return {
       name: sat.id,
-      label: sat.id,
+      norad: sat.noradId,
       color: regimeColor(regime, h),
-      A: A,
-      rx: A / 2.05,
-      tilt: ((e.inclinationDeg || 0) * Math.PI) / 180,
-      raan: ((e.raanDeg || 0) * Math.PI) / 180,
-      speed: 0.02 / Math.max(e.periodMin || 95, 10),
-      phase: (((e.raanDeg || 0) + (e.argPerigeeDeg || 0)) * Math.PI / 180 + h * 0.013) % TAU,
+      kind: "satellite",
+      kepler: {
+        a_km: EARTH_R + (e.altitudeKm || 0),
+        e: e.eccentricity || 0,
+        i_deg: e.inclinationDeg || 0,
+        raanDeg: e.raanDeg || 0,
+        argPerigeeDeg: e.argPerigeeDeg || 0,
+        periodMin: e.periodMin || 95,
+        meanAnomaly0Deg: ((e.raanDeg || 0) + (e.argPerigeeDeg || 0) + h * 0.13) % 360,
+      },
       regime: regime,
     };
   }
@@ -79,11 +81,18 @@
     { id: "SAT-57754", noradId: 57754, name: "Aditya-L1", orbitClass: "HEO \u00B7 Molniya", elements: { altitudeKm: 108600, inclinationDeg: 24.0, raanDeg: 145.0, periodMin: 17280, argPerigeeDeg: 280.0, eccentricity: 0.5354 } },
   ];
 
+  // Realistic-scale camera distance: frame the largest orbit (units = a_km * 0.001).
   function cameraDistFor(list) {
-    var maxA = 1.4;
-    list.forEach(function (s) { if (s.A > maxA) maxA = s.A; });
-    return maxA * 1.55 + 2.2;
+    var maxU = EARTH_R * 0.001; // 6.378
+    list.forEach(function (s) {
+      if (s.kepler) { var u = s.kepler.a_km * 0.001; if (u > maxU) maxU = u; }
+      else if (s.A) { if (s.A > maxU) maxU = s.A; }
+    });
+    return Math.max(14, Math.min(60, maxU * 1.7 + 4));
   }
+
+  // Keep orbits within the camera's view range (≤ ~45 units ⇒ a_km ≤ 45000, i.e. GEO+).
+  function viewableIn3D(s) { return s.kepler ? s.kepler.a_km <= 45000 : true; }
 
   onDomReady(function () {
     var viewer = null;
@@ -166,10 +175,11 @@
         allRaw = data.items;
         setText("orbitCount", data.items.length + " satellites");
         if (viewer) {
-          var list = data.items.map(satTo3D).filter(function (s) { return s.A < 18; });
+          var list = data.items.map(satTo3D).filter(viewableIn3D);
           viewer.setSatellites(list);
           viewer.cameraDist = cameraDistFor(list);
           viewer.zoom = 1;
+          viewer._zoomTarget = 1;
         }
         applyFilter();
       }).catch(function () {

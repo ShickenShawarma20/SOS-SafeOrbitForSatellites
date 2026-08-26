@@ -695,6 +695,77 @@ li.fail .sc-mark { background: rgba(239,68,68,.15); color: var(--crit); }
 .ai-insight-driver b, .ai-insight-conf b { font-size: 13px; }
 .ai-insight-actions { display: flex; gap: 9px; flex-wrap: wrap; }
 
+/* ---------- Orbital HUD (dark glassmorphism control panel) ---------- */
+
+.orbital-hud {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 8;
+  display: flex; flex-direction: column; gap: 6px;
+  width: 188px;
+  padding: 11px 11px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.80);
+  border: 1px solid rgba(51, 65, 85, 0.60);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 36px rgba(2, 6, 14, 0.55);
+}
+.orbital-hud .oh-title {
+  font: 800 9px 'JetBrains Mono', monospace;
+  letter-spacing: 0.16em; color: #94A3B8;
+  text-transform: uppercase; margin-bottom: 3px;
+  padding-bottom: 7px; border-bottom: 1px solid rgba(148,163,184,0.18);
+}
+.orbital-hud .oh-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 9px;
+  font: 600 11px 'Inter', system-ui, sans-serif;
+  color: #94A3B8;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 8px;
+  cursor: pointer; text-align: left;
+  transition: all 0.15s ease;
+}
+.orbital-hud .oh-btn:hover { color: #E2E8F0; border-color: rgba(56,189,248,0.45); }
+.orbital-hud .oh-btn.on {
+  color: #67E8F9; border-color: rgba(6,182,212,0.5);
+  background: rgba(6,182,212,0.10);
+  box-shadow: inset 0 0 12px rgba(6,182,212,0.08);
+}
+.orbital-hud .oh-btn.oh-focus { color: #6EE7B7; border-color: rgba(16,185,129,0.45); background: rgba(16,185,129,0.08); }
+.orbital-hud .oh-btn.oh-focus.on { color: #A7F3D0; box-shadow: 0 0 14px rgba(16,185,129,0.25); }
+.orbital-hud .oh-speed {
+  margin-top: 4px; padding-top: 9px;
+  border-top: 1px solid rgba(148,163,184,0.18);
+}
+.orbital-hud .oh-speed-label {
+  font: 700 8.5px 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em; color: #64748B; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.orbital-hud .oh-speed-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.orbital-hud .oh-sp {
+  padding: 6px 0;
+  font: 700 10px 'JetBrains Mono', monospace;
+  color: #94A3B8;
+  background: rgba(2, 6, 23, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 6px;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.orbital-hud .oh-sp:hover { color: #E2E8F0; }
+.orbital-hud .oh-sp.on {
+  color: #67E8F9; border-color: rgba(6,182,212,0.5);
+  background: rgba(6,182,212,0.12);
+}
+
+@media (max-width: 840px) {
+  .orbital-hud { width: 168px; top: 10px; right: 10px; padding: 9px; }
+  .orbital-hud .oh-btn { font-size: 10px; padding: 6px 8px; }
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1500px) {
