@@ -338,30 +338,6 @@
 <script src="js/ui.js"></script>
 <script src="js/actions.js"></script>
 <script src="js/orbital.js"></script>
-<<<<<<< HEAD
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var current = null;
-    if (window.SOSApi) {
-      SOSApi.get("/conjunctions/critical").then(function (c) { current = c; }).catch(function () {});
-      var wl = document.getElementById("btnWatchlist");
-      var ack = document.getElementById("btnAcknowledge");
-      if (wl) wl.addEventListener("click", function () {
-        if (current && SOSApi.watchlist) SOSApi.watchlist(current.id).catch(function () {});
-      });
-      if (ack) ack.addEventListener("click", function () {
-        if (current && SOSApi.acknowledgeConjunction) {
-          SOSApi.acknowledgeConjunction(current.id)
-            .then(function () { return new Promise(function (r) { setTimeout(r, 300); }); })
-            .then(function () { SOSApi.refreshDashboard(); })
-            .catch(function () {});
-        }
-      });
-    }
-  });
-</script>
-=======
 <script src="js/pages/dashboard.js"></script>
->>>>>>> 9d5f73c (fixed routes)
 </body>
 </html>
