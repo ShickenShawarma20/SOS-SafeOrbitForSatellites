@@ -476,7 +476,7 @@
       cv.addEventListener("pointercancel", endDrag);
       cv.addEventListener("wheel", (e) => {
         e.preventDefault();
-        this._zoomTarget = Math.max(0.4, Math.min(3.2, this._zoomTarget * Math.exp(-e.deltaY * 0.001)));
+        this._zoomTarget = Math.max(0.2, Math.min(12, this._zoomTarget * Math.exp(-e.deltaY * 0.001)));
       }, { passive: false });
     }
 
@@ -499,8 +499,12 @@
       const zoomOut = document.querySelector("[data-zoom='out']");
       const reset = document.querySelector("[data-cam='reset']");
       const play = document.getElementById("playBtn");
-      if (zoomIn) zoomIn.addEventListener("click", () => (this._zoomTarget = Math.min(this._zoomTarget * 1.18, 3.2)));
-      if (zoomOut) zoomOut.addEventListener("click", () => (this._zoomTarget = Math.max(this._zoomTarget / 1.18, 0.4)));
+      // Wider zoom range so the operator can zoom from a wide GEO view all the
+      // way down to individual LEO satellites near Earth's surface.
+      const zoomMax = 12;
+      const zoomMin = 0.2;
+      if (zoomIn) zoomIn.addEventListener("click", () => (this._zoomTarget = Math.min(this._zoomTarget * 1.2, zoomMax)));
+      if (zoomOut) zoomOut.addEventListener("click", () => (this._zoomTarget = Math.max(this._zoomTarget / 1.2, zoomMin)));
       if (reset) reset.addEventListener("click", () => {
         this._zoomTarget = 1; this._yawTarget = 0.6; this._pitchTarget = 0.45; this._camFollow = false;
       });
@@ -731,13 +735,36 @@
         this.zoom += (this._zoomTarget - this.zoom) * 0.08;
         const tgt = (this._camFollow && focusPos) ? focusPos : new THREE.Vector3(0, 0, 0);
         this._camTarget.lerp(tgt, 0.05);
-        const dist = Math.max(7.5, Math.min(50, this.cameraDist / this.zoom));
+        // Dynamic zoom clamp: upper bound scales with cameraDist so GEO
+        // satellites (cameraDist ~110) remain reachable.  Lower bound lets
+        // the operator zoom into LEO satellites near Earth's surface.
+        const distMax = Math.max(50, this.cameraDist * 1.6);
+        const distMin = 8;
+        const dist = Math.max(distMin, Math.min(distMax, this.cameraDist / this.zoom));
         this.camera.position.set(
           this._camTarget.x + dist * Math.cos(this.pitch) * Math.sin(this.yaw),
           this._camTarget.y + dist * Math.sin(this.pitch),
           this._camTarget.z + dist * Math.cos(this.pitch) * Math.cos(this.yaw)
         );
         this.camera.lookAt(this._camTarget);
+
+        // Scale labels relative to camera distance so they stay readable at
+        // any zoom level (close-up or far-out GEO view).
+        const camDist = this.camera.position.distanceTo(this._camTarget);
+        const labelScale = Math.max(0.6, camDist / 30);
+        (this._liveGroups || []).forEach((g) => {
+          if (g.label && g.label.visible) {
+            const base = g.selected ? 1.5 : 1.1;
+            g.label.scale.set(base * labelScale, (base * 0.42) * labelScale, 1);
+          }
+          // Scale markers proportionally so they're visible at wide zoom.
+          if (g.marker) {
+            const focused = this._liveFocus && (g.sat.noradId === this._liveFocus);
+            const baseScale = focused ? 1.4 : (g.selected ? 1.0 : 0.7);
+            g.marker.scale.setScalar(baseScale * Math.max(1, labelScale * 0.5));
+          }
+        });
+
         this.renderer.render(this.scene, this.camera);
         return;
       }
