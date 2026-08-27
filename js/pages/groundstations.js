@@ -11,11 +11,19 @@
     var S = window.SOS;
     var allStations = [];
 
-    /* Lat/Lon to SVG x,y (Mercator-ish) */
+    /* Lat/Lon to SVG x,y (equirectangular — matches the 720×360 viewBox). */
     function latLonToXY(lat, lon) {
       var x = ((lon + 180) / 360) * 720;
       var y = ((90 - lat) / 180) * 360;
       return { x: x, y: y };
+    }
+
+    /* Load real world land mass path into the SVG. */
+    if (window.SOSWorldMap) {
+      SOSWorldMap.get().then(function (landPath) {
+        var landEl = document.getElementById("gsLandPath");
+        if (landEl && landPath) landEl.setAttribute("d", landPath);
+      });
     }
 
     /* ---- Load network status ---- */
@@ -45,13 +53,23 @@
         var isOnline = s.status === "online";
         var glowId = isOnline ? "glow" : "glowRed";
         var fillColor = isOnline ? "#22C55E" : "#EF4444";
-        var glowColor = isOnline ? "rgba(34,197,94,.6)" : "rgba(239,68,68,.5)";
-        return '<g transform="translate(' + pos.x + ',' + pos.y + ')" class="station-marker" data-id="' + s.id + '" data-name="' + s.name + '" data-lat="' + s.lat + '" data-lon="' + s.lon + '" data-status="' + s.status + '">' +
-          '<circle r="14" fill="url(#' + glowId + ')" opacity="0.6"/>' +
-          '<circle r="3.5" fill="' + fillColor + '" stroke="' + fillColor + '" stroke-width="1" opacity="0.9"/>' +
-          '<text x="0" y="-9" text-anchor="middle" fill="rgba(200,225,250,.85)" font-family="JetBrains Mono, monospace" font-size="8" font-weight="600">' + s.name + '</text>' +
+        return '<g transform="translate(' + pos.x.toFixed(1) + ',' + pos.y.toFixed(1) + ')" class="station-marker" data-id="' + s.id + '" data-name="' + s.name + '" data-lat="' + s.lat + '" data-lon="' + s.lon + '" data-status="' + s.status + '">' +
+          '<circle r="16" fill="url(#' + glowId + ')" opacity="0.7"/>' +
+          '<circle r="4" fill="' + fillColor + '" stroke="' + fillColor + '" stroke-width="1.5" opacity="1"/>' +
+          '<circle r="8" fill="none" stroke="' + fillColor + '" stroke-width="1" opacity="0.4"/>' +
+          '<text x="0" y="-12" text-anchor="middle" fill="rgba(200,225,250,.9)" font-family="JetBrains Mono, monospace" font-size="7" font-weight="600">' + s.name + '</text>' +
           '</g>';
       }).join("");
+      // Hover tooltip
+      markers.querySelectorAll(".station-marker").forEach(function (m) {
+        m.addEventListener("mouseenter", function () {
+          var name = m.getAttribute("data-name");
+          var lat = parseFloat(m.getAttribute("data-lat"));
+          var lon = parseFloat(m.getAttribute("data-lon"));
+          var status = m.getAttribute("data-status");
+          if (window.SOSUI) SOSUI.toast(name + " · " + lat.toFixed(1) + "°, " + lon.toFixed(1) + "° · " + status.toUpperCase(), "info", 2500);
+        });
+      });
     }
 
     function renderTable(stations) {

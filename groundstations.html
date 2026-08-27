@@ -70,20 +70,21 @@
             <defs>
               <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(56,189,248,.35)"/><stop offset="100%" stop-color="rgba(56,189,248,0)"/></radialGradient>
               <radialGradient id="glowRed" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(239,68,68,.3)"/><stop offset="100%" stop-color="rgba(239,68,68,0)"/></radialGradient>
+              <linearGradient id="oceanGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0A1626"/>
+                <stop offset="100%" stop-color="#060D18"/>
+              </linearGradient>
             </defs>
-            <g class="graticule" stroke="rgba(120,170,220,.1)" stroke-width="0.5">
+            <!-- Ocean background -->
+            <rect width="720" height="360" fill="url(#oceanGrad)"/>
+            <!-- Graticule -->
+            <g class="graticule" stroke="rgba(120,170,220,.08)" stroke-width="0.5" fill="none">
               <line x1="0" y1="90" x2="720" y2="90"/><line x1="0" y1="180" x2="720" y2="180"/><line x1="0" y1="270" x2="720" y2="270"/>
               <line x1="120" y1="0" x2="120" y2="360"/><line x1="240" y1="0" x2="240" y2="360"/><line x1="360" y1="0" x2="360" y2="360"/><line x1="480" y1="0" x2="480" y2="360"/><line x1="600" y1="0" x2="600" y2="360"/>
-              <ellipse cx="360" cy="180" rx="360" ry="180" fill="none"/>
             </g>
-            <g class="land" fill="rgba(40,80,120,.25)" stroke="rgba(80,140,200,.15)" stroke-width="0.5">
-              <path d="M60 62 Q100 38 165 46 Q215 40 232 66 Q250 84 228 104 Q238 128 214 140 L196 168 Q178 176 166 158 Q136 148 118 122 Q76 108 60 84 Z"/>
-              <path d="M212 190 Q244 178 258 204 Q268 236 252 272 Q240 310 222 314 Q206 296 208 262 Q198 224 212 190 Z"/>
-              <path d="M332 60 Q360 42 396 54 Q412 68 396 86 Q372 98 348 92 Q330 80 332 60 Z"/>
-              <path d="M330 118 Q380 104 416 124 Q438 152 424 192 Q408 240 384 262 Q362 268 350 236 Q330 196 326 156 Z"/>
-              <path d="M420 52 Q480 28 560 44 Q622 52 636 84 Q648 116 606 132 Q560 150 512 138 Q462 144 436 118 Q414 84 420 52 Z"/>
-              <path d="M560 218 Q606 202 646 222 Q664 244 644 264 Q606 280 572 266 Q550 244 560 218 Z"/>
-            </g>
+            <!-- Land masses (loaded from Natural Earth 110m data) -->
+            <path id="gsLandPath" fill="rgba(56,189,248,.12)" stroke="rgba(56,189,248,.35)" stroke-width="0.6" stroke-linejoin="round" d=""/>
+            <!-- Ground station markers -->
             <g id="gsMarkers"></g>
           </svg>
         </div>
@@ -110,6 +111,7 @@
 <script src="js/api.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/app.js"></script>
+<script src="js/data/world-map.js"></script>
 <script src="js/pages/groundstations.js"></script>
 </body>
 </html>
