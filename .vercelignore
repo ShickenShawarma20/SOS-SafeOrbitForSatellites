@@ -4,3 +4,7 @@ docs
 .gitignore
 README.md
 render.yaml
+server/dist
+server_out.log
+server_err.log
+*.tmp.js

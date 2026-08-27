@@ -7,5 +7,4 @@ API base: http://localhost:3000/api/v1
 Static files: D:\SOS-SafeOrbitForSattelites
 [tle-fetcher] Loaded 19 TLEs from bundled snapshot (offline fallback)
 Tracking API: http://localhost:3000/api/v1/tracking/fleet
-[tle-fetcher] Loaded 19 TLEs from bundled snapshot (offline fallback)
-[tle-fetcher] Refresh complete: 0 ok, 19 failed, status=stale
+[tle-fetcher] Refresh complete: 19 ok, 0 failed, status=ok

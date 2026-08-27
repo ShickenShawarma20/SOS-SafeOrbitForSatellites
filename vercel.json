@@ -3,6 +3,28 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/v1/tracking/fleet",
+      "destination": "/api/v1/tracking/fleet"
+    },
+    {
+      "source": "/api/v1/tracking/status",
+      "destination": "/api/v1/tracking/status"
+    },
+    {
+      "source": "/api/v1/tracking/:noradId/position",
+      "destination": "/api/v1/[...path]"
+    },
+    {
+      "source": "/api/v1/tracking/:noradId/trajectory",
+      "destination": "/api/v1/[...path]"
+    },
+    {
+      "source": "/api/v1/:path*",
+      "destination": "/api/v1/[...path]"
+    }
+  ],
   "headers": [
     {
       "source": "/css/(.*)",

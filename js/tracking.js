@@ -112,7 +112,13 @@
   async function fetchFleet() {
     try {
       const res = await fetch("/api/v1/tracking/fleet");
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      // Guard against non-JSON responses (e.g. static-host HTML 404 pages on
+      // Vercel when the serverless function isn't wired).  Check content-type
+      // before attempting to parse JSON.
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok || !contentType.includes("application/json")) {
+        throw new Error("Non-JSON response (" + res.status + ")");
+      }
       const data = await res.json();
       fleetStatus = data.status || "ok";
       fleetFetchedAt = data.fetchedAt;
