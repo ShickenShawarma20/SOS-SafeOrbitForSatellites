@@ -1,1 +1,0 @@
-{"version":3,"file":"isro-fleet.d.ts","sourceRoot":"","sources":["../../src/data/isro-fleet.ts"],"names":[],"mappings":"AAcA,MAAM,WAAW,WAAW;IAC1B,OAAO,EAAE,MAAM,CAAC;IAChB,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,QAAQ,EAAE,MAAM,CAAC;IACjB,QAAQ,EAAE,MAAM,CAAC;IACjB,MAAM,EAAE,MAAM,CAAC;CAChB;AAED,eAAO,MAAM,UAAU,EAAE,WAAW,EAoBnC,CAAC"}
