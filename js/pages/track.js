@@ -12,11 +12,25 @@
   "use strict";
 
   function onReady(fn) {
-    // Always wait for shellready — shell.js reinjects #shell.innerHTML on
-    // DOMContentLoaded, wiping elements that existed at parse time.  Querying
-    // before shellready would bind to detached nodes.
-    if (document.querySelector(".main-col")) fn();
-    else document.addEventListener("shellready", fn);
+    // We need BOTH:
+    //   - shellready (shell.js reinjects #shell.innerHTML on DOMContentLoaded)
+    //   - viewerready (orbital.js creates window.sosOrbitalViewer in a later
+    //     DOMContentLoaded handler, AFTER shellready fires)
+    // Without viewerready, enableLiveTracking() would never be called.
+    function check() {
+      if (document.querySelector(".main-col") && window.sosOrbitalViewer) {
+        fn();
+      } else if (document.querySelector(".main-col")) {
+        // Shell is ready but viewer isn't yet — wait for viewerready event.
+        document.addEventListener("viewerready", fn, { once: true });
+      } else {
+        document.addEventListener("shellready", function () {
+          if (window.sosOrbitalViewer) fn();
+          else document.addEventListener("viewerready", fn, { once: true });
+        }, { once: true });
+      }
+    }
+    check();
   }
 
   onReady(function () {

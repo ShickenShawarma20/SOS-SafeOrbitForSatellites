@@ -529,6 +529,19 @@
       this._buildLiveSatellites();
       // Rebuild when the fleet data changes (new TLEs loaded).
       this.tracking.on("status", () => this._buildLiveSatellites());
+      // Rebuild orbit trails once positions are first computed (the initial
+      // _buildLiveSatellites may run before propagateAll populates sat.state).
+      this._liveOrbitsBuilt = false;
+      this.tracking.on("position", () => {
+        if (!this._liveOrbitsBuilt && this._liveGroups && this._liveGroups.length) {
+          const hasState = this._liveGroups.some((g) => g.sat.state);
+          if (hasState) {
+            this._liveOrbitsBuilt = true;
+            this._autoFitCamera();
+            this._rebuildLiveOrbits();
+          }
+        }
+      });
       // Listen for selection changes to highlight + focus.
       this.tracking.on("select", (noradId) => {
         this._liveFocus = noradId;
@@ -549,28 +562,50 @@
       (this._satGroups || []).forEach((g) => { g.group.visible = false; g.label.visible = false; });
 
       sats.forEach((sat) => {
-        const selected = this.tracking.getSelected() && this.tracking.getSelected().noradId === sat.noradId;
-        const color = this._liveColor(sat, selected);
-        const ring = this._buildLiveOrbitLine(sat, selected, color);
-        const marker = this._makeSatelliteMesh({ color: color, selected: selected });
-        const halo = new THREE.Sprite(new THREE.SpriteMaterial({
-          map: this._glowTexture(color), transparent: true, opacity: 0,
-          depthTest: false, blending: THREE.AdditiveBlending,
-        }));
-        halo.scale.set(1.2, 1.2, 1);
-        const group = new THREE.Group();
-        group.add(ring);
-        group.add(marker);
-        group.add(halo);
-        const label = this.makeLabel(
-          [sat.name, "NORAD " + sat.noradId, sat.category],
-          selected ? "#67E8F9" : "rgba(186,222,250,.9)"
-        );
-        label.scale.set(selected ? 1.5 : 1.1, selected ? 0.6 : 0.45, 1);
-        this.scene.add(group);
-        this.scene.add(label);
-        this._liveGroups.push({ sat, group, marker, ring, label, halo, color, selected });
+        try {
+          const selected = this.tracking.getSelected() && this.tracking.getSelected().noradId === sat.noradId;
+          const color = this._liveColor(sat, selected);
+          const ring = this._buildLiveOrbitLine(sat, selected, color);
+          const marker = this._makeSatelliteMesh({ color: color, selected: selected });
+          const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+            map: this._glowTexture(color), transparent: true, opacity: 0,
+            depthTest: false, blending: THREE.AdditiveBlending,
+          }));
+          halo.scale.set(1.2, 1.2, 1);
+          const group = new THREE.Group();
+          group.add(ring);
+          group.add(marker);
+          group.add(halo);
+          const label = this.makeLabel(
+            [sat.name, "NORAD " + sat.noradId, sat.category],
+            selected ? "#67E8F9" : "rgba(186,222,250,.9)"
+          );
+          label.scale.set(selected ? 1.5 : 1.1, selected ? 0.6 : 0.45, 1);
+          this.scene.add(group);
+          this.scene.add(label);
+          this._liveGroups.push({ sat, group, marker, ring, label, halo, color, selected });
+        } catch (e) {
+          console.warn("[orbital] Failed to build live satellite " + sat.noradId, e);
+        }
       });
+      this._liveOrbitsBuilt = false;
+    }
+
+    /* Auto-fit the camera distance to encompass all live satellites, including
+       GEO satellites at ~42,164 km (~42 units) which would be off-screen at the
+       default cameraDist of 18. */
+    _autoFitCamera() {
+      if (!this._liveGroups || !this._liveGroups.length) return;
+      let maxR = 0;
+      this._liveGroups.forEach((g) => {
+        if (g.sat.state && g.sat.state.position) {
+          const r = Math.hypot(g.sat.state.position[0], g.sat.state.position[1], g.sat.state.position[2]) * KM_TO_UNITS;
+          if (Number.isFinite(r) && r > maxR) maxR = r;
+        }
+      });
+      if (maxR > 0) {
+        this.cameraDist = Math.max(16, maxR * 2.6);
+      }
     }
 
     _liveColor(sat, selected) {
