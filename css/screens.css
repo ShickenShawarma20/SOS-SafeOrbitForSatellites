@@ -11,7 +11,7 @@
   box-shadow: var(--shadow);
 }
 
-#orbitalCanvas { display: block; width: 100%; height: 560px; }
+#orbitalCanvas { display: block; width: 100%; height: clamp(420px, 58vh, 620px); }
 
 .viewer-head {
   position: absolute; top: 14px; left: 16px; right: 16px;
@@ -1048,6 +1048,13 @@ li.fail .sc-mark { background: rgba(239,68,68,.15); color: var(--crit); }
   background: var(--nominal); box-shadow: 0 0 10px rgba(34,197,94,.7);
   animation: pulse 2s infinite;
 }
+/* Status-reactive LIVE banner */
+.tb-live.stale { color: var(--warn); background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.32); }
+.tb-live.stale .pip { background: var(--warn); box-shadow: 0 0 10px rgba(245,158,11,.7); }
+.tb-live.error { color: var(--crit); background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.32); }
+.tb-live.error .pip { background: var(--crit); box-shadow: 0 0 10px rgba(239,68,68,.7); animation: none; }
+.tb-live.loading { color: var(--accent); background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.32); }
+.tb-live.loading .pip { background: var(--accent); }
 .tb-count {
   font-family: var(--mono); font-size: 13px; font-weight: 700;
   color: var(--text-hi);

@@ -48,8 +48,12 @@
     var $tcOffset = document.getElementById("tcOffset");
 
     var searchQuery = "";
+    var searchDebounce = null;
+    var listBuilt = false;
+    var telemBuilt = false;
+    var lastTelemVals = {};
 
-    /* ---- Satellite list rendering ---- */
+    /* ---- Satellite list rendering (in-place update, preserves scroll/focus) ---- */
     function renderList() {
       var sats = T.search(searchQuery);
       if (!sats || !sats.length) {
@@ -57,73 +61,129 @@
         if (status.status === "loading" || status.count === 0) {
           $list.innerHTML = '<div class="track-state loading"><div class="ts-msg">Loading orbital data…</div></div>';
         } else if (status.status === "error" && status.count === 0) {
-          $list.innerHTML = '<div class="track-state error"><div class="ts-icon">⚠</div><div class="ts-msg">Orbital Data Source Unavailable</div><div class="ts-sub">Could not reach CelesTrak. Retrying automatically.</div></div>';
+          $list.innerHTML = '<div class="track-state error"><div class="ts-msg">Orbital Data Source Unavailable</div><div class="ts-sub">Could not reach CelesTrak. Retrying automatically.</div></div>';
         } else {
-          $list.innerHTML = '<div class="track-state"><div class="ts-msg">No satellites match "' + escapeHtml(searchQuery) + '"</div></div>';
+          $list.innerHTML = '<div class="track-state"><div class="ts-msg">No satellites match "' + escapeHtml(searchQuery) + '"</div><div class="ts-sub">Try a different search term.</div></div>';
         }
+        listBuilt = false;
         return;
       }
       var selected = T.getSelected();
       var selId = selected ? selected.noradId : null;
-      $list.innerHTML = sats.map(function (s) {
+
+      // Build the list structure once, then update in place
+      if (!listBuilt || $list.children.length !== sats.length) {
+        $list.innerHTML = sats.map(function (s) {
+          return '<div class="sat-item" data-norad="' + s.noradId + '" tabindex="0">' +
+            '<span class="sat-item-dot"></span>' +
+            '<div class="sat-item-info">' +
+              '<div class="sat-item-name"></div>' +
+              '<div class="sat-item-meta"></div>' +
+            '</div>' +
+          '</div>';
+        }).join("");
+        listBuilt = true;
+      }
+
+      // Update each item in place
+      var items = $list.querySelectorAll(".sat-item");
+      sats.forEach(function (s, i) {
+        var el = items[i];
+        if (!el) return;
         var isSel = s.noradId === selId;
-        var cls = "sat-item" + (isSel ? " selected" : "") + (s.ok ? "" : " unavailable");
-        var dot = s.ok ? "" : " off";
+        el.classList.toggle("selected", isSel);
+        el.classList.toggle("unavailable", !s.ok);
+        var dot = el.querySelector(".sat-item-dot");
+        dot.className = "sat-item-dot" + (s.ok ? "" : " off") + (s.ok && /GEO|GSO/.test(s.category) ? " geo" : "");
         var alt = s.state ? Math.round(s.state.altitudeKm) + " km" : (s.ok ? "…" : "N/A");
-        var cat = s.category || "";
-        return '<div class="' + cls + '" data-norad="' + s.noradId + '">' +
-          '<span class="sat-item-dot' + dot + '"></span>' +
-          '<div class="sat-item-info">' +
-            '<div class="sat-item-name">' + escapeHtml(s.name) + '</div>' +
-            '<div class="sat-item-meta">' + alt + ' · ' + escapeHtml(cat) + '</div>' +
-          '</div>' +
-        '</div>';
-      }).join("");
+        el.querySelector(".sat-item-name").textContent = s.name;
+        el.querySelector(".sat-item-meta").textContent = alt + " · " + (s.category || "");
+        el.setAttribute("title", s.name + " · NORAD " + s.noradId + " · " + (s.category || ""));
+      });
     }
 
-    /* ---- Telemetry panel rendering ---- */
+    /* ---- Telemetry panel rendering (in-place update, enables value flash) ---- */
     function renderTelemetry() {
       var sel = T.getSelected();
       if (!sel) {
         $telemName.textContent = "—";
-        $telemBody.innerHTML = '<div class="track-state loading"><div class="ts-msg">Select a satellite</div><div class="ts-sub">Choose a satellite from the list to view its real-time propagated position.</div></div>';
+        if (!telemBuilt || $telemBody.querySelector(".track-state") === null) {
+          $telemBody.innerHTML = '<div class="track-state loading"><div class="ts-msg">Select a satellite</div><div class="ts-sub">Choose a satellite from the list to view its real-time propagated position.</div></div>';
+          telemBuilt = false;
+        }
         return;
       }
       $telemName.textContent = sel.name;
       var status = T.getStatus();
-      // Update the LIVE/SIM tag in place (avoid outerHTML which invalidates the ref)
       if ($telemTag) {
         $telemTag.className = "telem-tag " + (status.isLive ? "live" : "sim");
         $telemTag.innerHTML = '<span class="live-pip"></span>' + (status.isLive ? "LIVE" : "SIM");
       }
 
       if (!sel.ok) {
-        $telemBody.innerHTML = '<div class="track-state error"><div class="ts-icon">⚠</div><div class="ts-msg">Orbital Data Unavailable</div><div class="ts-sub">' + (sel.error || "No TLE data for this satellite.") + '</div></div>';
+        $telemBody.innerHTML = '<div class="track-state error"><div class="ts-msg">Orbital Data Unavailable</div><div class="ts-sub">' + (sel.error || "No TLE data for this satellite.") + '</div></div>';
+        telemBuilt = false;
         return;
       }
       if (!sel.state) {
-        $telemBody.innerHTML = '<div class="track-state loading"><div class="ts-msg">Propagating…</div></div>';
+        if (!telemBuilt || $telemBody.querySelector(".track-state") === null) {
+          $telemBody.innerHTML = '<div class="track-state loading"><div class="ts-msg">Propagating…</div></div>';
+          telemBuilt = false;
+        }
         return;
       }
+
+      // Build the telemetry structure once, then update values in place
+      if (!telemBuilt) {
+        $telemBody.innerHTML =
+          '<div class="telem-section-label">Real-Time Propagated Position</div>' +
+          '<div class="telem-grid">' +
+            '<div class="telem-cell" data-key="lat"><div class="k">Latitude</div><div class="v">—</div></div>' +
+            '<div class="telem-cell" data-key="lon"><div class="k">Longitude</div><div class="v">—</div></div>' +
+            '<div class="telem-cell" data-key="alt"><div class="k">Altitude</div><div class="v">— <span class="u">km</span></div></div>' +
+            '<div class="telem-cell" data-key="vel"><div class="k">Velocity</div><div class="v">— <span class="u">km/s</span></div></div>' +
+          '</div>' +
+          '<div class="telem-meta">' +
+            '<div class="telem-meta-row"><span>Orbital data epoch</span><b data-key="epoch">—</b></div>' +
+            '<div class="telem-meta-row"><span>Data last updated</span><b data-key="updated">—</b></div>' +
+            '<div class="telem-meta-row"><span>Position calculation</span><b data-key="calc">—</b></div>' +
+            '<div class="telem-meta-row"><span>Position timestamp</span><b data-key="ts">—</b></div>' +
+          '</div>';
+        telemBuilt = true;
+        lastTelemVals = {};
+      }
+
+      // Update values in place with flash on change
       var st = sel.state;
-      $telemBody.innerHTML =
-        '<div class="telem-section-label">Real-Time Propagated Position</div>' +
-        '<div class="telem-grid">' +
-          telemCell("Latitude", st.latitude.toFixed(3) + "°") +
-          telemCell("Longitude", st.longitude.toFixed(3) + "°") +
-          telemCell("Altitude", st.altitudeKm.toFixed(1), "km") +
-          telemCell("Velocity", st.velocityKms.toFixed(3), "km/s") +
-        '</div>' +
-        '<div class="telem-meta">' +
-          '<div class="telem-meta-row"><span>Orbital data epoch</span><b>' + (sel.epoch ? fmtEpoch(sel.epoch) : "—") + '</b></div>' +
-          '<div class="telem-meta-row"><span>Data last updated</span><b>' + (sel.fetchedAt ? timeAgo(sel.fetchedAt) : "—") + '</b></div>' +
-          '<div class="telem-meta-row"><span>Position calculation</span><b>' + (status.isLive ? "LIVE (UTC)" : "SIM (" + fmtOffset(status.timeOffsetMs) + ")") + '</b></div>' +
-          '<div class="telem-meta-row"><span>Position timestamp</span><b>' + fmtTimeUTC(st.timestamp) + '</b></div>' +
-        '</div>';
+      updateCell("lat", st.latitude.toFixed(3) + "°");
+      updateCell("lon", st.longitude.toFixed(3) + "°");
+      updateCell("alt", st.altitudeKm.toFixed(1), "km");
+      updateCell("vel", st.velocityKms.toFixed(3), "km/s");
+      updateMeta("epoch", sel.epoch ? fmtEpoch(sel.epoch) : "—");
+      updateMeta("updated", sel.fetchedAt ? timeAgo(sel.fetchedAt) : "—");
+      updateMeta("calc", status.isLive ? "LIVE (UTC)" : "SIM (" + fmtOffset(status.timeOffsetMs) + ")");
+      updateMeta("ts", fmtTimeUTC(st.timestamp));
     }
 
-    function telemCell(k, v, u) {
-      return '<div class="telem-cell"><div class="k">' + k + '</div><div class="v">' + v + (u ? ' <span class="u">' + u + '</span>' : '') + '</div></div>';
+    function updateCell(key, val, unit) {
+      var cell = $telemBody.querySelector('[data-key="' + key + '"]');
+      if (!cell) return;
+      var vEl = cell.querySelector(".v");
+      if (!vEl) return;
+      var text = val + (unit ? ' <span class="u">' + unit + '</span>' : '');
+      if (lastTelemVals[key] !== val) {
+        vEl.innerHTML = text;
+        lastTelemVals[key] = val;
+        // brief flash highlight on value change
+        cell.classList.remove("flash");
+        void cell.offsetWidth; // force reflow to restart animation
+        cell.classList.add("flash");
+      }
+    }
+
+    function updateMeta(key, val) {
+      var el = $telemBody.querySelector('[data-key="' + key + '"]');
+      if (el && el.textContent !== val) el.textContent = val;
     }
 
     /* ---- System status bar ---- */
@@ -136,6 +196,15 @@
         tbRefresh: s.fetchedAt ? timeAgo(s.fetchedAt) : "—",
       };
       for (var id in tb) setText(id, tb[id]);
+
+      // Status-reactive LIVE banner
+      var tbLive = document.querySelector(".tb-live");
+      if (tbLive) {
+        tbLive.classList.remove("stale", "error", "loading");
+        if (s.status === "stale") tbLive.classList.add("stale");
+        else if (s.status === "error") tbLive.classList.add("error");
+        else if (s.status === "initializing" || s.count === 0) tbLive.classList.add("loading");
+      }
 
       var sourceCls = s.status === "ok" ? "ok" : s.status === "stale" ? "stale" : s.status === "error" ? "err" : "";
       setClass("tsSource", "v " + sourceCls, s.status === "ok" ? "CelesTrak · AVAILABLE" : s.status === "stale" ? "CelesTrak · STALE" : s.status === "error" ? "CelesTrak · UNAVAILABLE" : "Loading…");
@@ -170,15 +239,42 @@
       renderList();
       renderTelemetry();
       if (viewer && viewer.liveMode) {
-        viewer._liveFocus = noradId;
         viewer._camFollow = true;
         viewer._zoomTarget = 1.6;
       }
     });
 
+    // Keyboard navigation: arrow up/down to move, Enter to select
+    $list.addEventListener("keydown", function (e) {
+      var items = Array.from($list.querySelectorAll(".sat-item"));
+      var current = document.activeElement;
+      var idx = items.indexOf(current);
+      if (idx === -1) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        var next = items[Math.min(idx + 1, items.length - 1)];
+        if (next) next.focus();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        var prev = items[Math.max(idx - 1, 0)];
+        if (prev) prev.focus();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        var noradId = parseInt(current.dataset.norad, 10);
+        T.select(noradId);
+        renderList();
+        renderTelemetry();
+        if (viewer && viewer.liveMode) { viewer._camFollow = true; viewer._zoomTarget = 1.6; }
+      }
+    });
+
+    // Debounced search
     $search.addEventListener("input", function (e) {
-      searchQuery = e.target.value;
-      renderList();
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(function () {
+        searchQuery = e.target.value;
+        renderList();
+      }, 150);
     });
 
     $tcLive.addEventListener("click", function () {

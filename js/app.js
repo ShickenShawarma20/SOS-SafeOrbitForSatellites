@@ -22,52 +22,19 @@
   setInterval(tickClock, 1000);
 
   /* Sidebar (mobile) */
-  const menuBtn = $("#menuBtn");
-  if (menuBtn) {
+  function wireSidebar() {
+    const menuBtn = $("#menuBtn");
+    if (!menuBtn) return;
     menuBtn.addEventListener("click", () => $(".sidebar").classList.toggle("open"));
     document.addEventListener("click", (e) => {
       const sb = $(".sidebar");
-      if (
-        sb.classList.contains("open") &&
-        !sb.contains(e.target) && !menuBtn.contains(e.target)
-      ) sb.classList.remove("open");
+      if (sb && sb.classList.contains("open") && !sb.contains(e.target) && !menuBtn.contains(e.target)) {
+        sb.classList.remove("open");
+      }
     });
   }
 
-  /* Layer chips toggle */
-  $$(".chip").forEach((chip) =>
-    chip.addEventListener("click", () => chip.classList.toggle("on"))
-  );
-
-  /* Tabs */
-  $$(".tabs").forEach((tabs) => {
-    $$(".tab", tabs).forEach((tab) =>
-      tab.addEventListener("click", () => {
-        $$(".tab", tabs).forEach((t) => t.classList.remove("active"));
-        tab.classList.add("active");
-        document.dispatchEvent(new CustomEvent("tabchange", { detail: tab }));
-      })
-    );
-  });
-
-  /* Modal */
-  $$("[data-modal-open]").forEach((btn) =>
-    btn.addEventListener("click", () => {
-      const m = $("#" + btn.getAttribute("data-modal-open"));
-      if (m) m.classList.add("open");
-    })
-  );
-  $$("[data-modal-close]").forEach((btn) =>
-    btn.addEventListener("click", () => btn.closest(".modal-backdrop").classList.remove("open"))
-  );
-  $$(".modal-backdrop").forEach((bd) =>
-    bd.addEventListener("click", (e) => { if (e.target === bd) bd.classList.remove("open"); })
-  );
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") $$(".modal-backdrop.open").forEach((m) => m.classList.remove("open"));
-  });
-
-  /* Donut chart renderer: segments = [{v, color}] */
+  /* Donut chart renderer: segments = [{v, color, label}] */
   window.renderDonut = function (svgId, segments, size = 126, stroke = 12) {
     const svg = document.getElementById(svgId);
     if (!svg) return;
@@ -102,51 +69,107 @@
       `<title>Fuel remaining ${pct}%</title></circle>`;
   };
 
-  /* Initial renders are handled by page-specific loaders via API */
+  /* Layer chips (non-viewer filter chips only; viewer chips handled by actions.js) */
+  function wireChips() {
+    $$(".chip:not(.layer-chips .chip)").forEach((chip) =>
+      chip.addEventListener("click", () => chip.classList.toggle("on"))
+    );
+  }
+
+  /* Tabs */
+  function wireTabs() {
+    $$(".tabs").forEach((tabs) => {
+      $$(".tab", tabs).forEach((tab) =>
+        tab.addEventListener("click", () => {
+          $$(".tab", tabs).forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          document.dispatchEvent(new CustomEvent("tabchange", { detail: tab }));
+        })
+      );
+    });
+  }
+
+  /* Modals */
+  function wireModals() {
+    $$("[data-modal-open]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        const m = $("#" + btn.getAttribute("data-modal-open"));
+        if (m) m.classList.add("open");
+      })
+    );
+    $$("[data-modal-close]").forEach((btn) =>
+      btn.addEventListener("click", () => btn.closest(".modal-backdrop").classList.remove("open"))
+    );
+    $$(".modal-backdrop").forEach((bd) =>
+      bd.addEventListener("click", (e) => { if (e.target === bd) bd.classList.remove("open"); })
+    );
+  }
 
   /* Plan card selection */
-  $$(".plan-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      $$(".plan-card").forEach((c) => c.classList.remove("selected"));
-      card.classList.add("selected");
-      $$(".plan-card .sel-check").forEach((b) => b.remove());
-      const badge = card.querySelector(".plan-head");
-      const tag = document.createElement("span");
-      tag.className = "sel-check";
-      tag.textContent = "SELECTED";
-      badge.appendChild(tag);
-      document.dispatchEvent(new CustomEvent("planselect", { detail: card.dataset.plan }));
+  function wirePlanCards() {
+    $$(".plan-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        $$(".plan-card").forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+        $$(".plan-card .sel-check").forEach((b) => b.remove());
+        const badge = card.querySelector(".plan-head");
+        if (badge) {
+          const tag = document.createElement("span");
+          tag.className = "sel-check";
+          tag.textContent = "SELECTED";
+          badge.appendChild(tag);
+        }
+        document.dispatchEvent(new CustomEvent("planselect", { detail: card.dataset.plan }));
+      });
     });
-  });
+  }
 
-  /* Search */
-  const searchInput = document.getElementById("globalSearch");
-  if (searchInput) {
-    let searchTimer = null;
+  /* Global search */
+  function wireSearch() {
+    const searchInput = document.getElementById("globalSearch");
+    if (!searchInput) return;
     searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         const q = searchInput.value.trim();
-        if (q) {
-          if (window.SOS && SOS.api) {
-            SOS.api("/search?q=" + encodeURIComponent(q)).then((results) => {
-              /* Simple alert-based results display */
-              const parts = [];
-              if (results.satellites && results.satellites.length) parts.push("Satellites: " + results.satellites.map(s => s.id).join(", "));
-              if (results.objects && results.objects.length) parts.push("Objects: " + results.objects.map(o => o.id).join(", "));
-              if (results.conjunctions && results.conjunctions.length) parts.push("Conjunctions: " + results.conjunctions.map(c => c.id).join(", "));
-              if (parts.length) alert(parts.join("\n\n"));
-              else alert("No results found for '" + q + "'");
-            });
-          }
+        if (q && window.SOS && SOS.api) {
+          SOS.api("/search?q=" + encodeURIComponent(q)).then((results) => {
+            const parts = [];
+            if (results.satellites && results.satellites.length) parts.push("Satellites: " + results.satellites.map(s => s.id + " (" + s.name + ")").join(", "));
+            if (results.objects && results.objects.length) parts.push("Objects: " + results.objects.map(o => o.id).join(", "));
+            if (results.conjunctions && results.conjunctions.length) parts.push("Conjunctions: " + results.conjunctions.map(c => c.id).join(", "));
+            if (window.SOSUI) SOSUI.toast(parts.length ? parts.join(" · ") : "No results for '" + q + "'", parts.length ? "info" : "warn", 4000);
+          }).catch(() => {
+            if (window.SOSUI) SOSUI.toast("Search unavailable — backend offline.", "error");
+          });
         }
       }
     });
-    /* Ctrl+K shortcut */
-    document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        searchInput.focus();
-      }
-    });
   }
+
+  /* Ctrl+K shortcut (global, safe to register once) */
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      e.preventDefault();
+      const si = document.getElementById("globalSearch");
+      if (si) si.focus();
+    }
+  });
+
+  /* Escape closes modals (global) */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") $$(".modal-backdrop.open").forEach((m) => m.classList.remove("open"));
+  });
+
+  /* ---- Boot: wait for shellready (shell reinjects DOM on DOMContentLoaded) ---- */
+  function boot() {
+    wireSidebar();
+    wireChips();
+    wireTabs();
+    wireModals();
+    wirePlanCards();
+    wireSearch();
+  }
+
+  if (document.querySelector(".main-col")) boot();
+  else document.addEventListener("shellready", boot);
 })();

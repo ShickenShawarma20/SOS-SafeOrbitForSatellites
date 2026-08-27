@@ -395,6 +395,7 @@
         if (c.material) c.material.dispose();
       });
       if (g.halo) { if (g.halo.material.map) g.halo.material.map.dispose(); g.halo.material.dispose(); }
+      if (g.reticle) { if (g.reticle.material.map) g.reticle.material.map.dispose(); g.reticle.material.dispose(); }
       if (g.label) { if (g.label.material.map) g.label.material.map.dispose(); g.label.material.dispose(); }
       // suppress unused-var warning for disp
       void disp;
@@ -406,10 +407,28 @@
       const g = c.getContext("2d");
       const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
       grd.addColorStop(0, color);
-      grd.addColorStop(0.4, color);
+      grd.addColorStop(0.25, color);
+      grd.addColorStop(0.6, color.replace("rgb(", "rgba(").replace(")", ",0.3)"));
       grd.addColorStop(1, "rgba(0,0,0,0)");
       g.fillStyle = grd;
       g.fillRect(0, 0, 64, 64);
+      const tex = new THREE.CanvasTexture(c);
+      tex.minFilter = THREE.LinearFilter;
+      return tex;
+    }
+
+    /* Targeting reticle texture — a hollow bracket ring for the focused sat. */
+    _reticleTexture() {
+      const c = document.createElement("canvas");
+      c.width = c.height = 64;
+      const g = c.getContext("2d");
+      g.strokeStyle = "#67E8F9";
+      g.lineWidth = 2;
+      // four corner brackets
+      const s = 10, l = 18, o = 14;
+      [[o,o,1,1],[64-o,o,-1,1],[o,64-o,1,-1],[64-o,64-o,-1,-1]].forEach(([x,y,dx,dy]) => {
+        g.beginPath(); g.moveTo(x, y+dy*l); g.lineTo(x, y); g.lineTo(x+dx*l, y); g.stroke();
+      });
       const tex = new THREE.CanvasTexture(c);
       tex.minFilter = THREE.LinearFilter;
       return tex;
@@ -495,6 +514,8 @@
     }
 
     bindControls() {
+      if (this._controlsBound) return; // prevent duplicate listeners
+      this._controlsBound = true;
       const zoomIn = document.querySelector("[data-zoom='in']");
       const zoomOut = document.querySelector("[data-zoom='out']");
       const reset = document.querySelector("[data-cam='reset']");
@@ -546,11 +567,11 @@
           }
         }
       });
-      // Listen for selection changes to highlight + focus.
+      // Listen for selection changes to highlight + focus (in-place, no rebuild).
       this.tracking.on("select", (noradId) => {
         this._liveFocus = noradId;
         this._camFollow = !!noradId;
-        this._buildLiveSatellites(); // refresh highlight colors
+        this._updateLiveSelection();
       });
       // Listen for time-control changes to rebuild orbit trails.
       this.tracking.on("time", () => this._rebuildLiveOrbits());
@@ -571,15 +592,23 @@
           const color = this._liveColor(sat, selected);
           const ring = this._buildLiveOrbitLine(sat, selected, color);
           const marker = this._makeSatelliteMesh({ color: color, selected: selected });
-          const halo = new THREE.Sprite(new THREE.SpriteMaterial({
-            map: this._glowTexture(color), transparent: true, opacity: 0,
-            depthTest: false, blending: THREE.AdditiveBlending,
-          }));
-          halo.scale.set(1.2, 1.2, 1);
-          const group = new THREE.Group();
-          group.add(ring);
-          group.add(marker);
-          group.add(halo);
+        const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: this._glowTexture(color), transparent: true, opacity: 0,
+          depthTest: false, blending: THREE.AdditiveBlending,
+        }));
+        halo.scale.set(1.2, 1.2, 1);
+        // Selection reticle: a targeting bracket shown only when focused
+        const reticle = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: this._reticleTexture(), transparent: true, opacity: 0,
+          depthTest: false, blending: THREE.AdditiveBlending,
+        }));
+        reticle.scale.set(2.5, 2.5, 1);
+        reticle.visible = false;
+        const group = new THREE.Group();
+        group.add(ring);
+        group.add(marker);
+        group.add(halo);
+        group.add(reticle);
           const label = this.makeLabel(
             [sat.name, "NORAD " + sat.noradId, sat.category],
             selected ? "#67E8F9" : "rgba(186,222,250,.9)"
@@ -587,12 +616,47 @@
           label.scale.set(selected ? 1.5 : 1.1, selected ? 0.6 : 0.45, 1);
           this.scene.add(group);
           this.scene.add(label);
-          this._liveGroups.push({ sat, group, marker, ring, label, halo, color, selected });
+          this._liveGroups.push({ sat, group, marker, ring, label, halo, reticle, color, selected });
         } catch (e) {
           console.warn("[orbital] Failed to build live satellite " + sat.noradId, e);
         }
       });
       this._liveOrbitsBuilt = false;
+    }
+
+    /* Update highlight colors/materials in-place on selection change — avoids
+       the flash caused by disposing and recreating all meshes. */
+    _updateLiveSelection() {
+      if (!this._liveGroups || !this._liveGroups.length) return;
+      const selNorad = this.tracking.getSelected() ? this.tracking.getSelected().noradId : null;
+      this._liveGroups.forEach((g) => {
+        const selected = g.sat.noradId === selNorad;
+        g.selected = selected;
+        const color = this._liveColor(g.sat, selected);
+        g.color = color;
+        // update marker emissive
+        g.marker.traverse((c) => {
+          if (c.material && c.material.emissive) {
+            c.material.emissive = new THREE.Color(color);
+            c.material.emissiveIntensity = selected ? 0.7 : 0.35;
+          }
+        });
+        // update orbit line opacity
+        if (g.ring && g.ring.material) g.ring.material.opacity = selected ? 0.85 : 0.35;
+        // update label color
+        if (g.label && g.label.material && g.label.material.map) {
+          // labels are canvas textures — rebuild with new color only if selection changed
+          const newLabel = this.makeLabel(
+            [g.sat.name, "NORAD " + g.sat.noradId, g.sat.category],
+            selected ? "#67E8F9" : "rgba(186,222,250,.9)"
+          );
+          newLabel.scale.copy(g.label.scale);
+          if (g.label.material.map) g.label.material.map.dispose();
+          g.label.material.map = newLabel.material.map;
+          g.label.material.needsUpdate = true;
+          newLabel.material.map = null; // prevent double-dispose
+        }
+      });
     }
 
     /* Auto-fit the camera distance to encompass all live satellites, including
@@ -614,8 +678,10 @@
 
     _liveColor(sat, selected) {
       if (selected) return "#22D3EE";        // selected: bright cyan
-      if (/GEO|GSO/i.test(sat.category)) return "#60A5FA";  // GEO: blue
-      return "#38BDF8";                       // normal: sky/cyan
+      if (/GEO|GSO/i.test(sat.category)) return "#A78BFA";  // GEO/GSO: purple
+      if (/SSO/i.test(sat.category)) return "#2DD4BF";      // sun-sync: teal
+      if (/Equatorial/i.test(sat.category)) return "#60A5FA"; // equatorial: blue
+      return "#38BDF8";                       // LEO: sky/cyan
     }
 
     _buildLiveOrbitLine(sat, selected, color) {
@@ -679,8 +745,18 @@
         g.halo.position.copy(g.marker.position);
         const focused = this._liveFocus && (sat.noradId === this._liveFocus);
         if (g.halo) {
-          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : (g.selected ? 0.25 + pulse * 0.15 : 0);
+          // Always-on subtle halo for discoverability; brighter when selected/focused
+          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : (g.selected ? 0.25 + pulse * 0.15 : 0.1);
           g.halo.scale.setScalar(focused ? 1.6 + pulse * 0.4 : (g.selected ? 1.2 : 1.0));
+        }
+        // Selection reticle: a ring sprite around the focused satellite
+        if (g.reticle) {
+          g.reticle.visible = !!focused;
+          if (focused) {
+            g.reticle.position.copy(g.marker.position);
+            g.reticle.scale.setScalar(2.5 + pulse * 0.5);
+            g.reticle.material.opacity = 0.6 + pulse * 0.3;
+          }
         }
         g.marker.scale.setScalar(focused ? 1.4 : (g.selected ? 1.0 : 0.7));
         if (focused) focusPos = v.clone();
@@ -711,8 +787,10 @@
 
     render3d(dt) {
       const v = new THREE.Vector3();
-      // gentle Earth rotation
-      this.globeGroup.rotation.y += dt * 0.00004;
+      // gentle Earth rotation — only in legacy Kepler mode (in live mode
+      // satellites use real ECI inertial positions, so spinning only the
+      // globe would create a frame mismatch).
+      if (!this.liveMode) this.globeGroup.rotation.y += dt * 0.00004;
 
       if (this.graticule) this.graticule.visible = this.layers.graticule !== false;
       const showLabels = this.layers.labels !== false;
@@ -1120,10 +1198,13 @@
       // attach the floating HUD to the dashboard orbital viewer
       const wrap = orb.closest(".orbital-viewer");
       if (wrap) window.sosOrbitalHUD = new OrbitalHUD(viewer, wrap);
-      // Notify page scripts that the viewer is ready.  shell.js dispatches
-      // `shellready` synchronously during its own DOMContentLoaded handler
-      // (which fires before this one), so listeners that need the viewer
-      // must wait for this event instead.
+      // shell.js reinjects #shell.innerHTML on DOMContentLoaded (fires before
+      // this handler), so the zoom/play buttons the viewer bound in its
+      // constructor were wiped.  Rebind controls now that the fresh DOM is in
+      // place, and also after shellready for safety.
+      viewer.bindControls();
+      document.addEventListener("shellready", () => viewer.bindControls(), { once: true });
+      // Notify page scripts that the viewer is ready.
       document.dispatchEvent(new CustomEvent("viewerready", { detail: viewer }));
     }
     initPlanCompare(document.getElementById("planCanvas"));

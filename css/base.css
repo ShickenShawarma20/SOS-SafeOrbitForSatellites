@@ -32,6 +32,36 @@
 
   --shadow: 0 10px 32px rgba(2, 6, 14, 0.55);
   --glow-accent: 0 0 24px rgba(56, 189, 248, 0.18);
+
+  /* Shadow scale */
+  --shadow-sm: 0 4px 12px rgba(2, 6, 14, 0.4);
+  --shadow-md: 0 10px 32px rgba(2, 6, 14, 0.55);
+  --shadow-lg: 0 16px 48px rgba(2, 6, 14, 0.65);
+  --shadow-xl: 0 24px 64px rgba(2, 6, 14, 0.75);
+
+  /* Status glows */
+  --glow-nominal: 0 0 12px rgba(34, 197, 94, 0.5);
+  --glow-warn: 0 0 12px rgba(245, 158, 11, 0.5);
+  --glow-high: 0 0 12px rgba(249, 115, 22, 0.5);
+  --glow-crit: 0 0 12px rgba(239, 68, 68, 0.6);
+
+  /* Accent RGB triplet for rgba() usage */
+  --accent-rgb: 56 189 248;
+
+  /* Duration tokens */
+  --dur-fast: 0.12s;
+  --dur-base: 0.18s;
+  --dur-slow: 0.3s;
+  --ease-out: cubic-bezier(0.16, 0.84, 0.44, 1);
+
+  /* Z-index scale */
+  --z-base: 1;
+  --z-overlay: 5;
+  --z-hud: 8;
+  --z-sticky: 30;
+  --z-sidebar: 40;
+  --z-modal: 90;
+  --z-toast: 99;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -344,3 +374,12 @@ button { font-family: inherit; cursor: pointer; }
 }
 
 .menu-btn { display: none; }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

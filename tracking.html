@@ -11,12 +11,15 @@
 <link rel="stylesheet" href="css/screens.css">
 </head>
 <body data-page="track">
+<a href="#orbitalCanvas" class="skip-link" style="position:absolute;left:-9999px;top:0;z-index:9999;background:var(--panel-2);color:var(--accent);padding:8px 16px;border-radius:0 0 8px 0;text-decoration:none;">Skip to 3D view</a>
 <div class="shell" id="shell">
 
   <main class="page">
 
+    <h1 style="position:absolute;left:-9999px;">SOS Live Satellite Tracking</h1>
+
     <!-- ============ TRACKING BANNER ============ -->
-    <section class="track-banner">
+    <section class="track-banner" aria-label="Tracking status">
       <div class="tb-brand">
         <div class="brand-mark">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="9" ry="4.4" transform="rotate(-28 12 12)"/><circle cx="19" cy="7.6" r="1.5" fill="currentColor" stroke="none"/></svg>
@@ -26,9 +29,9 @@
           <div class="brand-sub">SafeOrbitForSattelites</div>
         </div>
       </div>
-      <span class="tb-live"><span class="pip"></span>LIVE</span>
-      <span class="tb-count"><b id="tbSatCount">—</b> ISRO SATELLITES</span>
-      <div class="tb-status">
+      <span class="tb-live" aria-live="polite"><span class="pip" aria-hidden="true"></span>LIVE</span>
+      <span class="tb-count"><b id="tbSatCount" aria-label="Satellites tracked">—</b> ISRO SATELLITES</span>
+      <div class="tb-status" aria-live="polite">
         <div>Position propagation: <b id="tbProp">ACTIVE</b></div>
         <div>Orbital data: <b id="tbData">—</b></div>
         <div>Last refresh: <b id="tbRefresh">—</b></div>
@@ -47,7 +50,7 @@
             <input type="search" id="satSearch" placeholder="Search satellites…" aria-label="Search satellites">
           </div>
         </div>
-        <div class="sat-list-body" id="satListBody">
+        <div class="sat-list-body" id="satListBody" role="status" aria-live="polite" aria-label="Satellite list">
           <div class="track-state loading">
             <div class="ts-msg">Loading orbital data…</div>
           </div>
@@ -55,7 +58,7 @@
       </aside>
 
       <!-- CENTER: 3D Earth -->
-      <div class="orbital-viewer" style="min-height:560px;">
+      <div class="orbital-viewer">
         <canvas id="orbitalCanvas" role="img" aria-label="Live 3D orbital view of Earth with ISRO satellite tracks"></canvas>
 
         <div class="viewer-head">
@@ -97,7 +100,7 @@
 
       <!-- RIGHT: Telemetry panel -->
       <aside class="telemetry-panel">
-        <div class="telem-card" id="telemCard">
+        <div class="telem-card" id="telemCard" aria-live="polite" aria-label="Selected satellite telemetry">
           <div class="telem-head">
             <span class="telem-name" id="telemName">—</span>
             <span class="telem-tag live" id="telemTag"><span class="live-pip"></span>LIVE</span>

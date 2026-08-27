@@ -4,7 +4,24 @@
 
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
-  const API = () => window.SOSApi;
+
+  /* Bridge window.SOSApi → window.SOS.
+   * actions.js was originally written against a richer SOSApi client with
+   * .get/.post/.watchlist/.simulate/.jobStatus/.submitPlan methods, but the
+   * actual API client (js/api.js) only exposes SOS.api(path, opts).  This
+   * adapter wraps SOS.api so the rest of actions.js works unchanged. */
+  const API = () => {
+    if (!window.SOS) return null;
+    return {
+      get: (p) => SOS.api(p),
+      post: (p, body) => SOS.api(p, { method: "POST", body }),
+      put: (p, body) => SOS.api(p, { method: "PUT", body }),
+      watchlist: async (conjId) => SOS.api("/conjunctions/" + encodeURIComponent(conjId) + "/watchlist", { method: "POST" }),
+      simulate: async (planId) => SOS.api("/maneuvers/simulate", { method: "POST", body: { planId } }),
+      jobStatus: (jobId) => SOS.api("/jobs/" + encodeURIComponent(jobId)),
+      submitPlan: (planId) => SOS.api("/maneuvers/plans/" + encodeURIComponent(planId) + "/submit", { method: "POST" }),
+    };
+  };
   const UI = () => window.SOSUI;
 
   /* ================= GLOBAL SEARCH (topbar) ================= */
@@ -83,7 +100,9 @@
     async function refreshBadge() {
       if (!API()) return;
       try {
-        const { unreadCount: n } = await API().get("/notifications?unread=true");
+        const data = await API().get("/notifications?unread=true");
+        // API returns either an array or {unreadCount}; handle both.
+        const n = Array.isArray(data) ? data.length : (data.unreadCount || 0);
         unreadCount = n;
         let badge = bell.querySelector(".bell-badge");
         if (n > 0) {
@@ -106,7 +125,10 @@
       const box = document.createElement("div");
       let items = [];
       if (API()) {
-        try { items = (await API().get("/notifications")).items; } catch (_) {}
+        try {
+          const data = await API().get("/notifications");
+          items = Array.isArray(data) ? data : (data.items || []);
+        } catch (_) {}
       }
       const dotCls = { critical: "#EF4444", high: "#F97316", medium: "#F59E0B", info: "#38BDF8", nominal: "#22C55E" };
       box.innerHTML = `
@@ -240,13 +262,14 @@
           if (!API()) return;
           try {
             const satId = ($("h1").textContent.match(/SAT-\d+/) || ["SAT-51656"])[0];
-            const { items } = await API().get(`/satellites/${satId}/files`);
+            const data = await API().get(`/satellites/${satId}/files`);
+            const items = Array.isArray(data) ? data : (data.items || []);
             const box = document.createElement("div");
             box.innerHTML =
               `<b style="display:block;padding:4px 8px 8px;font-size:11px;color:#94A3B8;letter-spacing:.06em;">FILES · ${items.length}</b>` +
               items.map((f) =>
-                `<a href="${f.url}" download style="display:flex;justify-content:space-between;gap:14px;padding:7px 8px;border-radius:7px;color:#E2E8F0;text-decoration:none;">
-                   <span>${f.name}</span><span style="color:#64748B;">${f.sizeKb} KB</span></a>`).join("");
+                `<a href="${f.url || '#'}" download style="display:flex;justify-content:space-between;gap:14px;padding:7px 8px;border-radius:7px;color:#E2E8F0;text-decoration:none;">
+                   <span>${f.name}</span><span style="color:#64748B;">${Math.round((f.size||0)/1024)} KB</span></a>`).join("");
             UI().openDropdown(tab, box, 380);
           } catch (_) {}
         });
@@ -392,12 +415,20 @@
 
     // Layer chips toggle actual layers
     $$(".layer-chips .chip", viewer).forEach((chip) => {
-      const label = chip.textContent.trim();
-      const key = /DEBRIS/i.test(label) ? "debris" : /ORBIT/i.test(label) ? "orbits" : "satellites";
+      const label = chip.textContent.trim().toUpperCase();
+      const key = /DEBRIS/i.test(label) ? "debris"
+        : /ORBIT/i.test(label) ? "orbits"
+        : /LABEL/i.test(label) ? "labels"
+        : /GRATIC/i.test(label) ? "graticule"
+        : /GROUND/i.test(label) ? "groundStations"
+        : "satellites";
       chip.addEventListener("click", () => {
         const v = window.sosOrbitalViewer;
         if (!v || !v.layers) return;
-        v.layers[key] = chip.classList.contains("on");
+        const on = !chip.classList.contains("on");
+        chip.classList.toggle("on", on);
+        chip.setAttribute("aria-pressed", on ? "true" : "false");
+        v.layers[key] = on;
       });
     });
 
@@ -410,6 +441,12 @@
         speedBtn.addEventListener("click", () => {
           const v = window.sosOrbitalViewer;
           if (!v) return;
+          // In live-tracking mode the speed multiplier is not meaningful
+          // (positions come from SGP4, not the internal Kepler sim).
+          if (v.liveMode) {
+            UI().toast("Speed control is inactive in live tracking mode", "info", 1400);
+            return;
+          }
           v.speedMult = v.speedMult === 1 ? 2 : 1;
           speedBtn.textContent = `${v.speedMult}\u00d7`;
           speedBtn.classList.toggle("on", v.speedMult !== 1);
@@ -430,9 +467,11 @@
     }
   }
 
-  /* ================= BOOT ================= */
-
-  document.addEventListener("DOMContentLoaded", () => {
+  /* ================= BOOT =================
+   * All init functions must run AFTER shellready because shell.js reinjects
+   * #shell.innerHTML on DOMContentLoaded, wiping buttons/canvas that existed
+   * at parse time.  Without this, event listeners bind to detached nodes. */
+  function boot() {
     initSearch();
     initNotifications();
     initTabs();
@@ -441,5 +480,8 @@
     initManeuverPage();
     initAnalyticsPage();
     initViewerControls();
-  });
+  }
+
+  if (document.querySelector(".main-col")) boot();
+  else document.addEventListener("shellready", boot);
 })();

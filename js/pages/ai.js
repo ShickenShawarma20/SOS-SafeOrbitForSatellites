@@ -3,7 +3,7 @@
   "use strict";
 
   function onReady(fn) {
-    if (window.SOS) fn();
+    if (document.querySelector(".main-col")) fn();
     else document.addEventListener("shellready", fn);
   }
 
@@ -154,7 +154,7 @@
       if (sim) sim.addEventListener("click", function () { openSimModal(rec); });
       var cmp = document.querySelector("[data-aicompare]");
       if (cmp) cmp.addEventListener("click", function () {
-        UI.toast("Compare view: " + rec.candidates.length + " candidate plans ranked by overall orbital safety.", "info");
+        if (UI) UI.toast("Compare view: " + rec.candidates.length + " candidate plans ranked by overall orbital safety.", "info");
         var card = document.getElementById("aiRecCard");
         if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -180,13 +180,15 @@
           '<span class="sc-mark">' + (c[1] ? "✓" : "✕") + '</span><span class="sc-txt">' + c[0] + '</span></li>';
       }).join("") + '<li class="sc-final"><span class="sc-final-tag">VALIDATED FOR SIMULATION</span></li>';
       if (badge) { badge.textContent = sv.status === "validated" ? "VALIDATED" : sv.status === "failed" ? "FAILED" : "PENDING";
-        badge.className = "badge " + (sv.status === "validated" ? "badge-nominal" : sv.status === "failed" ? "badge-crit" : "badge-high") + '" style="margin-left:auto;'; }
+        badge.className = "badge " + (sv.status === "validated" ? "badge-nominal" : sv.status === "failed" ? "badge-crit" : "badge-high");
+        badge.style.marginLeft = "auto"; }
     }
 
     /* ---------- Reasoning drawer ---------- */
     var drawer = document.getElementById("aiReasonDrawer");
     var backdrop = document.getElementById("aiReasonBackdrop");
-    document.getElementById("aiReasonClose").addEventListener("click", closeDrawer);
+    var reasonClose = document.getElementById("aiReasonClose");
+    if (reasonClose) reasonClose.addEventListener("click", closeDrawer);
     if (backdrop) backdrop.addEventListener("click", closeDrawer);
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
 
@@ -195,7 +197,7 @@
         currentAssessment = a;
         renderReasoning(a, null);
         openDrawer();
-      }).catch(function () { UI.toast("Unable to load reasoning.", "error"); });
+      }).catch(function () { if (UI) UI.toast("Unable to load reasoning.", "error"); });
     }
 
     function openReasoningByConjunction(conjunctionId) {
@@ -205,7 +207,7 @@
         var assess = a || (window.__aiAssessmentsCache || []).find(function (x) { return x.conjunctionId === conjunctionId; }) || (rec && { satelliteId: rec.satelliteId, objectId: rec.objectId });
         renderReasoning(assess, rec);
         openDrawer();
-      }).catch(function () { UI.toast("Unable to load reasoning.", "error"); });
+      }).catch(function () { if (UI) UI.toast("Unable to load reasoning.", "error"); });
     }
 
     function renderReasoning(a, rec) {
@@ -251,14 +253,16 @@
         '<p class="rr-foot">This is a decision-support assessment. The operator remains responsible for approving any operational action.</p>';
     }
 
-    function openDrawer() { drawer.classList.add("open"); if (backdrop) backdrop.classList.add("open"); }
-    function closeDrawer() { drawer.classList.remove("open"); if (backdrop) backdrop.classList.remove("open"); }
+    function openDrawer() { if (drawer) drawer.classList.add("open"); if (backdrop) backdrop.classList.add("open"); }
+    function closeDrawer() { if (drawer) drawer.classList.remove("open"); if (backdrop) backdrop.classList.remove("open"); }
 
     /* ---------- Simulation modal ---------- */
     var simModal = document.getElementById("aiSimModal");
-    document.querySelectorAll("#aiSimModal [data-modal-close]").forEach(function (b) {
-      b.addEventListener("click", function () { simModal.classList.remove("open"); });
-    });
+    if (simModal) {
+      simModal.querySelectorAll("[data-modal-close]").forEach(function (b) {
+        b.addEventListener("click", function () { simModal.classList.remove("open"); });
+      });
+    }
     var simRunBtn = document.getElementById("aiSimRun");
 
     function openSimModal(rec) {
@@ -275,14 +279,14 @@
       simModal.classList.add("open");
     }
 
-    simRunBtn.addEventListener("click", function () {
+    if (simRunBtn) simRunBtn.addEventListener("click", function () {
       if (!pendingSim) return;
       var rec = pendingSim;
       var plan = rec.candidates.find(function (c) { return c.recommended; }) || rec.candidates[0];
-      UI.toast("Simulation started for " + plan.label + "…", "info");
+      if (UI) UI.toast("Simulation started for " + plan.label + "…", "info");
       S.api("/ai/simulate", { method: "POST", body: { recommendationId: rec.id, planId: plan.planId } })
         .then(function (r) { pollSim(r.jobId, plan); })
-        .catch(function () { UI.toast("Simulation failed to start.", "error"); });
+        .catch(function () { if (UI) UI.toast("Simulation failed to start.", "error"); });
     });
 
     function pollSim(jobId, plan) {
@@ -290,9 +294,9 @@
       function tick() {
         S.api("/jobs/" + jobId).then(function (job) {
           n++;
-          UI.toast(plan.label + " simulation: " + (job.progress || 0) + "% — " + (job.stage || ""), "info", 1400);
+          if (UI) UI.toast(plan.label + " simulation: " + (job.progress || 0) + "% — " + (job.stage || ""), "info", 1400);
           if (job.status === "completed") {
-            UI.toast(plan.label + " validated — post-burn trajectory clear of catalogued objects.", "success", 4200);
+            if (UI) UI.toast(plan.label + " validated — post-burn trajectory clear of catalogued objects.", "success", 4200);
             return;
           }
           if (n < 30) setTimeout(tick, 900);
@@ -332,7 +336,7 @@
         '</div>';
       }).join("");
       body.querySelectorAll("[data-dqsrc]").forEach(function (b) {
-        b.addEventListener("click", function () { UI.toast("Tracking sources for " + b.getAttribute("data-dqsrc") + ": 2 sensors reporting (reconcile required).", "warn"); });
+        b.addEventListener("click", function () { if (UI) UI.toast("Tracking sources for " + b.getAttribute("data-dqsrc") + ": 2 sensors reporting (reconcile required).", "warn"); });
       });
     }).catch(function () {});
 
@@ -350,9 +354,9 @@
     /* ---------- Run new analysis button ---------- */
     var runBtn = document.getElementById("aiRunAnalysis");
     if (runBtn) runBtn.addEventListener("click", function () {
-      UI.toast("AI analysis re-run queued against latest tracking data…", "info");
+      if (UI) UI.toast("AI analysis re-run queued against latest tracking data…", "info");
       setTimeout(function () {
-        UI.toast("Analysis complete — 1 recommendation updated.", "success");
+        if (UI) UI.toast("Analysis complete — 1 recommendation updated.", "success");
         loadRiskMap();
       }, 1400);
     });

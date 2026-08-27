@@ -3,7 +3,7 @@
   "use strict";
 
   function onReady(fn) {
-    if (window.SOS) fn();
+    if (document.querySelector(".main-col")) fn();
     else document.addEventListener("shellready", fn);
   }
 
@@ -56,6 +56,7 @@
     }
 
     loadSummary(currentRange);
+    loadCharts(currentRange);
 
     /* ---- Time range chips ---- */
     document.querySelectorAll(".page-head-actions .btn-sm").forEach(function (btn) {
@@ -67,6 +68,8 @@
         else if (range === "14d") currentRange = "14d";
         else currentRange = "30d";
         loadSummary(currentRange);
+        loadCharts(currentRange);
+        if (window.SOSUI) SOSUI.toast("Analytics updated for last " + currentRange, "info", 1600);
       });
     });
 
@@ -75,40 +78,36 @@
     if (exportBtn) {
       exportBtn.onclick = function () {
         S.api("/analytics/report/export?range=" + currentRange + "&format=pdf").then(function (data) {
-          alert("Report generated at " + data.generatedAt + " (format: " + data.format + ")");
-        }).catch(function () {});
+          if (window.SOSUI) SOSUI.toast("Report generated (" + data.format + ")", "success");
+        }).catch(function () { if (window.SOSUI) SOSUI.toast("Report export failed", "error"); });
       };
     }
 
-    /* ---- Chart Data: Conjunctions Over Time ---- */
-    S.api("/analytics/conjunctions-over-time?range=" + currentRange + "&bucket=week").then(function (data) {
-      if (data && data.series) {
-        /* Store for charts.js to pick up */
-        window.__chartTimeData = (data.series || []).map(function (v, i) {
-          return { label: (data.labels && data.labels[i]) != null ? String(data.labels[i]) : String(i), value: v };
-        });
-      }
-    }).catch(function () {});
+    /* ---- Chart Data loader (re-run on range change) ---- */
+    function loadCharts(range) {
+      /* Conjunctions Over Time */
+      S.api("/analytics/conjunctions-over-time?range=" + range + "&bucket=week").then(function (data) {
+        if (data && data.series) {
+          window.__chartTimeData = (data.series || []).map(function (v, i) {
+            return { label: (data.labels && data.labels[i]) != null ? String(data.labels[i]) : String(i), value: v };
+          });
+        }
+      }).catch(function () {});
 
-    /* ---- Chart Data: By Severity ---- */
-    S.api("/analytics/by-severity?groupBy=regime").then(function (data) {
-      if (data) {
-        window.__chartSeverityData = data;
-      }
-    }).catch(function () {});
+      /* By Severity */
+      S.api("/analytics/by-severity?groupBy=regime").then(function (data) {
+        if (data) window.__chartSeverityData = data;
+      }).catch(function () {});
 
-    /* ---- Chart Data: Top Objects ---- */
-    S.api("/analytics/top-objects?range=" + currentRange + "&limit=5").then(function (data) {
-      if (Array.isArray(data)) {
-        window.__chartTopObjectsData = data;
-      }
-    }).catch(function () {});
+      /* Top Objects */
+      S.api("/analytics/top-objects?range=" + range + "&limit=5").then(function (data) {
+        if (Array.isArray(data)) window.__chartTopObjectsData = data;
+      }).catch(function () {});
 
-    /* ---- Chart Data: Altitude Bands ---- */
-    S.api("/analytics/by-altitude-band?range=" + currentRange).then(function (data) {
-      if (Array.isArray(data)) {
-        window.__chartAltitudeData = data;
-      }
-    }).catch(function () {});
+      /* Altitude Bands */
+      S.api("/analytics/by-altitude-band?range=" + range).then(function (data) {
+        if (Array.isArray(data)) window.__chartAltitudeData = data;
+      }).catch(function () {});
+    }
   });
 })();

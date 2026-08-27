@@ -3,7 +3,7 @@
   "use strict";
 
   function onReady(fn) {
-    if (window.SOS) fn();
+    if (document.querySelector(".main-col")) fn();
     else document.addEventListener("shellready", fn);
   }
 
@@ -156,8 +156,13 @@
 
     function pollJob(jobId) {
       S.api("/jobs/" + jobId).then(function (job) {
-        if (job.status === "running") {
+        if (job.status === "running" || job.status === "queued") {
           setTimeout(function () { pollJob(jobId); }, 2000);
+        } else if (job.status === "completed" || job.status === "complete") {
+          if (window.SOSUI) SOSUI.toast("Simulation complete — trajectory is clear for 72 h.", "success");
+          if (job.result && job.result.summary && window.SOSUI) SOSUI.toast(job.result.summary, "info", 5000);
+        } else if (job.status === "failed") {
+          if (window.SOSUI) SOSUI.toast("Simulation failed: " + (job.error || "unknown error"), "error");
         }
       }).catch(function () {});
     }

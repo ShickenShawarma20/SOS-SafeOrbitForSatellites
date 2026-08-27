@@ -3,7 +3,7 @@
   "use strict";
 
   function onReady(fn) {
-    if (window.SOS) fn();
+    if (document.querySelector(".main-col")) fn();
     else document.addEventListener("shellready", fn);
   }
 
