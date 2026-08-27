@@ -25,11 +25,17 @@ const settings_1 = __importDefault(require("./routes/settings"));
 const auth_1 = __importDefault(require("./routes/auth"));
 const audit_1 = __importDefault(require("./routes/audit"));
 const ai_1 = __importDefault(require("./routes/ai"));
+const tracking_1 = __importDefault(require("./routes/tracking"));
+const tle_fetcher_js_1 = require("./services/tle-fetcher.js");
 const app = (0, express_1.default)();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
 const staticRoot = path_1.default.resolve(__dirname, "../..");
+/* Clean URLs — /satellite -> /satellite.html (mirrors server/index.js) */
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai"].forEach((name) => {
+    app.get("/" + name, (_req, res) => res.sendFile(path_1.default.join(staticRoot, name + ".html")));
+});
 app.use(express_1.default.static(staticRoot));
 app.use("/api/v1/satellites", satellites_1.default);
 app.use("/api/v1/conjunctions", conjunctions_1.default);
@@ -47,6 +53,7 @@ app.use("/api/v1/jobs", jobs_1.default);
 app.use("/api/v1/settings", settings_1.default);
 app.use("/api/v1/audit", audit_1.default);
 app.use("/api/v1/ai", ai_1.default);
+app.use("/api/v1/tracking", tracking_1.default);
 app.use("/auth", auth_1.default);
 app.get("/favicon.ico", (_req, res) => res.status(204).end());
 app.get("/api/v1/health", (_req, res) => {
@@ -64,5 +71,8 @@ server.listen(PORT, () => {
     console.log(`API base: http://localhost:${PORT}/api/v1`);
     console.log(`WebSocket: ws://localhost:${PORT}/ws`);
     console.log(`Static files: ${staticRoot}`);
+    // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
+    (0, tle_fetcher_js_1.startTleRefreshLoop)();
+    console.log(`Tracking API: http://localhost:${PORT}/api/v1/tracking/fleet`);
 });
 //# sourceMappingURL=index.js.map

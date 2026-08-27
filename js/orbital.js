@@ -134,6 +134,9 @@
       this.pitch = 0.45; this._pitchTarget = 0.45;
       this._camTarget = new THREE.Vector3(0, 0, 0);
       this.useThree = typeof THREE !== "undefined" && !!canvas.getContext("webgl");
+      this.liveMode = false;           // SGP4 live-tracking mode (from SOSTracking)
+      this._liveGroups = null;        // per-satellite Three.js groups in live mode
+      this._liveOrbitEpochs = {};      // cached orbit-trail epoch per noradId
       if (this.useThree) this.initThree();
       else console.warn(THREE_CDN_NOTE);
       this.bindControls();
@@ -510,6 +513,142 @@
       });
     }
 
+    /* ===== LIVE SGP4 TRACKING MODE =====
+     * When enabled, the viewer pulls satellite positions from SOSTracking
+     * (propagated via satellite.js) instead of using the internal Kepler
+     * simulation.  Orbit trails are generated from SOSTracking.generateTrajectory.
+     * The existing render3d() runs each frame; this layer updates marker
+     * positions + trail geometry from the live data state. */
+
+    enableLiveTracking(tracking) {
+      this.tracking = tracking || window.SOSTracking;
+      if (!this.tracking || !this.useThree) return;
+      this.liveMode = true;
+      // Stop the internal Kepler sim from advancing time in live mode.
+      this.simSpeed = 0;
+      this._buildLiveSatellites();
+      // Rebuild when the fleet data changes (new TLEs loaded).
+      this.tracking.on("status", () => this._buildLiveSatellites());
+      // Listen for selection changes to highlight + focus.
+      this.tracking.on("select", (noradId) => {
+        this._liveFocus = noradId;
+        this._camFollow = !!noradId;
+        this._buildLiveSatellites(); // refresh highlight colors
+      });
+      // Listen for time-control changes to rebuild orbit trails.
+      this.tracking.on("time", () => this._rebuildLiveOrbits());
+    }
+
+    _buildLiveSatellites() {
+      if (!this.tracking) return;
+      const sats = this.tracking.getSatellites().filter((s) => s.ok);
+      // dispose previous live groups
+      if (this._liveGroups) this._liveGroups.forEach((g) => this._disposeGroup(g));
+      this._liveGroups = [];
+      // also clear the legacy satellite groups so they don't overlap
+      (this._satGroups || []).forEach((g) => { g.group.visible = false; g.label.visible = false; });
+
+      sats.forEach((sat) => {
+        const selected = this.tracking.getSelected() && this.tracking.getSelected().noradId === sat.noradId;
+        const color = this._liveColor(sat, selected);
+        const ring = this._buildLiveOrbitLine(sat, selected, color);
+        const marker = this._makeSatelliteMesh({ color: color, selected: selected });
+        const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: this._glowTexture(color), transparent: true, opacity: 0,
+          depthTest: false, blending: THREE.AdditiveBlending,
+        }));
+        halo.scale.set(1.2, 1.2, 1);
+        const group = new THREE.Group();
+        group.add(ring);
+        group.add(marker);
+        group.add(halo);
+        const label = this.makeLabel(
+          [sat.name, "NORAD " + sat.noradId, sat.category],
+          selected ? "#67E8F9" : "rgba(186,222,250,.9)"
+        );
+        label.scale.set(selected ? 1.5 : 1.1, selected ? 0.6 : 0.45, 1);
+        this.scene.add(group);
+        this.scene.add(label);
+        this._liveGroups.push({ sat, group, marker, ring, label, halo, color, selected });
+      });
+    }
+
+    _liveColor(sat, selected) {
+      if (selected) return "#22D3EE";        // selected: bright cyan
+      if (/GEO|GSO/i.test(sat.category)) return "#60A5FA";  // GEO: blue
+      return "#38BDF8";                       // normal: sky/cyan
+    }
+
+    _buildLiveOrbitLine(sat, selected, color) {
+      const traj = this.tracking.generateTrajectory(sat.noradId, 180, 240);
+      const pts = [];
+      (traj.points || []).forEach((p) => {
+        const v = eciToThree(p.position[0], p.position[1], p.position[2]);
+        if (Number.isFinite(v.x)) pts.push(v);
+      });
+      if (pts.length < 2) {
+        // fallback empty line
+        const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+        return new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0 }));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      geo.computeBoundingSphere();
+      const mat = new THREE.LineBasicMaterial({
+        color: new THREE.Color(color),
+        transparent: true,
+        opacity: selected ? 0.85 : 0.35,
+      });
+      return new THREE.LineLoop(geo, mat);
+    }
+
+    _rebuildLiveOrbits() {
+      if (!this._liveGroups) return;
+      this._liveGroups.forEach((g) => {
+        if (!g.sat.ok) return;
+        const oldRing = g.ring;
+        const newRing = this._buildLiveOrbitLine(g.sat, g.selected, g.color);
+        g.group.remove(oldRing);
+        if (oldRing.geometry) oldRing.geometry.dispose();
+        if (oldRing.material) oldRing.material.dispose();
+        g.group.add(newRing);
+        g.ring = newRing;
+        g.ring.visible = this.layers.orbits !== false;
+      });
+    }
+
+    _updateLivePositions() {
+      if (!this._liveGroups || !this._liveGroups.length) return;
+      const v = new THREE.Vector3();
+      const showLabels = this.layers.labels !== false;
+      const pulse = (Math.sin(this.t / 300) + 1) / 2;
+      let focusPos = null;
+      this._liveGroups.forEach((g) => {
+        const sat = g.sat;
+        const visible = this.layers.satellites !== false;
+        g.group.visible = visible;
+        if (!visible) { g.label.visible = false; return; }
+        g.ring.visible = this.layers.orbits !== false;
+        const state = sat.state;
+        if (state && state.position) {
+          const pos = eciToThree(state.position[0], state.position[1], state.position[2]);
+          if (Number.isFinite(pos.x)) g.marker.position.copy(pos);
+        }
+        g.marker.getWorldPosition(v);
+        g.label.visible = showLabels;
+        g.label.position.copy(v);
+        g.label.position.y += 0.22;
+        g.halo.position.copy(g.marker.position);
+        const focused = this._liveFocus && (sat.noradId === this._liveFocus);
+        if (g.halo) {
+          g.halo.material.opacity = focused ? 0.55 + pulse * 0.35 : (g.selected ? 0.25 + pulse * 0.15 : 0);
+          g.halo.scale.setScalar(focused ? 1.6 + pulse * 0.4 : (g.selected ? 1.2 : 1.0));
+        }
+        g.marker.scale.setScalar(focused ? 1.4 : (g.selected ? 1.0 : 0.7));
+        if (focused) focusPos = v.clone();
+      });
+      return focusPos;
+    }
+
     loop(now) {
       if (!this.w && !this.useThree) this.resize();
       const n = now || performance.now();
@@ -520,6 +659,8 @@
         this.simTimeSec += (dt / 1000) * this.simSpeed * this.speedMult * BASE_TIME_ACCEL;
         this.t += dt * this.speedMult;
       }
+      // In live mode, keep the internal clock ticking for label animations.
+      if (this.liveMode) this.t += dt * (this.playing ? 1 : 0);
       try {
         if (this.useThree) this.render3d(dt);
         else this.draw();
@@ -539,6 +680,32 @@
       const pulse = (Math.sin(this.t / 300) + 1) / 2;
 
       let focusPos = null;
+
+      // ---- LIVE SGP4 TRACKING MODE ----
+      // When enabled, update live satellite markers from SOSTracking data and
+      // skip the legacy Kepler propagation loop below.
+      if (this.liveMode && this._liveGroups && this._liveGroups.length) {
+        focusPos = this._updateLivePositions();
+        // hide legacy conjunction marker in live mode (no conjunction data yet)
+        if (this.conjCore) this.conjCore.visible = false;
+        if (this.conjRing) this.conjRing.visible = false;
+        if (this.conjLabel) this.conjLabel.visible = false;
+        // camera follow
+        this.yaw += (this._yawTarget - this.yaw) * 0.08;
+        this.pitch += (this._pitchTarget - this.pitch) * 0.08;
+        this.zoom += (this._zoomTarget - this.zoom) * 0.08;
+        const tgt = (this._camFollow && focusPos) ? focusPos : new THREE.Vector3(0, 0, 0);
+        this._camTarget.lerp(tgt, 0.05);
+        const dist = Math.max(7.5, Math.min(50, this.cameraDist / this.zoom));
+        this.camera.position.set(
+          this._camTarget.x + dist * Math.cos(this.pitch) * Math.sin(this.yaw),
+          this._camTarget.y + dist * Math.sin(this.pitch),
+          this._camTarget.z + dist * Math.cos(this.pitch) * Math.cos(this.yaw)
+        );
+        this.camera.lookAt(this._camTarget);
+        this.renderer.render(this.scene, this.camera);
+        return;
+      }
 
       (this._satGroups || []).forEach((g) => {
         const sat = g.sat;

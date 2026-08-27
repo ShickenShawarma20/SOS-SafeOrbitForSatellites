@@ -21,6 +21,8 @@ import settingsRouter from "./routes/settings";
 import authRouter from "./routes/auth";
 import auditRouter from "./routes/audit";
 import aiRouter from "./routes/ai";
+import trackingRouter from "./routes/tracking";
+import { startTleRefreshLoop } from "./services/tle-fetcher.js";
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -55,6 +57,7 @@ app.use("/api/v1/jobs", jobsRouter);
 app.use("/api/v1/settings", settingsRouter);
 app.use("/api/v1/audit", auditRouter);
 app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/tracking", trackingRouter);
 app.use("/auth", authRouter);
 
 app.get("/favicon.ico", (_req, res) => res.status(204).end());
@@ -78,4 +81,7 @@ server.listen(PORT, () => {
   console.log(`API base: http://localhost:${PORT}/api/v1`);
   console.log(`WebSocket: ws://localhost:${PORT}/ws`);
   console.log(`Static files: ${staticRoot}`);
+  // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
+  startTleRefreshLoop();
+  console.log(`Tracking API: http://localhost:${PORT}/api/v1/tracking/fleet`);
 });
