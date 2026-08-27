@@ -306,9 +306,9 @@
           const planId = planIdFromSelection();
           try {
             const { jobId } = await API().simulate(planId);
-            body.innerHTML =
+              body.innerHTML =
               `<div id="simProgressWrap">
-                 <div style="margin-bottom:8px;">Running high-fidelity propagation for <b>${planId.replace("MP-", "Plan ").slice(-1)}</b>&hellip;</div>
+                 <div style="margin-bottom:8px;">Running high-fidelity propagation for <b>${planId}</b>&hellip;</div>
                  <div style="height:8px;border-radius:4px;background:rgba(148,163,184,.15);overflow:hidden;">
                    <div id="simBar" style="height:100%;width:0%;background:linear-gradient(90deg,#0369A1,#38BDF8);transition:width .5s ease;"></div>
                  </div>
@@ -321,9 +321,18 @@
                 const stage = $("#simStage", body);
                 if (bar) bar.style.width = job.progress + "%";
                 if (stage) stage.textContent = job.stage;
-                if (job.status === "complete") {
+                if (job.status === "completed") {
                   clearInterval(poll);
-                  body.innerHTML = `<div><b style="color:var(--nominal);">\u2713 Simulation complete</b><br><br>${job.result.summary}</div>`;
+                  var resultHtml = '<div><b style="color:var(--nominal);">\u2713 Simulation complete</b><br><br>';
+                  if (job.result && job.result.summary) resultHtml += job.result.summary + '<br><br>';
+                  if (job.result && job.result.newMissDistanceKm != null)
+                    resultHtml += '<b style="color:#7DD3FC;">New miss distance:</b> ' + job.result.newMissDistanceKm.toFixed(2) + ' km &nbsp; ';
+                  if (job.result && job.result.postBurnPc != null)
+                    resultHtml += '<b style="color:#7DD3FC;">Post-burn Pc:</b> ' + job.result.postBurnPc.toExponential(2) + '<br>';
+                  if (job.result && job.result.riskReductionPct != null)
+                    resultHtml += '<b style="color:#4ADE80;">Risk reduction:</b> ' + job.result.riskReductionPct.toFixed(1) + '%';
+                  resultHtml += '</div>';
+                  body.innerHTML = resultHtml;
                   UI().toast("Simulation finished — trajectory is clear for 72 h.", "success");
                   setTimeout(() => {
                     const bd = simModal.closest(".modal-backdrop") || simModal;
@@ -362,8 +371,8 @@
 
   function planIdFromSelection() {
     const selected = $(".plan-card.selected");
-    const letter = (selected && selected.dataset.plan) || "A";
-    return `MP-0417-${letter}`;
+    // The data-plan attribute holds the real plan ID from the API (e.g. MAN-001)
+    return (selected && selected.dataset.plan) || "MAN-001";
   }
 
   /* ================= ANALYTICS PAGE — range chips + export ================= */
@@ -472,7 +481,6 @@
    * #shell.innerHTML on DOMContentLoaded, wiping buttons/canvas that existed
    * at parse time.  Without this, event listeners bind to detached nodes. */
   function boot() {
-    initSearch();
     initNotifications();
     initTabs();
     initConjunctionPage();

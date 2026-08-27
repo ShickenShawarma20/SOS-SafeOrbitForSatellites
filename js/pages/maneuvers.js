@@ -30,7 +30,7 @@
 
     /* ---- Candidate Plans ---- */
     S.api("/maneuvers/plans?conjunctionId=" + encodeURIComponent(conjunctionId)).then(function (plans) {
-      if (!Array.isArray(plans)) return;
+      if (!Array.isArray(plans) || !plans.length) return;
       allPlans = plans;
 
       var container = document.querySelector(".plan-cards");
@@ -41,7 +41,7 @@
         var isSelected = i === 0;
         return '<button class="plan-card' + (isSelected ? ' selected' : '') + '" data-plan="' + p.id + '">' +
           '<div class="plan-head">' +
-          '<span class="plan-name" style="color:' + (isRec ? "#4ADE80" : i === 1 ? "var(--warn)" : "#A78BFA") + ';">PLAN ' + String.fromCharCode(65 + i) + '</span>' +
+          '<span class="plan-name" style="color:' + (isRec ? "#4ADE80" : i === 1 ? "var(--warn)" : "#A78BFA") + ';">' + p.label + '</span>' +
           (isRec ? '<span class="rec-badge">RECOMMENDED</span>' : '') +
           '</div>' +
           '<div class="plan-stats">' +
@@ -53,7 +53,7 @@
       }).join("");
 
       /* Re-bind plan card selection */
-      container.querySelectorAll(".plan-card").forEach(function (card) {
+      container.querySelectorAll(".plan-card").forEach(function (card, idx) {
         card.addEventListener("click", function () {
           container.querySelectorAll(".plan-card").forEach(function (c) { c.classList.remove("selected"); });
           card.classList.add("selected");
@@ -63,12 +63,12 @@
           tag.className = "sel-check";
           tag.textContent = "SELECTED";
           badge.appendChild(tag);
-          selectPlan(card.dataset.plan);
+          selectPlan(card.dataset.plan, idx);
         });
       });
 
       /* Select first plan */
-      if (plans.length > 0) selectPlan(plans[0].id);
+      if (plans.length > 0) selectPlan(plans[0].id, 0);
 
       /* ---- Burn Window ---- */
       if (plans[0] && plans[0].burnWindow) {
@@ -78,14 +78,17 @@
       }
     }).catch(function () {});
 
-    function selectPlan(planId) {
+    function selectPlan(planId, idx) {
       selectedPlan = allPlans.find(function (p) { return p.id === planId; });
       if (!selectedPlan) return;
+
+      /* Highlight the selected plan's orbit in the canvas */
+      if (window.sosPlanCompare) window.sosPlanCompare.selectPlan(idx);
 
       /* Plan Details */
       var detailTitle = document.querySelector(".two-col:last-of-type .card:last-child .card-title");
       var planIdx = allPlans.indexOf(selectedPlan);
-      var planLabel = "PLAN " + String.fromCharCode(65 + planIdx);
+      var planLabel = selectedPlan.label || ("PLAN " + String.fromCharCode(65 + planIdx));
       if (detailTitle) detailTitle.textContent = planLabel + " Details";
 
       var detGrid = document.querySelectorAll(".two-col:last-of-type .detail-grid .info-tile");
@@ -100,7 +103,7 @@
       setText("sumPlan", planLabel);
       setText("sumDv", selectedPlan.deltaVmps + " m/s");
       setText("sumDur", S.fmtDuration(selectedPlan.burnDurationSec));
-      setText("sumFuel", "\u2212" + selectedPlan.fuelImpactPct + "% (" + selectedPlan.fuelImpactKg + " kg)");
+      setText("sumFuel", "\u2212" + Math.abs(selectedPlan.fuelImpactPct) + "% (" + Math.abs(selectedPlan.fuelImpactKg) + " kg)");
       setText("sumMiss", S.fmtDistKm(selectedPlan.newMissDistanceKm));
       setText("sumRisk", selectedPlan.riskReductionPct + "%");
 
@@ -109,63 +112,9 @@
       setText("savePlanLabel", planLabel);
     }
 
-    /* ---- Simulate Button ---- */
-    var simConfirmBtn = document.querySelector("#simulateModal .modal-foot .btn-primary");
-    if (simConfirmBtn) {
-      simConfirmBtn.onclick = function () {
-        if (!selectedPlan) return;
-        S.api("/maneuvers/simulate", { method: "POST", body: { planId: selectedPlan.id } })
-          .then(function (result) {
-            if (result && result.jobId) {
-              /* Poll job status */
-              pollJob(result.jobId);
-            }
-          });
-      };
-    }
-
-    /* ---- Submit for Approval Button ---- */
-    var saveConfirmBtn = document.querySelector("#saveModal .modal-foot .btn-danger");
-    if (saveConfirmBtn) {
-      saveConfirmBtn.onclick = function () {
-        if (!selectedPlan) return;
-        S.api("/maneuvers/plans/" + encodeURIComponent(selectedPlan.id) + "/submit", { method: "POST" })
-          .then(function () {
-            alert("Plan submitted for approval.");
-          });
-      };
-    }
-
-    /* ---- Export Button ---- */
-    var exportBtn = document.querySelector(".page-head-actions .btn:first-child");
-    if (exportBtn) {
-      exportBtn.onclick = function () {
-        if (!selectedPlan) return;
-        S.api("/maneuvers/plans/" + encodeURIComponent(selectedPlan.id) + "/export?format=json")
-          .then(function (data) {
-            var blob = new Blob([JSON.stringify(data.plan, null, 2)], { type: "application/json" });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement("a");
-            a.href = url;
-            a.download = selectedPlan.id + "_export.json";
-            a.click();
-            URL.revokeObjectURL(url);
-          });
-      };
-    }
-
-    function pollJob(jobId) {
-      S.api("/jobs/" + jobId).then(function (job) {
-        if (job.status === "running" || job.status === "queued") {
-          setTimeout(function () { pollJob(jobId); }, 2000);
-        } else if (job.status === "completed" || job.status === "complete") {
-          if (window.SOSUI) SOSUI.toast("Simulation complete — trajectory is clear for 72 h.", "success");
-          if (job.result && job.result.summary && window.SOSUI) SOSUI.toast(job.result.summary, "info", 5000);
-        } else if (job.status === "failed") {
-          if (window.SOSUI) SOSUI.toast("Simulation failed: " + (job.error || "unknown error"), "error");
-        }
-      }).catch(function () {});
-    }
+    /* ---- Simulate / Submit / Export are handled by actions.js ----
+       (actions.js initManeuverPage binds these with progress-bar UI and
+       proper plan-ID resolution. Avoid double-binding here.) */
 
     function setText(id, val) {
       var el = document.getElementById(id);

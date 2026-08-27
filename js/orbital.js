@@ -1093,96 +1093,242 @@
   }
 
   /* ---------- Plan comparison (maneuver planner) ---------- */
+  /* Data-driven: fetches real orbit rings from the API and renders current
+     orbit, debris orbit, post-burn orbits for each plan, and the conjunction
+     point using actual Keplerian propagation — not hardcoded ellipses. */
 
   function initPlanCompare(canvas) {
     if (!canvas) return null;
-    let t = 0;
-    const plans = [
-      { name: "PLAN A", color: "#22C55E", grow: 1.16, dash: [] },
-      { name: "PLAN B", color: "#F59E0B", grow: 1.10, dash: [6, 5] },
-      { name: "PLAN C", color: "#A78BFA", grow: 1.24, dash: [2, 5] },
-    ];
-    function frame() {
-      const { ctx, w, h } = setupCanvas(canvas);
-      ctx.clearRect(0, 0, w, h);
-      stars(ctx, w, h, 110);
-      t += 0.002;
 
-      const cx = w / 2, cy = h / 2;
-      const R = Math.min(w, h) * 0.17;
+    var conjId = new URLSearchParams(location.search).get("conjunctionId") || "CD-2024-0526-0417";
+    var currentRing = null, debrisRing = null, planData = [];
+    var conjPoint = null, loaded = false, selectedIdx = 0;
+    var t = 0;
 
-      const g = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.4, R * 0.1, cx, cy, R);
-      g.addColorStop(0, "#16324D");
-      g.addColorStop(1, "#050E19");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, 0, TAU);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(56,189,248,.3)";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
+    var PLAN_COLORS = ["#22C55E", "#F59E0B", "#A78BFA"];
+    var PLAN_DASHES = [[], [6, 5], [2, 5]];
 
-      ctx.strokeStyle = "rgba(148,163,184,.5)";
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, R * 2.1, R * 1.25, -0.35, 0, TAU);
-      ctx.stroke();
+    /* Fetch geometry + plans in parallel, then each plan's post-burn ring */
+    function loadData() {
+      var base = window.SOS_API_BASE || "/api/v1";
+      Promise.all([
+        fetch(base + "/conjunctions/" + encodeURIComponent(conjId) + "/geometry").then(function(r) { return r.json(); }),
+        fetch(base + "/maneuvers/plans?conjunctionId=" + encodeURIComponent(conjId)).then(function(r) { return r.json(); }),
+      ]).then(function(responses) {
+        var geom = responses[0], plans = responses[1];
+        if (!Array.isArray(plans)) plans = [];
+        currentRing = (geom.primary && geom.primary.orbitRing) || null;
+        debrisRing = (geom.secondary && geom.secondary.orbitRing) || null;
+        if (currentRing && debrisRing) conjPoint = findClosest(currentRing, debrisRing);
+        return Promise.all(plans.map(function(p, i) {
+          return fetch(base + "/maneuvers/plans/" + encodeURIComponent(p.id) + "/geometry")
+            .then(function(r) { return r.json(); })
+            .then(function(g) {
+              return {
+                name: p.label || ("PLAN " + String.fromCharCode(65 + i)),
+                color: PLAN_COLORS[i % 3],
+                dash: PLAN_DASHES[i % 3],
+                ring: g.postBurnRing || null,
+                deltaV: p.deltaVmps,
+                missDist: p.newMissDistanceKm,
+                riskRed: p.riskReductionPct,
+                fuel: p.fuelImpactPct,
+              };
+            })
+            .catch(function() { return null; });
+        }));
+      }).then(function(results) {
+        planData = results.filter(function(p) { return p && p.ring; });
+        loaded = true;
+      }).catch(function() { loaded = false; });
+    }
+    loadData();
 
+    /* Find the closest approach point between two orbit rings (ECI km). */
+    function findClosest(rA, rB) {
+      var bd = Infinity, bi = 0, bj = 0;
+      var sA = Math.max(1, Math.floor(rA.length / 80));
+      var sB = Math.max(1, Math.floor(rB.length / 80));
+      for (var i = 0; i < rA.length; i += sA) {
+        for (var j = 0; j < rB.length; j += sB) {
+          var dx = rA[i][0] - rB[j][0], dy = rA[i][1] - rB[j][1], dz = (rA[i][2] || 0) - (rB[j][2] || 0);
+          var d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+          if (d < bd) { bd = d; bi = i; bj = j; }
+        }
+      }
+      return { pA: rA[bi], pB: rB[j === 0 ? 0 : bj], dist: bd, idxA: bi, idxB: bj };
+    }
+
+    /* Auto-fit scale: find max |coord| across all rings, fit to canvas. */
+    function computeScale(w, h) {
+      var mx = 0;
+      if (currentRing) for (var i = 0; i < currentRing.length; i++) mx = Math.max(mx, Math.abs(currentRing[i][0]), Math.abs(currentRing[i][1]));
+      if (debrisRing) for (var i = 0; i < debrisRing.length; i++) mx = Math.max(mx, Math.abs(debrisRing[i][0]), Math.abs(debrisRing[i][1]));
+      for (var p = 0; p < planData.length; p++) {
+        var r = planData[p].ring;
+        if (!r) continue;
+        for (var i = 0; i < r.length; i++) mx = Math.max(mx, Math.abs(r[i][0]), Math.abs(r[i][1]));
+      }
+      mx = Math.max(mx, EARTH_R_KM) * 1.1;
+      return (Math.min(w, h) * 0.42) / mx;
+    }
+
+    /* Draw an orbit ring (ECI XY projection). */
+    function drawRing(ctx, ring, cx, cy, sc, color, lw, dash, alpha) {
+      if (!ring || ring.length < 2) return;
       ctx.save();
-      ctx.translate(cx + R * 1.55 * Math.cos(-0.35), cy + R * 1.55 * Math.sin(-0.35));
-      ctx.rotate(-0.35);
-      ctx.fillStyle = "rgba(239,68,68,.12)";
-      ctx.strokeStyle = "rgba(239,68,68,.5)";
-      ctx.setLineDash([5, 4]);
+      ctx.globalAlpha = alpha || 0.85;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lw || 1.4;
+      if (dash) ctx.setLineDash(dash);
       ctx.beginPath();
-      ctx.ellipse(0, 0, 54, 22, 0, 0, TAU);
-      ctx.fill();
+      for (var i = 0; i < ring.length; i++) {
+        var x = cx + ring[i][0] * sc, y = cy - ring[i][1] * sc;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
+    }
 
-      plans.forEach((pl, i) => {
-        const rot = -0.35 + (i - 1) * 0.16;
-        ctx.strokeStyle = pl.color;
-        ctx.globalAlpha = 0.85;
-        ctx.lineWidth = 1.6;
-        ctx.setLineDash(pl.dash);
+    /* Animated satellite position on a ring at parametric time t. */
+    function drawSat(ctx, ring, cx, cy, sc, t, color, label) {
+      if (!ring || ring.length < 2) return;
+      var idx = Math.floor(((t % 1) + 1) % 1 * ring.length);
+      var x = cx + ring[idx][0] * sc, y = cy - ring[idx][1] * sc;
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, TAU);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      if (label) {
+        ctx.font = "700 9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = color;
+        ctx.fillText(label, x + 8, y - 6);
+      }
+      ctx.restore();
+    }
+
+    function frame() {
+      var r = canvas.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(r.width * dpr, 10);
+      canvas.height = Math.max(r.height * dpr, 10);
+      var ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var w = r.width, h = r.height;
+      ctx.clearRect(0, 0, w, h);
+      stars(ctx, w, h, 90);
+      t += 0.0015;
+
+      var cx = w / 2, cy = h / 2;
+      var sc = computeScale(w, h);
+
+      /* Earth */
+      var eg = ctx.createRadialGradient(cx - EARTH_R_KM * sc * 0.3, cy - EARTH_R_KM * sc * 0.4, EARTH_R_KM * sc * 0.1, cx, cy, EARTH_R_KM * sc);
+      eg.addColorStop(0, "#16324D");
+      eg.addColorStop(1, "#050E19");
+      ctx.fillStyle = eg;
+      ctx.beginPath();
+      ctx.arc(cx, cy, EARTH_R_KM * sc, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(56,189,248,.35)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      if (!loaded) {
+        ctx.font = "500 12px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "rgba(148,163,184,.6)";
+        ctx.fillText("Loading orbit geometry...", cx - 60, cy + 4);
+        requestAnimationFrame(frame);
+        return;
+      }
+
+      /* Debris orbit (red) */
+      drawRing(ctx, debrisRing, cx, cy, sc, "#EF4444", 1.3, [4, 4], 0.6);
+
+      /* Current orbit (blue) */
+      drawRing(ctx, currentRing, cx, cy, sc, "#38BDF8", 1.8, null, 0.9);
+
+      /* Post-burn orbits */
+      for (var i = 0; i < planData.length; i++) {
+        var isSel = i === selectedIdx;
+        drawRing(ctx, planData[i].ring, cx, cy, sc, planData[i].color,
+          isSel ? 2.4 : 1.4, planData[i].dash, isSel ? 1.0 : 0.5);
+      }
+
+      /* Conjunction point (encounter region) */
+      if (conjPoint) {
+        var px = cx + conjPoint.pA[0] * sc, py = cy - conjPoint.pA[1] * sc;
+        var pulse = (Math.sin(t * 8) + 1) / 2;
+        ctx.save();
+        ctx.strokeStyle = "rgba(253,224,71," + (0.85 - pulse * 0.5) + ")";
+        ctx.lineWidth = 1.4;
         ctx.beginPath();
-        ctx.ellipse(cx, cy, R * 2.1 * pl.grow, R * 1.25 * pl.grow, rot, 0, TAU);
+        ctx.arc(px, py, 6 + pulse * 8, 0, TAU);
         ctx.stroke();
-        ctx.setLineDash([]);
-
-        const a = t * (1.4 - i * 0.2) + i * 2.2;
-        const px = cx + Math.cos(a) * R * 2.1 * pl.grow * Math.cos(rot) - Math.sin(a) * R * 1.25 * pl.grow * Math.sin(rot);
-        const py = cy + Math.cos(a) * R * 2.1 * pl.grow * Math.sin(rot) + Math.sin(a) * R * 1.25 * pl.grow * Math.cos(rot);
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = pl.color;
-        ctx.shadowColor = pl.color;
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = "#FDE047";
         ctx.beginPath();
-        ctx.arc(px, py, 3.4, 0, TAU);
+        ctx.arc(px, py, 3.5, 0, TAU);
         ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.font = "700 9.5px 'JetBrains Mono', monospace";
-        ctx.fillText(pl.name, px + 8, py - 6);
-      });
+        ctx.font = "700 9px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "rgba(253,224,71,.9)";
+        ctx.fillText("TCA", px + 10, py + 3);
+        ctx.restore();
+      }
 
+      /* Animated satellites */
+      drawSat(ctx, currentRing, cx, cy, sc, t * 0.8, "#7DD3FC", null);
+      drawSat(ctx, debrisRing, cx, cy, sc, t * 0.85, "#FCA5A5", null);
+      for (var i = 0; i < planData.length; i++) {
+        if (i !== selectedIdx) continue;
+        drawSat(ctx, planData[i].ring, cx, cy, sc, t * 0.9 + i * 0.2, planData[i].color, planData[i].name);
+      }
+
+      /* Legend */
       ctx.font = "600 10px 'JetBrains Mono', monospace";
-      let lx = 14, ly = 20;
-      [["#94A3B8", "CURRENT ORBIT"], ["#22C55E", "PLAN A"], ["#F59E0B", "PLAN B"], ["#A78BFA", "PLAN C"], ["#EF4444", "CONJUNCTION CORRIDOR"]].forEach(
-        ([c, label]) => {
-          ctx.fillStyle = c;
-          ctx.fillRect(lx, ly - 7, 10, 4);
-          ctx.fillStyle = "rgba(148,163,184,.95)";
-          ctx.fillText(label, lx + 16, ly - 3);
-          ly += 17;
-        }
-      );
+      var lx = 14, ly = 20;
+      var legend = [["#38BDF8", "CURRENT ORBIT"]];
+      for (var i = 0; i < planData.length; i++) {
+        var label = planData[i].name + " (" + planData[i].deltaV + " m/s)";
+        if (i === selectedIdx) label += " ✓";
+        legend.push([planData[i].color, label]);
+      }
+      legend.push(["#EF4444", "DEBRIS ORBIT"]);
+      legend.push(["#FDE047", "TCA / ENCOUNTER"]);
+      for (var i = 0; i < legend.length; i++) {
+        ctx.fillStyle = legend[i][0];
+        ctx.fillRect(lx, ly - 7, 10, 4);
+        ctx.fillStyle = "rgba(148,163,184,.95)";
+        ctx.fillText(legend[i][1], lx + 16, ly - 3);
+        ly += 17;
+      }
+
+      /* Selected plan stats (bottom-left) */
+      if (planData[selectedIdx]) {
+        var p = planData[selectedIdx];
+        ctx.font = "700 11px 'JetBrains Mono', monospace";
+        ctx.fillStyle = p.color;
+        var sy = h - 52;
+        ctx.fillText(p.name + " — ΔV " + p.deltaV + " m/s", 14, sy);
+        ctx.font = "500 10px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "rgba(148,163,184,.85)";
+        ctx.fillText("Miss: " + p.missDist.toFixed(2) + " km  ·  Risk ↓ " + p.riskRed + "%  ·  Fuel " + p.fuel + "%", 14, sy + 16);
+      }
 
       requestAnimationFrame(frame);
     }
     frame();
-    return {};
+
+    /* Expose selection API for the page */
+    var api = {
+      selectPlan: function(idx) { selectedIdx = idx; },
+    };
+    window.sosPlanCompare = api;
+    return api;
   }
 
   /* ---------- Bootstrapping ---------- */
@@ -1208,5 +1354,10 @@
       document.dispatchEvent(new CustomEvent("viewerready", { detail: viewer }));
     }
     initPlanCompare(document.getElementById("planCanvas"));
+    // Re-init after shell reinjects DOM
+    document.addEventListener("shellready", () => {
+      const pc = document.getElementById("planCanvas");
+      if (pc && !window.sosPlanCompare) initPlanCompare(pc);
+    }, { once: true });
   });
 })();

@@ -12,16 +12,25 @@ router.get("/:id", (req, res) => {
   const created = new Date(job.createdAt).getTime();
   const elapsed = (Date.now() - created) / 1000;
 
-  if (job.status === "queued" && elapsed > 2) {
+  // Progress through realistic simulation stages
+  if (job.status === "queued" && elapsed > 1.5) {
     job.status = "running";
-    job.progress = 20;
-    job.stage = "propagating";
+    job.progress = 15;
+    job.stage = "loading ephemeris";
   }
-  if (job.status === "running" && elapsed > 5) {
-    job.progress = 60;
-    job.stage = "conjunction筛查";
+  if (job.status === "running" && elapsed > 3.5) {
+    job.progress = 40;
+    job.stage = "propagating post-burn trajectory";
   }
-  if (job.status === "running" && elapsed > 8) {
+  if (job.status === "running" && elapsed > 5.5) {
+    job.progress = 70;
+    job.stage = "secondary conjunction screening";
+  }
+  if (job.status === "running" && elapsed > 7.5) {
+    job.progress = 90;
+    job.stage = "computing Pc";
+  }
+  if (job.status === "running" && elapsed > 9) {
     job.status = "completed";
     job.progress = 100;
     job.stage = "completed";

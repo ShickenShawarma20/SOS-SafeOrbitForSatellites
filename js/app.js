@@ -124,36 +124,9 @@
     });
   }
 
-  /* Global search */
-  function wireSearch() {
-    const searchInput = document.getElementById("globalSearch");
-    if (!searchInput) return;
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const q = searchInput.value.trim();
-        if (q && window.SOS && SOS.api) {
-          SOS.api("/search?q=" + encodeURIComponent(q)).then((results) => {
-            const parts = [];
-            if (results.satellites && results.satellites.length) parts.push("Satellites: " + results.satellites.map(s => s.id + " (" + s.name + ")").join(", "));
-            if (results.objects && results.objects.length) parts.push("Objects: " + results.objects.map(o => o.id).join(", "));
-            if (results.conjunctions && results.conjunctions.length) parts.push("Conjunctions: " + results.conjunctions.map(c => c.id).join(", "));
-            if (window.SOSUI) SOSUI.toast(parts.length ? parts.join(" · ") : "No results for '" + q + "'", parts.length ? "info" : "warn", 4000);
-          }).catch(() => {
-            if (window.SOSUI) SOSUI.toast("Search unavailable — backend offline.", "error");
-          });
-        }
-      }
-    });
-  }
+  /* Global search removed */
 
-  /* Ctrl+K shortcut (global, safe to register once) */
-  document.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-      e.preventDefault();
-      const si = document.getElementById("globalSearch");
-      if (si) si.focus();
-    }
-  });
+  /* Ctrl+K shortcut removed (search bar removed) */
 
   /* Escape closes modals (global) */
   document.addEventListener("keydown", (e) => {
@@ -167,7 +140,6 @@
     wireTabs();
     wireModals();
     wirePlanCards();
-    wireSearch();
   }
 
   if (document.querySelector(".main-col")) boot();

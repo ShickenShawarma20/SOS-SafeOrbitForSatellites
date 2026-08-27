@@ -109,11 +109,6 @@
         <div class="t num" id="utcTime">--:--:-- UTC</div>
         <div class="d" id="utcDate"></div>
       </div>
-      <div class="search" role="search">
-        ${I.search}
-        <input type="search" id="globalSearch" placeholder="Search satellites, objects, TCA\u2026" aria-label="Search">
-        <kbd>Ctrl K</kbd>
-      </div>
       <div class="top-metrics">
         <div class="top-metric">${I.sat_metric}
           <div><div class="v num" id="kpiSats">124</div><div class="k">Active Satellites</div></div>
@@ -180,8 +175,48 @@
         var dot = document.getElementById("notifDot");
         if (dot) dot.style.display = unread > 0 ? "inline-block" : "none";
       }).catch(function () {});
+
+      /* Fetch upcoming conjunctions into the dashboard table */
+      SOS.api("/conjunctions?limit=20").then(function (data) {
+        var items = (data && data.items) || [];
+        items.sort(function (a, b) { return new Date(a.tca) - new Date(b.tca); });
+        renderConjunctionTable(items);
+      }).catch(function () {});
     }
   });
+
+  /* Render the dashboard "Upcoming Conjunctions" table from API data.
+     Each row links to the correct conjunction detail page. */
+  function renderConjunctionTable(items) {
+    var tbody = document.querySelector(".cx-table tbody");
+    if (!tbody) return;
+    if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-mid);padding:18px;">No upcoming conjunctions</td></tr>'; return; }
+    var now = Date.now();
+    tbody.innerHTML = items.map(function (c) {
+      var tcaMs = new Date(c.tca).getTime();
+      var offsetH = (tcaMs - now) / 3600000;
+      var tcaLabel = formatTca(c.tca, offsetH);
+      var sevRow = c.severity === "critical" ? "row-crit" : c.severity === "high" ? "row-high" : c.severity === "medium" ? "row-med" : "";
+      var pcPill = "pc-pill " + (window.SOS && SOS.pcClass ? SOS.pcClass(c.probabilityOfCollision) : "pc-low");
+      var miss = c.missDistanceMeters < 1000 ? c.missDistanceMeters + " m" : (c.missDistanceMeters / 1000).toFixed(1) + " km";
+      return '<tr class="' + sevRow + '" style="cursor:pointer;" onclick="location.href=\'conjunction.html?id=' + encodeURIComponent(c.id) + '\'">' +
+        '<td class="sat-id">' + c.satelliteId + '</td>' +
+        '<td class="obj-id">' + c.objectId + '</td>' +
+        '<td>' + tcaLabel + '</td>' +
+        '<td>' + miss + '</td>' +
+        '<td><span class="' + pcPill + '">' + c.probabilityOfCollision.toExponential(1) + '</span></td>' +
+        '</tr>';
+    }).join("");
+  }
+
+  function formatTca(iso, offsetH) {
+    var d = new Date(iso);
+    var p = function (n) { return String(n).padStart(2, "0"); };
+    var hh = p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + ":" + p(d.getUTCSeconds());
+    if (Math.abs(offsetH) < 24) return hh;
+    var days = Math.floor(Math.abs(offsetH) / 24);
+    return days + "d " + hh;
+  }
 
   function setText(id, val) {
     var el = document.getElementById(id);
