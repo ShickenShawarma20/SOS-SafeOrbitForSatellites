@@ -79,7 +79,7 @@ app.post("/api/ai/chat", (req, res) => {
 });
 
 /* Clean URLs — /satellite -> /satellite.html */
-["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings"].forEach(
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking"].forEach(
   function (name) {
     app.get("/" + name, (_req, res) => res.sendFile(path.join(__dirname, "..", name + ".html")));
   }
@@ -115,34 +115,3 @@ let server = app.listen(PORT, () => {
   console.log(`SOS backend prototype listening on http://localhost:${PORT}`);
   console.log(`API base: http://localhost:${PORT}/api/v1`);
 });
-
-/* Optional WebSocket layer (activates automatically if `ws` is installed) */
-try {
-  const WebSocket = require("ws");
-  const wss = new WebSocket.Server({ server });
-  wss.on("connection", (socket) => {
-    socket.send(JSON.stringify({ type: "hello", payload: { channels: ["conjunction", "event.feed", "job.progress", "maneuver.status", "weather.update"] } }));
-    socket.on("message", (raw) => {
-      try {
-        const msg = JSON.parse(raw.toString());
-        if (msg.subscribe) socket.subscribedChannels = msg.subscribe;
-      } catch (_) { /* ignore malformed frames */ }
-    });
-  });
-  store.setWsServer({
-    broadcastJSON(message) {
-      const data = JSON.stringify(message);
-      for (const client of wss.clients) {
-        if (client.readyState === WebSocket.OPEN) {
-          if (!client.subscribedChannels || client.subscribedChannels.length === 0 ||
-              client.subscribedChannels.some((ch) => (message.type || "").startsWith(ch))) {
-            client.send(data);
-          }
-        }
-      }
-    },
-  });
-  console.log("WebSocket channel active at ws://localhost:" + PORT + "/");
-} catch (_) {
-  console.log("`ws` not installed \u2014 running without WebSocket push (REST only). Install with: npm i ws");
-}

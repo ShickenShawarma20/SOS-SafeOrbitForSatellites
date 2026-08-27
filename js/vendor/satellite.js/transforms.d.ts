@@ -1,0 +1,12 @@
+import type { Degrees, EcfVec3, EciVec3, GeodeticLocation, GMSTime, Kilometer, LookAngles, Radians } from './common-types.js';
+export declare function radiansToDegrees(radians: Radians): Degrees;
+export declare function degreesToRadians(degrees: Degrees): Radians;
+export declare function degreesLat(radians: Radians): Degrees;
+export declare function degreesLong(radians: Radians): Degrees;
+export declare function radiansLat(degrees: Degrees): Radians;
+export declare function radiansLong(degrees: Degrees): Radians;
+export declare function geodeticToEcf({ longitude, latitude, height, }: GeodeticLocation): EcfVec3<Kilometer>;
+export declare function eciToGeodetic(eci: EciVec3<Kilometer>, gmst: GMSTime): GeodeticLocation;
+export declare function ecfToEci(ecf: EcfVec3<number>, gmst: GMSTime): EciVec3<number>;
+export declare function eciToEcf(eci: EciVec3<number>, gmst: GMSTime): EcfVec3<number>;
+export declare function ecfToLookAngles(observerGeodetic: GeodeticLocation, satelliteEcf: EcfVec3<Kilometer>): LookAngles;

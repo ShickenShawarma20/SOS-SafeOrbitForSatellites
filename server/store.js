@@ -140,15 +140,6 @@ function sampleOrbit(r0km, altKm, steps = 90) {
   return pts;
 }
 
-/* ---- WebSocket broadcast (wired by index.js when ws available) ---- */
-let wsServer = null;
-function setWsServer(srv) { wsServer = srv; }
-
-function broadcast(message) {
-  if (!wsServer) return;
-  try { wsServer.broadcastJSON(message); } catch (_) { /* ignore */ }
-}
-
 module.exports = {
   state,
   satellites,
@@ -160,6 +151,4 @@ module.exports = {
   addAudit,
   pushFeed,
   createJob,
-  setWsServer,
-  broadcast,
 };

@@ -5,9 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const http_1 = require("http");
 const path_1 = __importDefault(require("path"));
-const server_1 = require("./ws/server");
 const error_1 = require("./middleware/error");
 const satellites_1 = __importDefault(require("./routes/satellites"));
 const conjunctions_1 = __importDefault(require("./routes/conjunctions"));
@@ -33,7 +31,7 @@ app.use((0, cors_1.default)({ origin: true, credentials: true }));
 app.use(express_1.default.json());
 const staticRoot = path_1.default.resolve(__dirname, "../..");
 /* Clean URLs — /satellite -> /satellite.html (mirrors server/index.js) */
-["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai"].forEach((name) => {
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking"].forEach((name) => {
     app.get("/" + name, (_req, res) => res.sendFile(path_1.default.join(staticRoot, name + ".html")));
 });
 app.use(express_1.default.static(staticRoot));
@@ -60,16 +58,9 @@ app.get("/api/v1/health", (_req, res) => {
     res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
 });
 app.use(error_1.errorHandler);
-const server = (0, http_1.createServer)(app);
-(0, server_1.setupWebSocket)(server);
-setInterval(() => {
-    const now = new Date().toISOString();
-    (0, server_1.broadcast)("heartbeat", { timestamp: now }, "*");
-}, 30000);
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`SOS Backend running on http://localhost:${PORT}`);
     console.log(`API base: http://localhost:${PORT}/api/v1`);
-    console.log(`WebSocket: ws://localhost:${PORT}/ws`);
     console.log(`Static files: ${staticRoot}`);
     // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
     (0, tle_fetcher_js_1.startTleRefreshLoop)();

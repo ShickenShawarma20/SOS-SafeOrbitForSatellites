@@ -1,8 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { createServer } from "http";
 import path from "path";
-import { setupWebSocket, broadcast } from "./ws/server";
 import { errorHandler } from "./middleware/error";
 
 import satellitesRouter from "./routes/satellites";
@@ -33,7 +31,7 @@ app.use(express.json());
 const staticRoot = path.resolve(__dirname, "../..");
 
 /* Clean URLs — /satellite -> /satellite.html (mirrors server/index.js) */
-["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai"].forEach(
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking"].forEach(
   (name) => {
     app.get("/" + name, (_req, res) => res.sendFile(path.join(staticRoot, name + ".html")));
   }
@@ -67,19 +65,9 @@ app.get("/api/v1/health", (_req, res) => {
 
 app.use(errorHandler);
 
-const server = createServer(app);
-
-setupWebSocket(server);
-
-setInterval(() => {
-  const now = new Date().toISOString();
-  broadcast("heartbeat", { timestamp: now }, "*");
-}, 30000);
-
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`SOS Backend running on http://localhost:${PORT}`);
   console.log(`API base: http://localhost:${PORT}/api/v1`);
-  console.log(`WebSocket: ws://localhost:${PORT}/ws`);
   console.log(`Static files: ${staticRoot}`);
   // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
   startTleRefreshLoop();

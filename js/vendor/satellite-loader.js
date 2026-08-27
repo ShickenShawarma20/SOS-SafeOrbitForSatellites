@@ -1,13 +1,12 @@
 /* SOS — satellite.js browser loader
  *
- * satellite.js v7 is published as ESM-only.  This tiny module script imports it
- * from the esm.sh CDN and exposes it on `window.Satellite` so the rest of the
- * classic-script codebase (IIFE globals) can consume it without a bundler.
- *
- * Once `window.Satellite` is set, a `satellitjsready` event is dispatched on
- * `document` so dependent modules can start propagating.
+ * Loads satellite.js (v7, ESM) from the local bundled copy under
+ * /js/vendor/satellite.js/ (sourced from node_modules/satellite.js/dist).
+ * Serving locally avoids CDN tracking-prevention blocks and network
+ * dependencies.  Once loaded, it is exposed on `window.Satellite` and a
+ * `satellitejsready` event is dispatched so dependent modules can start.
  */
-import * as Satellite from "https://esm.sh/satellite.js@7.1.0";
+import * as Satellite from "/js/vendor/satellite.js/index.js";
 
 window.Satellite = Satellite;
 document.dispatchEvent(new CustomEvent("satellitejsready", { detail: Satellite }));

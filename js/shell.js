@@ -47,6 +47,7 @@
     { id: "console", label: "SSA Console", href: "console.html", icon: I.console, badge: "1" },
     { id: "autopilot", label: "Autopilot Engine", href: "autopilot.html", icon: I.autopilot, badge: "4" },
     { id: "home", label: "Home", href: "index.html", icon: I.home },
+    { id: "track", label: "Live Tracking", href: "tracking.html", icon: I.satellite },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
     { id: "ai", label: "AI Command Center", href: "ai.html", icon: I.ai, badge: "7" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
@@ -179,9 +180,6 @@
         var dot = document.getElementById("notifDot");
         if (dot) dot.style.display = unread > 0 ? "inline-block" : "none";
       }).catch(function () {});
-
-      /* Connect WebSocket */
-      SOS.ws.connect();
     }
   });
 

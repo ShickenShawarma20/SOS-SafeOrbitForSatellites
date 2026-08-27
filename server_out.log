@@ -4,7 +4,8 @@
 
 SOS Backend running on http://localhost:3000
 API base: http://localhost:3000/api/v1
-WebSocket: ws://localhost:3000/ws
 Static files: D:\SOS-SafeOrbitForSattelites
+[tle-fetcher] Loaded 19 TLEs from bundled snapshot (offline fallback)
 Tracking API: http://localhost:3000/api/v1/tracking/fleet
-[tle-fetcher] Refresh complete: 19 ok, 1 failed, status=ok
+[tle-fetcher] Loaded 19 TLEs from bundled snapshot (offline fallback)
+[tle-fetcher] Refresh complete: 0 ok, 19 failed, status=stale

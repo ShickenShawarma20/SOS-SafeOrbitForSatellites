@@ -240,28 +240,6 @@
       if (stats[1]) stats[1].querySelector("b").textContent = fuel.usableKg + " kg";
       if (stats[2]) stats[2].querySelector("b").textContent = fuel.reservedKg + " kg";
     }).catch(function () {});
-
-    /* ---- WebSocket: live conjunction updates ---- */
-    S.ws.on("conjunction.new", function (data) {
-      var badge = document.getElementById("navBadge_conjunctions");
-      if (badge) {
-        var current = parseInt(badge.textContent) || 0;
-        badge.textContent = current + 1;
-      }
-    });
-
-    S.ws.on("event.feed", function (data) {
-      var feed = document.querySelector(".dash-row2 .feed");
-      if (feed && data) {
-        var item = document.createElement("div");
-        item.className = "feed-item";
-        item.innerHTML = '<span class="sev-dot ' + S.sevClass(data.severity || "low") + '"></span>' +
-          '<div><div class="feed-text">' + (data.text || "") + '</div>' +
-          '<div class="feed-time">just now</div></div>';
-        feed.insertBefore(item, feed.firstChild);
-        if (feed.children.length > 10) feed.removeChild(feed.lastChild);
-      }
-    });
   });
 
   function setText(id, val) {

@@ -85,13 +85,6 @@
       });
     });
 
-    /* ---- WebSocket: live station status ---- */
-    S.ws.on("network.status", function (data) {
-      if (data && data.stationsOnline != null) setText("gsOnline", data.stationsOnline);
-      if (data && data.stationsOffline != null) setText("gsOffline", data.stationsOffline);
-      if (data && data.coveragePct != null) setText("gsCoverage", data.coveragePct + "%");
-    });
-
     function setText(id, val) {
       var el = document.getElementById(id);
       if (el) el.textContent = val;

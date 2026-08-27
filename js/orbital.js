@@ -1058,6 +1058,11 @@
       // attach the floating HUD to the dashboard orbital viewer
       const wrap = orb.closest(".orbital-viewer");
       if (wrap) window.sosOrbitalHUD = new OrbitalHUD(viewer, wrap);
+      // Notify page scripts that the viewer is ready.  shell.js dispatches
+      // `shellready` synchronously during its own DOMContentLoaded handler
+      // (which fires before this one), so listeners that need the viewer
+      // must wait for this event instead.
+      document.dispatchEvent(new CustomEvent("viewerready", { detail: viewer }));
     }
     initPlanCompare(document.getElementById("planCanvas"));
   });

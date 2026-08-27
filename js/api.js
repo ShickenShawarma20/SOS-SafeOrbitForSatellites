@@ -30,57 +30,6 @@
     });
   }
 
-  /* ---------- WebSocket ---------- */
-  var ws = null;
-  var wsListeners = {};
-  var wsReconnectTimer = null;
-
-  function wsConnect() {
-    var apiOrigin;
-    try { apiOrigin = new URL(BASE, location.href).origin; } catch (e) { apiOrigin = location.origin; }
-    var protocol = apiOrigin === location.origin ? (location.protocol === "https:" ? "wss:" : "ws:") : (apiOrigin.indexOf("https:") === 0 ? "wss:" : "ws:");
-    var url = protocol + "//" + new URL(apiOrigin).host + "/ws";
-    try {
-      ws = new WebSocket(url);
-    } catch (e) {
-      scheduleReconnect();
-      return;
-    }
-    ws.onopen = function () {
-      wsSend({ subscribe: ["conjunction", "telemetry", "event", "weather", "network", "job", "maneuver"] });
-    };
-    ws.onmessage = function (ev) {
-      try {
-        var msg = JSON.parse(ev.data);
-        if (msg.channel && wsListeners[msg.channel]) {
-          wsListeners[msg.channel].forEach(function (fn) { fn(msg.data); });
-        }
-        if (msg.event && wsListeners["*"]) {
-          wsListeners["*"].forEach(function (fn) { fn(msg.event, msg.data); });
-        }
-      } catch (e) {}
-    };
-    ws.onclose = function () { scheduleReconnect(); };
-    ws.onerror = function () {};
-  }
-
-  function scheduleReconnect() {
-    if (wsReconnectTimer) return;
-    wsReconnectTimer = setTimeout(function () {
-      wsReconnectTimer = null;
-      wsConnect();
-    }, 5000);
-  }
-
-  function wsSend(data) {
-    if (ws && ws.readyState === 1) ws.send(JSON.stringify(data));
-  }
-
-  function wsOn(channel, fn) {
-    if (!wsListeners[channel]) wsListeners[channel] = [];
-    wsListeners[channel].push(fn);
-  }
-
   /* ---------- URL param helpers ---------- */
   function getParam(name) {
     var params = new URLSearchParams(window.location.search);
@@ -169,7 +118,6 @@
   /* ---------- Expose ---------- */
   window.SOS = {
     api: api,
-    ws: { connect: wsConnect, on: wsOn, send: wsSend },
     param: getParam,
     hash: getHashParam,
     fmtPc: fmtPc,

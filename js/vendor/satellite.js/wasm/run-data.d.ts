@@ -1,0 +1,36 @@
+import type { NativeStructLayout } from './native-structs-from-js.js';
+import type { WasmModuleBase } from './runtimes/wasm-module-interfaces.js';
+export interface RunData {
+    satellitesPointer: number;
+    satellitesCount: number;
+    jdaysPointer: number;
+    jdaysCount: number;
+    communityDecayCheckEnabled: boolean;
+    eciPositions: number;
+    eciVelocities: number;
+    sgp4Errors: number;
+    gmstEnabled: boolean;
+    ecfPositionEnabled: boolean;
+    ecfVelocityEnabled: boolean;
+    geodeticPositionEnabled: boolean;
+    lookAnglesEnabled: boolean;
+    dopplerFactorEnabled: boolean;
+    gmstValues: number;
+    ecfPositions: number;
+    ecfVelocities: number;
+    geodeticPositions: number;
+    longitudeRadians: number;
+    latitudeRadians: number;
+    heightKm: number;
+    lookAngles: number;
+    observerEcfX: number;
+    observerEcfY: number;
+    observerEcfZ: number;
+    dopplerFactors: number;
+    sunPositionEnabled: boolean;
+    sunPositions: number;
+    shadowFractionEnabled: boolean;
+    shadowFractionValues: number;
+}
+export declare function allocateRunData(module: WasmModuleBase): number;
+export declare function passRunDataToWasm(module: WasmModuleBase, runDataStruct: NativeStructLayout<keyof RunData>, runData: RunData, runDataPointer: number): number;

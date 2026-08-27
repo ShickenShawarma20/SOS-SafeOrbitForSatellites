@@ -34,6 +34,5 @@ exports.ISRO_FLEET = [
     { noradId: 56759, name: "NVS-01", alias: "IRNSS-1J", operator: "ISRO", category: "GSO · Inclined", source: "CelesTrak" },
     { noradId: 39635, name: "IRNSS-1B", operator: "ISRO", category: "GSO · Inclined", source: "CelesTrak" },
     { noradId: 40269, name: "IRNSS-1C", operator: "ISRO", category: "GSO · Inclined", source: "CelesTrak" },
-    { noradId: 40547, name: "IRNSS-1D", operator: "ISRO", category: "GSO · Inclined", source: "CelesTrak" },
 ];
 //# sourceMappingURL=isro-fleet.js.map

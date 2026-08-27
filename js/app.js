@@ -149,12 +149,4 @@
       }
     });
   }
-
-  /* WebSocket: live notification badge */
-  if (window.SOS && SOS.ws) {
-    SOS.ws.on("conjunction.new", () => {
-      const dot = document.getElementById("notifDot");
-      if (dot) dot.style.display = "inline-block";
-    });
-  }
 })();

@@ -1,0 +1,16 @@
+export declare const pi: number;
+export declare const twoPi: number;
+export declare const deg2rad: number;
+export declare const rad2deg: number;
+export declare const minutesPerDay = 1440;
+export declare const mu = 398600.8;
+export declare const earthRadius = 6378.135;
+export declare const xke: number;
+export declare const vkmpersec: number;
+export declare const tumin: number;
+export declare const j2 = 0.001082616;
+export declare const j3 = -0.00000253881;
+export declare const j4 = -0.00000165597;
+export declare const j3oj2: number;
+export declare const x2o3: number;
+export declare const xpdotp: number;

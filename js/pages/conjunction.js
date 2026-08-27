@@ -143,12 +143,5 @@
           trend + '</tr>';
       }).reverse().join("");
     }).catch(function () {});
-
-    /* ---- WebSocket: live CDM updates ---- */
-    S.ws.on("conjunction.update", function (data) {
-      if (data && data.id === id) {
-        location.reload();
-      }
-    });
   });
 })();

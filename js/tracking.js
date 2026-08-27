@@ -287,6 +287,7 @@
     if (initialized && rafId) return;
 
     function start() {
+      if (satelliteJsReady) return; // already started
       satelliteJsReady = true;
       fetchFleet().catch(function (e) { console.error("[tracking] init fetch error", e); });
       rafId = requestAnimationFrame(loop);
@@ -295,18 +296,18 @@
       fleetRefreshTimer = setInterval(fetchFleet, REFLEET_INTERVAL_MS);
     }
 
-    if (window.Satellite) {
-      start();
-    } else {
-      document.addEventListener("satellitejsready", start, { once: true });
-      // Timeout fallback: if CDN fails, retry after 3s
-      setTimeout(function () {
-        if (!satelliteJsReady) {
-          console.warn("[tracking] satellite.js CDN load timed out, retrying…");
-          start();
-        }
-      }, 5000);
+    function waitForSatelliteJs() {
+      if (window.Satellite) {
+        start();
+      } else {
+        // Poll until satellite.js loads (the loader is a module script that
+        // sets window.Satellite + dispatches the event).
+        setTimeout(waitForSatelliteJs, 200);
+      }
     }
+
+    document.addEventListener("satellitejsready", start, { once: true });
+    waitForSatelliteJs();
   }
 
   /* ---- Cleanup ---- */
