@@ -30,6 +30,13 @@ app.use(express.json());
 
 const staticRoot = path.resolve(__dirname, "../..");
 
+/* Clean URLs — /satellite -> /satellite.html (mirrors server/index.js) */
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai"].forEach(
+  (name) => {
+    app.get("/" + name, (_req, res) => res.sendFile(path.join(staticRoot, name + ".html")));
+  }
+);
+
 app.use(express.static(staticRoot));
 
 app.use("/api/v1/satellites", satellitesRouter);
