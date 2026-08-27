@@ -50,7 +50,7 @@
           <span class="live-dot" style="margin-left:auto;">PROPAGATING</span>
         </div>
         <div class="approach-viz">
-          <canvas id="approachCanvas" role="img" aria-label="Close approach visualization showing nominal trajectories of SAT-51656 and OBJ-8821, uncertainty regions and the TCA point"></canvas>
+          <canvas id="approachCanvas" role="img" aria-label="Close approach visualization: animated encounter corridor where the secondary object passes the primary at the B-plane miss distance, plus a B-plane target plot showing covariance ellipses and the hard-body-radius keep-out circle, and a top-down orbit-context view of both real orbit rings"></canvas>
           <div style="position:absolute;top:10px;left:12px;display:flex;flex-direction:column;gap:3px;z-index:5;">
             <span id="simCountdown" class="num" style="font-size:16px;font-weight:700;">T−02:00</span>
             <span class="num" style="font-size:11px;color:var(--text-mid);">RANGE <b id="simRange" style="color:#E2E8F0;">— km</b></span>
@@ -61,11 +61,11 @@
           </div>
         </div>
         <div class="viz-legend">
-          <span class="vl-item"><span class="vl-swatch" style="background:#38BDF8;"></span>SAT-51656 nominal trajectory</span>
-          <span class="vl-item"><span class="vl-swatch" style="background:#EF4444;"></span>OBJ-8821 nominal trajectory</span>
-          <span class="vl-item"><span class="vl-swatch" style="border:1px dashed #38BDF8;background:rgba(56,189,248,.15);"></span>SAT covariance (3σ)</span>
-          <span class="vl-item"><span class="vl-swatch" style="border:1px dashed #EF4444;background:rgba(239,68,68,.15);"></span>OBJ-8821 covariance (1σ / 3σ)</span>
-          <span class="vl-item"><span class="vl-swatch" style="background:#EF4444;border-radius:50%;"></span>TCA point</span>
+          <span class="vl-item"><span class="vl-swatch" style="background:#38BDF8;border-radius:50%;"></span>Primary (HBR keep-out)</span>
+          <span class="vl-item"><span class="vl-swatch" style="background:#EF4444;border-radius:50%;"></span>Secondary trajectory</span>
+          <span class="vl-item"><span class="vl-swatch" style="border:1px dashed #EF4444;background:rgba(239,68,68,.12);"></span>Covariance 1σ / 2σ / 3σ</span>
+          <span class="vl-item"><span class="vl-swatch" style="background:#FDE047;border-radius:50%;"></span>TCA / miss point</span>
+          <span class="vl-item"><span class="vl-swatch" style="border:1px solid #38BDF8;background:rgba(56,189,248,.12);"></span>Orbit context (ECI)</span>
         </div>
       </article>
 
