@@ -12,7 +12,7 @@
   var W = 720, H = 360;            // equirectangular viewBox (2:1)
   var RE = 6371;                   // Earth radius, km
 
-  /* Satellites drawn on the coverage map (real elements from data.seed.js) */
+  /* Satellites drawn on the coverage map (real orbital elements) */
   var SATS = [
     { name: "EOS-06",    inc: 98.4, period: 99.3, raan: 245.8, alt: 743, color: "#38BDF8", phase: 0.20 },
     { name: "Cartosat-3", inc: 97.4, period: 94.8, raan: 132.4, alt: 508, color: "#60A5FA", phase: 1.70 },

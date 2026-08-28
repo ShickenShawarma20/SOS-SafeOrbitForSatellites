@@ -7,6 +7,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  transition: border-color var(--dur-base) ease, box-shadow var(--dur-base) ease;
 }
 
 .card.glass {
@@ -234,8 +235,10 @@
   display: none;
   align-items: center; justify-content: center;
   padding: 20px;
+  transition: opacity var(--dur-base) ease;
+  opacity: 0;
 }
-.modal-backdrop.open { display: flex; }
+.modal-backdrop.open { display: flex; opacity: 1; }
 
 .modal {
   width: min(480px, 100%);
@@ -296,9 +299,6 @@
 }
 
 /* Card hover lift */
-.card {
-  transition: border-color var(--dur-base) ease, box-shadow var(--dur-base) ease;
-}
 .card:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-lg);
@@ -345,14 +345,7 @@
   outline-offset: -2px;
 }
 
-/* Modal backdrop fade + pop */
-.modal-backdrop {
-  transition: opacity var(--dur-base) ease;
-  opacity: 0;
-}
-.modal-backdrop.open {
-  opacity: 1;
-}
+/* Modal backdrop pop animation */
 .modal-backdrop.open .modal {
   animation: sos-modal-pop var(--dur-slow) ease-out;
 }
