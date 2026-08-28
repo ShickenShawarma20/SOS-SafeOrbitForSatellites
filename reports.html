@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+</head>
+<body data-page="reports">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <section class="page-head">
+      <div>
+        <div class="crumb">Operations / Reports</div>
+        <h1>REPORTS</h1>
+        <div class="card-sub" style="margin-top:5px;">Real-time mission analytics on key collision-avoidance parameters</div>
+      </div>
+      <div class="page-head-actions">
+        <button class="btn" id="reportRefresh">Refresh</button>
+        <button class="btn btn-primary" id="reportExportCsv">Export CSV</button>
+      </div>
+    </section>
+
+    <!-- Summary metrics -->
+    <section class="metric-grid" id="reportMetrics">
+      <article class="metric-card"><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></svg></div><div><div class="metric-val num" id="rptTotal">—</div><div class="metric-key">Total Conjunctions</div></div></article>
+      <article class="metric-card crit"><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3z"/></svg></div><div><div class="metric-val num" id="rptCritical">—</div><div class="metric-key">Critical Events</div></div></article>
+      <article class="metric-card warn"><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19c6 0 4-11 10-11h4"/><path d="m15.5 5 3 3-3 3"/></svg></div><div><div class="metric-val num" id="rptManeuvers">—</div><div class="metric-key">Maneuvers Planned</div></div></article>
+      <article class="metric-card ok"><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7z"/></svg></div><div><div class="metric-val num" id="rptRiskReduction">—</div><div class="metric-key">Avg Risk Reduction</div></div></article>
+    </section>
+
+    <!-- Two-column: conjunction table + satellite risk -->
+    <section class="two-col">
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Conjunction Summary Report</span>
+          <span class="live-dot" style="margin-left:auto;">LIVE</span>
+        </div>
+        <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead><tr><th>ID</th><th>Satellite</th><th>Object</th><th>Severity</th><th>Pc</th><th>Miss</th><th>Rel V</th><th>Status</th></tr></thead>
+            <tbody id="rptConjTable">
+              <tr><td colspan="8" style="padding:24px;text-align:center;color:var(--text-low);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><span class="card-title">Per-Satellite Risk</span></div>
+        <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead><tr><th>Satellite</th><th>Conjunctions</th><th>Max Pc</th><th>Min Miss</th><th>Risk</th></tr></thead>
+            <tbody id="rptSatRisk">
+              <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--text-low);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- CDM Evolution + Maneuver Plans -->
+    <section class="two-col">
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">CDM Probability Evolution</span>
+          <span class="card-sub" style="margin-left:auto;">CD-2024-0526-0417</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead><tr><th>CDM</th><th>Epoch</th><th>Miss Dist.</th><th>Pc</th><th>Trend</th></tr></thead>
+            <tbody id="rptCdmTable">
+              <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--text-low);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head"><span class="card-title">Maneuver Plan Summary</span></div>
+        <div style="overflow-x:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead><tr><th>Plan</th><th>Satellite</th><th>ΔV</th><th>Fuel</th><th>Miss</th><th>Risk ↓</th><th>Status</th></tr></thead>
+            <tbody id="rptPlanTable">
+              <tr><td colspan="7" style="padding:24px;text-align:center;color:var(--text-low);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- Key parameters summary -->
+    <article class="card">
+      <div class="card-head"><span class="card-title">Key Parameters Summary</span><span class="badge badge-info" style="margin-left:auto;">COMPUTED</span></div>
+      <div class="card-body">
+        <div class="detail-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+          <div class="info-tile"><div class="k">Average Pc</div><div class="v" id="rptAvgPc">—</div></div>
+          <div class="info-tile"><div class="k">Avg Miss Distance</div><div class="v" id="rptAvgMiss">—</div></div>
+          <div class="info-tile"><div class="k">Avg Relative Velocity</div><div class="v" id="rptAvgRelV">—</div></div>
+          <div class="info-tile"><div class="k">Active Alerts</div><div class="v" id="rptActive">—</div></div>
+          <div class="info-tile"><div class="k">Total ΔV Budget</div><div class="v" id="rptTotalDv">—</div></div>
+          <div class="info-tile"><div class="k">Total Fuel Impact</div><div class="v" id="rptTotalFuel">—</div></div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/shell.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages/reports.js"></script>
+</body>
+</html>

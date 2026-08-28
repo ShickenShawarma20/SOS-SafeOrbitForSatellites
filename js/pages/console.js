@@ -404,7 +404,7 @@
   function drawSatellite(ctx, x, y, s) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = "#0C1727";
+    ctx.fillStyle = "#000000";
     ctx.strokeStyle = "rgba(6,182,212,0.85)";
     ctx.lineWidth = 1.4;
     ctx.fillRect(-s / 2, -s / 2, s, s);

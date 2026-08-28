@@ -272,12 +272,18 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    /* Delay chart init slightly so API data has time to arrive */
-    setTimeout(function () {
+    /* Delay chart init so API data has time to arrive, then retry every
+       500ms up to 4 times until the data is present. */
+    var attempts = 0;
+    function tryCharts() {
       lineChart(document.getElementById("chartTime"));
       severityChart(document.getElementById("chartSeverity"));
       topObjectsChart(document.getElementById("chartTopObjects"));
       altitudeChart(document.getElementById("chartAltitude"));
-    }, 300);
+      attempts++;
+      var hasData = window.__chartTimeData || window.__chartSeverityData || window.__chartTopObjectsData || window.__chartAltitudeData;
+      if (!hasData && attempts < 5) setTimeout(tryCharts, 500);
+    }
+    setTimeout(tryCharts, 300);
   });
 })();

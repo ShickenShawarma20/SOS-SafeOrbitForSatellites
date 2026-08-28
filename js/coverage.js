@@ -157,7 +157,7 @@
         parent.appendChild(fp);
         var m = el("g", { class: "satmark" });
         m.appendChild(el("circle", { r: "6", fill: "none", stroke: sat.color, "stroke-opacity": "0.5", "stroke-width": "0.7", class: "sat-ring" }));
-        m.appendChild(el("circle", { r: "3", fill: sat.color, stroke: "#04101F", "stroke-width": "0.8" }));
+        m.appendChild(el("circle", { r: "3", fill: sat.color, stroke: "#000000", "stroke-width": "0.8" }));
         parent.appendChild(m);
         var t = el("text", {
           "font-size": "12", "font-family": "JetBrains Mono, monospace",
@@ -196,7 +196,7 @@
           }));
           grp.appendChild(el("circle", { r: "5", fill: "none", stroke: col, "stroke-opacity": "0.6", "stroke-width": "0.8", class: "gs-ring" }));
         }
-        grp.appendChild(el("circle", { r: "2.4", fill: col, stroke: "#04101F", "stroke-width": "0.6", class: "gsdot" }));
+        grp.appendChild(el("circle", { r: "2.4", fill: col, stroke: "#000000", "stroke-width": "0.6", class: "gsdot" }));
         parent.appendChild(grp);
         g.appendChild(parent);
       });

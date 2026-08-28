@@ -52,11 +52,11 @@
   gap: 11px;
   padding: 14px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(16, 29, 45, 0.92), rgba(10, 18, 31, 0.95));
+  background: linear-gradient(180deg, rgba(15, 15, 15, 0.92), rgba(10, 18, 31, 0.95));
   border: 1px solid rgba(56, 189, 248, 0.28);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 16px 44px rgba(2, 6, 14, 0.6);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.6);
   pointer-events: auto;
   animation: demoPanelIn 0.35s cubic-bezier(0.16, 0.84, 0.44, 1);
 }

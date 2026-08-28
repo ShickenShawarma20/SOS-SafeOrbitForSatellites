@@ -1,13 +1,13 @@
 /* SOS — SafeOrbitForSattelites · Base design tokens & shell */
 
 :root {
-  --bg-0: #050A12;
-  --bg-1: #08111D;
-  --bg-2: #0B1422;
+  --bg-0: #000000;
+  --bg-1: #000000;
+  --bg-2: #000000;
 
-  --panel-1: #0C1727;
-  --panel-2: #101D2D;
-  --panel-3: #142238;
+  --panel-1: #0A0A0A;
+  --panel-2: #0F0F0F;
+  --panel-3: #161616;
 
   --text-hi: #F4F7FB;
   --text-mid: #94A3B8;
@@ -30,14 +30,14 @@
   --font: "Inter", "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --mono: "JetBrains Mono", "IBM Plex Mono", "Cascadia Mono", Consolas, monospace;
 
-  --shadow: 0 10px 32px rgba(2, 6, 14, 0.55);
+  --shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
   --glow-accent: 0 0 24px rgba(56, 189, 248, 0.18);
 
   /* Shadow scale */
-  --shadow-sm: 0 4px 12px rgba(2, 6, 14, 0.4);
-  --shadow-md: 0 10px 32px rgba(2, 6, 14, 0.55);
-  --shadow-lg: 0 16px 48px rgba(2, 6, 14, 0.65);
-  --shadow-xl: 0 24px 64px rgba(2, 6, 14, 0.75);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 32px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.65);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.75);
 
   /* Status glows */
   --glow-nominal: 0 0 12px rgba(34, 197, 94, 0.5);
@@ -74,8 +74,8 @@ body {
   line-height: 1.5;
   color: var(--text-hi);
   background:
-    radial-gradient(1200px 700px at 75% -10%, rgba(56, 189, 248, 0.07), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(37, 99, 235, 0.06), transparent 60%),
+    radial-gradient(1200px 700px at 75% -10%, rgba(56, 189, 248, 0.04), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, rgba(37, 99, 235, 0.03), transparent 60%),
     var(--bg-0);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -85,8 +85,8 @@ body {
 
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: #2B3B52; }
+::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #2A2A2A; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -155,8 +155,8 @@ button { font-family: inherit; cursor: pointer; }
   border-radius: 11px;
   display: grid; place-items: center;
   background:
-    radial-gradient(circle at 30% 25%, rgba(56, 189, 248, 0.35), transparent 60%),
-    linear-gradient(160deg, #123047, #0A1A2C);
+    radial-gradient(circle at 30% 25%, rgba(56, 189, 248, 0.2), transparent 60%),
+    linear-gradient(160deg, #1A1A1A, #0A0A0A);
   border: 1px solid rgba(56, 189, 248, 0.4);
   box-shadow: var(--glow-accent);
 }
@@ -283,7 +283,7 @@ button { font-family: inherit; cursor: pointer; }
   width: 32px; height: 32px; border-radius: 50%;
   display: grid; place-items: center;
   font-size: 12px; font-weight: 700;
-  background: linear-gradient(135deg, #155E75, #0C4A6E);
+  background: linear-gradient(135deg, #1A1A1A, #0A0A0A);
   border: 1px solid rgba(56, 189, 248, 0.4);
   color: #BAE6FD;
 }
@@ -302,7 +302,7 @@ button { font-family: inherit; cursor: pointer; }
   align-items: center;
   gap: 14px;
   padding: 10px 20px;
-  background: rgba(8, 17, 29, 0.82);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }

@@ -30,7 +30,7 @@
     const el = document.createElement("div");
     const col = TOAST_COLORS[type] || TOAST_COLORS.info;
     el.style.cssText = [
-      "background:#0C1727", `border:1px solid ${col}66`,
+      "background:#0A0A0A", `border:1px solid ${col}66`,
       "border-left:3px solid " + col, "color:#E6EEF7",
       "padding:10px 14px", "border-radius:10px",
       "font:500 12.5px Inter,system-ui,sans-serif",
@@ -93,7 +93,7 @@
     dd.style.cssText = [
       "position:absolute", "z-index:9000",
       `width:${width || 320}px`, "max-height:420px", "overflow:auto",
-      "background:#0C1727", "border:1px solid rgba(148,163,184,.25)",
+      "background:#0A0A0A", "border:1px solid rgba(148,163,184,.25)",
       "border-radius:12px", "box-shadow:0 16px 48px rgba(2,6,14,.65)",
       "padding:8px", "font:400 12.5px Inter,system-ui,sans-serif", "color:#CBD5E1",
     ].join(";");

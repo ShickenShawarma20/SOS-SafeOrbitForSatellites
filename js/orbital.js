@@ -957,7 +957,7 @@
       const R = (Math.min(w, h) * 0.26) * this.zoom;
 
       const g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
-      g.addColorStop(0, "#14304A"); g.addColorStop(0.55, "#0C2036"); g.addColorStop(1, "#050E19");
+      g.addColorStop(0, "#0F0F0F"); g.addColorStop(0.55, "#0A0A0A"); g.addColorStop(1, "#000000");
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();
       ctx.strokeStyle = "rgba(56,189,248,.28)"; ctx.lineWidth = 1.6;
       ctx.shadowColor = "rgba(56,189,248,.5)"; ctx.shadowBlur = 18; ctx.stroke(); ctx.shadowBlur = 0;
@@ -1244,8 +1244,8 @@
 
       /* Earth */
       var eg = ctx.createRadialGradient(cx - EARTH_R_KM * sc * 0.3, cy - EARTH_R_KM * sc * 0.4, EARTH_R_KM * sc * 0.1, cx, cy, EARTH_R_KM * sc);
-      eg.addColorStop(0, "#16324D");
-      eg.addColorStop(1, "#050E19");
+      eg.addColorStop(0, "#0F0F0F");
+      eg.addColorStop(1, "#000000");
       ctx.fillStyle = eg;
       ctx.beginPath();
       ctx.arc(cx, cy, EARTH_R_KM * sc, 0, TAU);

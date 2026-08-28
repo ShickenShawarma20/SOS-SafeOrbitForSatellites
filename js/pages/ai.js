@@ -528,13 +528,13 @@
         var cls = p.kind === "satellite" ? "rm-sat" : "rm-obj";
         var nodeCls = "rm-node" + (p._sim ? " rm-sim" : "");
         return '<g transform="translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')" class="' + nodeCls + '" style="color:' + col + ';">' +
-          (p.kind === "satellite" ? '<rect x="-' + r + '" y="-' + r + '" width="' + (r * 2) + '" height="' + (r * 2) + '" rx="2" fill="' + col + '" stroke="#04101F" stroke-width="1"/>' : '<circle r="' + r + '" fill="' + col + '" stroke="#04101F" stroke-width="1"/>') +
+          (p.kind === "satellite" ? '<rect x="-' + r + '" y="-' + r + '" width="' + (r * 2) + '" height="' + (r * 2) + '" rx="2" fill="' + col + '" stroke="#000000" stroke-width="1"/>' : '<circle r="' + r + '" fill="' + col + '" stroke="#000000" stroke-width="1"/>') +
           (p.riskLevel !== "none" ? '<circle r="' + (r + 4) + '" fill="none" stroke="' + col + '" stroke-opacity="0.5" class="rm-halo"/>' : "") +
           '<text x="0" y="' + (-(r + 4)) + '" class="rm-label" text-anchor="middle">' + p.name + '</text>' +
           '</g>';
       }).join("");
       svg.innerHTML =
-        '<defs><radialGradient id="rmEarth" cx="50%" cy="100%" r="100%"><stop offset="0%" stop-color="#0C2036"/><stop offset="100%" stop-color="#04101F"/></radialGradient></defs>' +
+        '<defs><radialGradient id="rmEarth" cx="50%" cy="100%" r="100%"><stop offset="0%" stop-color="#0A0A0A"/><stop offset="100%" stop-color="#000000"/></radialGradient></defs>' +
         '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#rmEarth)"/>' +
         '<text x="' + ML + '" y="' + (MT - 8) + '" class="rm-axis">Altitude ↑ · Orbital plane (RAAN) →</text>' +
         grid + corridors + dots;

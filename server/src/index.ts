@@ -31,7 +31,7 @@ app.use(express.json());
 const staticRoot = path.resolve(__dirname, "../..");
 
 /* Clean URLs — /satellite -> /satellite.html */
-["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking"].forEach(
+["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking", "reports"].forEach(
   (name) => {
     app.get("/" + name, (_req, res) => res.sendFile(path.join(staticRoot, name + ".html")));
   }

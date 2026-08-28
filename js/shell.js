@@ -55,7 +55,7 @@
     { id: "orbits", label: "Orbits", href: "orbits.html", icon: I.orbit },
     { id: "groundstations", label: "Ground Stations", href: "groundstations.html", icon: I.ground },
     { id: "analytics", label: "Analytics", href: "analytics.html", icon: I.analytics },
-    { id: "reports", label: "Reports", href: "#reports", icon: I.reports },
+    { id: "reports", label: "Reports", href: "reports.html", icon: I.reports },
     { id: "settings", label: "Settings", href: "settings.html", icon: I.settings },
   ];
 
