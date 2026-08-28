@@ -91,13 +91,28 @@
   }
 
   // Default constellation for the dashboard (real Keplerian elements).
+  // Mix of near-polar SSO satellites (97–98° inclination, cross the poles) and
+  // low-inclination "latitude-revolving" satellites (≤30° inclination, orbit
+  // along a latitude band near the equator) so both orbit families are visible.
   const DEFAULT_SATELLITES = [
+    /* --- Near-polar SSO satellites (cross the poles) --- */
     { name: "EOS-04", norad: 51656, selected: true, color: "#06b6d4",
       kepler: { a_km: EARTH_R_KM + 529, e: 0.00019, i_deg: 97.5, raanDeg: 305.2, argPerigeeDeg: 178.4, periodMin: 95.2, meanAnomaly0Deg: 120 } },
     { name: "Cartosat-3", norad: 44804, color: "#60A5FA",
       kepler: { a_km: EARTH_R_KM + 508, e: 0.00013, i_deg: 97.4, raanDeg: 132.4, argPerigeeDeg: 45.3, periodMin: 94.8, meanAnomaly0Deg: 200 } },
     { name: "EOS-06", norad: 54361, color: "#22D3EE",
       kepler: { a_km: EARTH_R_KM + 743, e: 0.00020, i_deg: 98.4, raanDeg: 245.8, argPerigeeDeg: 112.5, periodMin: 99.3, meanAnomaly0Deg: 45 } },
+    /* --- Latitude-revolving (low-inclination) satellites --- */
+    // Near-equatorial LEO astronomy satellite — orbits a narrow ±6° latitude band.
+    { name: "AstroSat", norad: 40930, color: "#34D399",
+      kepler: { a_km: EARTH_R_KM + 650, e: 0.00024, i_deg: 6.0, raanDeg: 88.9, argPerigeeDeg: 240.1, periodMin: 97.3, meanAnomaly0Deg: 80 } },
+    // Near-equatorial LEO X-ray observatory — very low latitude band.
+    { name: "XPoSat", norad: 58694, color: "#A78BFA",
+      kepler: { a_km: EARTH_R_KM + 350, e: 0.00018, i_deg: 6.0, raanDeg: 210.4, argPerigeeDeg: 91.2, periodMin: 91.5, meanAnomaly0Deg: 300 } },
+    // Geostationary meteorology satellite — hovers over the equator at 0.05°.
+    { name: "INSAT-3DS", norad: 58990, color: "#F472B6",
+      kepler: { a_km: EARTH_R_KM + 35786, e: 0.00021, i_deg: 0.05, raanDeg: 78.2, argPerigeeDeg: 30.0, periodMin: 1436, meanAnomaly0Deg: 0 } },
+    /* --- Debris / conjunction objects --- */
     { name: "OBJ-8821", norad: 8821, kind: "debris", danger: true, color: "#ef4444",
       kepler: { a_km: EARTH_R_KM + 448, e: 0.00214, i_deg: 97.4, raanDeg: 131.9, argPerigeeDeg: 105.6, periodMin: 92.58, meanAnomaly0Deg: 118 } },
     { name: "OBJ-3421", norad: 3421, kind: "debris", color: "#f59e0b",
