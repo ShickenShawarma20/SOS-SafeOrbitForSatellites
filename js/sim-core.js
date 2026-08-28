@@ -196,27 +196,59 @@
     };
   }
 
-  /* ---------- Collision probability (numerical 2D Gaussian over B-plane) ---------- */
-  // mean = { mx, my } B-plane offset (km); cov = { sx, sy } 1σ (km); hbrKm hard-body radius.
+  /* ---------- Collision probability (Foster 2D method, 1D reduction) ----------
+   *
+   * Integrates a 2D Gaussian N(μ, Σ) over the combined hard-body disc of radius
+   * `hbrKm` centred at the ORIGIN (the primary).  μ = {mx,my} is the predicted
+   * B-plane miss offset of the secondary, and Σ is the combined position
+   * covariance with 1σ principal axes {sx, sy} and orientation `orient` (degrees,
+   * angle of the σ1 axis from the ξ axis).
+   *
+   * Method: rotate into the covariance principal frame (so the Gaussian
+   * factorises), then reduce the disc integral to a 1D quadrature over the
+   * marginal of the first axis, evaluating the conditional 1D CDF along the
+   * second axis.  This is the standard short-encounter Pc estimator (Foster /
+   * Chan) and is exact for a circular hard-body — no coarse-grid disc-aliasing.
+   */
+  function normCdf(x) {
+    // Abramowitz & Stegun 7.1.26 erf approximation → Φ(x).
+    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+    const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+    const sign = x < 0 ? -1 : 1;
+    const z = Math.abs(x) / Math.SQRT2;
+    const t = 1 / (1 + p * z);
+    const erf = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
+    return 0.5 * (1 + sign * erf);
+  }
+
   function collisionProbability(mean, cov, hbrKm) {
-    const N = 81;
-    const ext = Math.max(4 * hbrKm, 3.5 * Math.max(cov.sx, cov.sy));
-    const cell = (2 * ext) / N;
-    const det = cov.sx * cov.sx * cov.sy * cov.sy;
-    if (det <= 0 || !isFinite(det)) return 0;
+    const R = Math.abs(hbrKm);
+    if (R <= 0 || !isFinite(R)) return 0;
+    const sx = cov.sx, sy = cov.sy;
+    if (!sx || !sy || sx <= 0 || sy <= 0 || !isFinite(sx) || !isFinite(sy)) return 0;
+
+    // Rotate the mean into the covariance principal frame.
+    const orient = (cov.orient || 0) * Math.PI / 180;
+    const c = Math.cos(orient), s = Math.sin(orient);
+    const mx = mean.mx * c + mean.my * s;
+    const my = -mean.mx * s + mean.my * c;
+
+    // P = ∫_{-R}^{R} f_X(x) · [Φ((√(R²−x²) − my)/sy) − Φ((−√(R²−x²) − my)/sy)] dx
+    // Composite Simpson's 1/3 rule over [-R, R].
+    const N = 512;            // even; R is tiny (~0.01 km) so this is cheap & exact
+    const a = -R, b = R, h = (b - a) / N;
+    const invSxSqrt2pi = 1 / (sx * Math.sqrt(2 * Math.PI));
     let sum = 0;
-    for (let i = 0; i < N; i++) {
-      const px = -ext + (i + 0.5) * cell;
-      for (let j = 0; j < N; j++) {
-        const py = -ext + (j + 0.5) * cell;
-        // integrate the 2D Gaussian density × hard-body disc indicator
-        const wx = px - mean.mx, wy = py - mean.my;
-        const e = (wx * wx) / (cov.sx * cov.sx) + (wy * wy) / (cov.sy * cov.sy);
-        if (Math.hypot(wx, wy) <= hbrKm) sum += Math.exp(-e / 2);
-      }
+    for (let i = 0; i <= N; i++) {
+      const x = a + i * h;
+      const rc = Math.sqrt(Math.max(0, R * R - x * x));
+      const fx = invSxSqrt2pi * Math.exp(-0.5 * ((x - mx) / sx) * ((x - mx) / sx));
+      const cdfDiff = normCdf((rc - my) / sy) - normCdf((-rc - my) / sy);
+      const f = fx * cdfDiff;
+      const w = (i === 0 || i === N) ? 1 / 3 : (i % 2 === 0 ? 2 / 3 : 4 / 3);
+      sum += w * f;
     }
-    const density = sum * cell * cell / (2 * Math.PI * Math.sqrt(det));
-    return density;
+    return Math.max(0, sum * h);
   }
 
   /* ---------- High-level scenario builders ---------- */

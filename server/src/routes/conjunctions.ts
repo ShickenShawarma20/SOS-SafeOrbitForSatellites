@@ -40,6 +40,56 @@ function ringFromElements(el: OrbitalElements, steps = 96): [number, number, num
   );
 }
 
+/* ---------- Collision probability (Foster 2D method, 1D reduction) ----------
+ * Integrates the 2D Gaussian N(μ, Σ) over the combined hard-body disc at the
+ * origin (the primary). μ is the B-plane miss offset, Σ has 1σ principal axes
+ * {sigma1, sigma2} and orientation `orientationDeg`.  Same formulation as the
+ * frontend js/sim-core.js so served and locally-computed Pc match exactly. */
+function normCdf(x: number): number {
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const sign = x < 0 ? -1 : 1;
+  const z = Math.abs(x) / Math.SQRT2;
+  const t = 1 / (1 + p * z);
+  const erf = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
+  return 0.5 * (1 + sign * erf);
+}
+
+function computePc(c: Conjunction): number {
+  try {
+    if (!c.bPlane || !c.covariance || !c.hardBodyRadiusM) return c.probabilityOfCollision;
+    const R = Math.abs(c.hardBodyRadiusM) / 1000;
+    if (R <= 0) return c.probabilityOfCollision;
+    const sx = c.covariance.sigma1, sy = c.covariance.sigma2;
+    if (!sx || !sy || sx <= 0 || sy <= 0) return c.probabilityOfCollision;
+    const orient = (c.covariance.orientationDeg || 0) * Math.PI / 180;
+    const co = Math.cos(orient), si = Math.sin(orient);
+    const mx = c.bPlane.xiKm * co + c.bPlane.zetaKm * si;
+    const my = -c.bPlane.xiKm * si + c.bPlane.zetaKm * co;
+    const N = 512, a = -R, b = R, h = (b - a) / N;
+    const invSxSqrt2pi = 1 / (sx * Math.sqrt(2 * Math.PI));
+    let sum = 0;
+    for (let i = 0; i <= N; i++) {
+      const x = a + i * h;
+      const rc = Math.sqrt(Math.max(0, R * R - x * x));
+      const fx = invSxSqrt2pi * Math.exp(-0.5 * ((x - mx) / sx) * ((x - mx) / sx));
+      const cdfDiff = normCdf((rc - my) / sy) - normCdf((-rc - my) / sy);
+      const w = (i === 0 || i === N) ? 1 / 3 : (i % 2 === 0 ? 2 / 3 : 4 / 3);
+      sum += w * fx * cdfDiff;
+    }
+    const pc = sum * h;
+    // Use the physics-derived value where significant (above the 1e-6
+    // screening threshold); below it keep the CDM-recorded value.
+    return (pc >= 1e-6 && isFinite(pc)) ? pc : c.probabilityOfCollision;
+  } catch {
+    return c.probabilityOfCollision;
+  }
+}
+
+function enrichConj(c: Conjunction): Conjunction {
+  return { ...c, probabilityOfCollision: computePc(c) };
+}
+
 /* Linear B-plane encounter trajectory (the standard short-encounter model).
  * Over the brief encounter the relative motion is a straight line along the
  * relative-velocity axis; the secondary passes the primary at the recorded
@@ -113,7 +163,7 @@ router.get("/critical", (req, res) => {
     .filter(c => c.severity === "critical" && !c.acknowledged)
     .sort((a, b) => new Date(b.tca).getTime() - new Date(a.tca).getTime())[0];
   if (!critical) throw new AppError(404, "NOT_FOUND", "No critical conjunctions");
-  res.json(critical);
+  res.json(enrichConj(critical));
 });
 
 router.get("/summary", (req, res) => {
@@ -135,7 +185,7 @@ router.get("/upcoming", (req, res) => {
     .filter(c => !c.acknowledged)
     .sort((a, b) => new Date(a.tca).getTime() - new Date(b.tca).getTime())
     .slice(0, limit);
-  res.json({ items: upcoming, total: conjunctions.length });
+  res.json({ items: upcoming.map(enrichConj), total: conjunctions.length });
 });
 
 router.get("/timeline", (req, res) => {
@@ -151,7 +201,7 @@ router.get("/timeline", (req, res) => {
       time: c.tca,
       offsetHours: Math.round(offsetMs / 3600000 * 10) / 10,
       severity: c.severity,
-      probabilityOfCollision: c.probabilityOfCollision,
+      probabilityOfCollision: computePc(c),
     };
   }).filter(e => Math.abs(e.offsetHours) <= hours)
     .sort((a, b) => a.offsetHours - b.offsetHours);
@@ -162,14 +212,14 @@ router.get("/", (req, res) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
   const total = conjunctions.length;
-  const items = conjunctions.slice((page - 1) * limit, page * limit);
+  const items = conjunctions.slice((page - 1) * limit, page * limit).map(enrichConj);
   res.json({ items, total, page, limit });
 });
 
 router.get("/:id", (req, res) => {
   const c = conjunctions.find(c => c.id === req.params.id);
   if (!c) throw new AppError(404, "NOT_FOUND", `Conjunction ${req.params.id} not found`);
-  res.json(c);
+  res.json(enrichConj(c));
 });
 
 router.get("/:id/geometry", (req, res) => {

@@ -112,9 +112,9 @@
           '<div class="ai-conf"><div class="ai-conf-pct num">' + conf + '%</div><div class="ai-conf-lvl">' + rec.confidenceLevel + '</div></div>' +
         '</div>' +
         '<div class="ai-rec-grid">' +
-          kv("Current Pc", S.fmtPc(rec.currentPc), "var(--crit)") +
-          kv("Predicted Pc", S.fmtPc(rec.predictedPc), "var(--nominal)") +
-          kv("Current Miss Distance", S.fmtDist(rec.currentMissDistanceM), "var(--high)") +
+          kv("Current Pc", S.fmtPc(rec.currentPc), "var(--crit)", "recCurrentPc") +
+          kv("Predicted Pc", S.fmtPc(rec.predictedPc), "var(--nominal)", "recPredictedPc") +
+          kv("Current Miss Distance", S.fmtDist(rec.currentMissDistanceM), "var(--high)", "recCurrentMiss") +
           kv("Predicted Miss Distance", rec.predictedMissDistanceKm + " km", "var(--nominal)") +
           kv("Recommended Action", rec.recommendedPlan, "var(--accent)") +
           kv("Risk Reduction", rec.riskReductionPct + "%", "var(--nominal)") +
@@ -284,18 +284,20 @@
       var rec = pendingSim;
       var plan = rec.candidates.find(function (c) { return c.recommended; }) || rec.candidates[0];
       if (UI) UI.toast("Simulation started for " + plan.label + "…", "info");
+      startSimAnimation(rec, plan);
       S.api("/ai/simulate", { method: "POST", body: { recommendationId: rec.id, planId: plan.planId } })
-        .then(function (r) { pollSim(r.jobId, plan); })
+        .then(function (r) { pollSim(r.jobId, plan, rec); })
         .catch(function () { if (UI) UI.toast("Simulation failed to start.", "error"); });
     });
 
-    function pollSim(jobId, plan) {
+    function pollSim(jobId, plan, rec) {
       var n = 0;
       function tick() {
         S.api("/jobs/" + jobId).then(function (job) {
           n++;
-          if (UI) UI.toast(plan.label + " simulation: " + (job.progress || 0) + "% — " + (job.stage || ""), "info", 1400);
+          if (UI && (n === 1 || n % 2 === 0)) UI.toast(plan.label + " simulation: " + (job.progress || 0) + "% — " + (job.stage || ""), "info", 1400);
           if (job.status === "completed") {
+            finishSimAnimation(rec, plan);
             if (UI) UI.toast(plan.label + " validated — post-burn trajectory clear of catalogued objects.", "success", 4200);
             return;
           }
@@ -303,6 +305,107 @@
         }).catch(function () { if (n < 30) setTimeout(tick, 1200); });
       }
       tick();
+    }
+
+    /* ---------- Live risk-map animation during the Plan-A simulation ----------
+     * Smoothly decays the collision probability from the current (recorded) Pc
+     * to the post-burn (predicted) Pc using a log-linear interpolation —
+     * physically, the Pc drops by orders of magnitude as the burn separates the
+     * orbits. The live Pc is mapped to a risk level (CRITICAL ≥1e-4, HIGH ≥1e-5,
+     * MEDIUM ≥1e-6, else LOW) so the satellite, its debris and the conjunction
+     * corridor recolour in real time as the simulation progresses. The corridor
+     * fades and the TCA marker shrinks as the encounter is cleared.
+     */
+    var SIM_DURATION_MS = 9000;     // mirrors the backend job's stage timeline
+    var simAnimId = null, simStartTs = 0, simRec = null, simBanner = null, simLastRender = 0;
+
+    function riskLevelFromPc(pc) {
+      if (pc >= 1e-4) return "CRITICAL";
+      if (pc >= 1e-5) return "HIGH";
+      if (pc >= 1e-6) return "MEDIUM";
+      return "LOW";
+    }
+
+    function startSimAnimation(rec, plan) {
+      stopSimAnimation();
+      simRec = rec;
+      simStartTs = performance.now();
+      simLastRender = 0;
+      showSimBanner(plan.label);
+      function frame(now) {
+        var p = Math.min(1, (now - simStartTs) / SIM_DURATION_MS);
+        applySimState(p, rec, now);
+        if (p < 1) simAnimId = requestAnimationFrame(frame);
+      }
+      simAnimId = requestAnimationFrame(frame);
+    }
+
+    function applySimState(p, rec, now) {
+      // Log-linear Pc decay: Pc(p) = currentPc · (predictedPc/currentPc)^p
+      var cur = rec.currentPc, pred = rec.predictedPc;
+      var pc = cur * Math.pow(pred / cur, p);
+      var missKm = (rec.currentMissDistanceM / 1000) + p * (rec.predictedMissDistanceKm - rec.currentMissDistanceM / 1000);
+      var riskLevel = riskLevelFromPc(pc);
+      var corridorOp = 0.8 - 0.68 * p;     // 0.80 → 0.12
+
+      // Throttle the SVG rebuild to ~30 fps for smoothness.
+      if (lastRiskMap && (now == null || now - simLastRender >= 33)) {
+        simLastRender = now || 0;
+        renderRiskMap(lastRiskMap, {
+          satelliteId: rec.satelliteId,
+          riskLevel: riskLevel,
+          corridorOpacity: corridorOp
+        });
+      }
+      // Live-update the recommendation tiles (cheap — every frame).
+      setText("recCurrentPc", S.fmtPc(pc));
+      setText("recCurrentMiss", missKm < 1 ? Math.round(missKm * 1000) + " m" : missKm.toFixed(2) + " km");
+      // Live-update the matching assessment entry.
+      updateAssessEntry(rec.satelliteId, riskLevel, pc);
+    }
+
+    function finishSimAnimation(rec, plan) {
+      if (simAnimId) cancelAnimationFrame(simAnimId);
+      simAnimId = null;
+      applySimState(1, rec);
+      hideSimBanner();
+    }
+
+    function stopSimAnimation() {
+      if (simAnimId) cancelAnimationFrame(simAnimId);
+      simAnimId = null;
+      hideSimBanner();
+      if (lastRiskMap) renderRiskMap(lastRiskMap);
+      simRec = null;
+    }
+
+    function updateAssessEntry(satId, riskLevel, pc) {
+      var items = document.querySelectorAll("#aiAssessList .assess-item");
+      items.forEach(function (el) {
+        var nameEl = el.querySelector(".assess-sat");
+        if (!nameEl || nameEl.textContent !== satId) return;
+        var col = RISK_COLORS[riskLevel] || RISK_COLORS.none;
+        var dot = el.querySelector(".ai-dot");
+        if (dot) { dot.style.background = col; dot.style.boxShadow = "0 0 9px " + col + "99"; }
+        var riskEl = el.querySelector(".assess-risk");
+        if (riskEl) { riskEl.textContent = riskLevel; riskEl.style.color = col; }
+        var subEl = el.querySelector(".assess-sub");
+        if (subEl) subEl.innerHTML = "↔ " + (simRec && simRec.objectId ? simRec.objectId : "") + " · Pc " + S.fmtPc(pc) + ' <span style="color:#FDE68A;font-size:9px;letter-spacing:.08em;">SIMULATING</span>';
+      });
+    }
+
+    function showSimBanner(label) {
+      var map = document.querySelector(".ai-riskmap");
+      if (!map) return;
+      hideSimBanner();
+      simBanner = document.createElement("div");
+      simBanner.className = "rm-sim-banner";
+      simBanner.innerHTML = "● " + label + " SIMULATION LIVE";
+      map.appendChild(simBanner);
+    }
+    function hideSimBanner() {
+      if (simBanner && simBanner.parentNode) simBanner.parentNode.removeChild(simBanner);
+      simBanner = null;
     }
 
     /* ---------- Health / data quality / activity ---------- */
@@ -362,14 +465,37 @@
     });
 
     /* ---------- Risk map renderer ---------- */
-    function renderRiskMap(data) {
+    var lastRiskMap = null;
+    function renderRiskMap(data, simState) {
+      lastRiskMap = data;
       var svg = document.getElementById("aiRiskSvg");
       if (!svg) return;
       var W = 760, H = 420, ML = 46, MR = 16, MT = 24, MB = 30;
       function altY(alt) { return MT + (H - MT - MB) * (1 - Math.sqrt(Math.min(alt, 36000) / 36000)); }
       function raanX(raan) { return ML + (W - ML - MR) * (((raan % 360) + 360) % 360) / 360; }
-      var pts = data.points || [];
-      var conj = data.conjunctions || [];
+      // Clone so live simulation overrides never mutate the cached data.
+      var pts = (data.points || []).map(function (p) { return Object.assign({}, p); });
+      var conj = (data.conjunctions || []).map(function (c) { return Object.assign({}, c); });
+
+      /* During a Plan-A simulation: downgrade the satellite + its debris +
+         conjunction corridor to the live (decaying) risk level and fade the
+         corridor as the burn takes effect. */
+      if (simState) {
+        conj.forEach(function (c) {
+          if (c.satelliteId === simState.satelliteId) {
+            c.riskLevel = simState.riskLevel;
+            c._simOp = simState.corridorOpacity;
+          }
+        });
+        pts.forEach(function (p) {
+          var matched = conj.some(function (c) { return c.satelliteId === simState.satelliteId && c.objectId === p.id; });
+          if (p.id === simState.satelliteId || matched) {
+            p.riskLevel = simState.riskLevel;
+            p._sim = true;
+          }
+        });
+      }
+
       var bands = [
         ["LEO", 2000], ["MEO", 35786], ["GEO", 36000],
       ];
@@ -390,15 +516,18 @@
         if (!s || !o) return "";
         var x1 = raanX(s.raanDeg), y1 = altY(s.altitudeKm), x2 = raanX(o.raanDeg), y2 = altY(o.altitudeKm);
         var col = RISK_COLORS[c.riskLevel] || RISK_COLORS.none;
-        return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" class="rm-corridor" stroke="' + col + '"/>' +
-          '<circle cx="' + ((x1 + x2) / 2).toFixed(1) + '" cy="' + ((y1 + y2) / 2).toFixed(1) + '" r="4" class="rm-tca" fill="' + col + '"><title>TCA ' + S.fmtTime(c.tca) + ' · ' + c.riskLevel + '</title></circle>';
+        var op = c._simOp != null ? c._simOp : 0.7;
+        var tcaR = c._simOp != null ? (1.5 + 2.5 * c._simOp) : 4;
+        return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" class="rm-corridor" stroke="' + col + '" stroke-opacity="' + op.toFixed(2) + '"/>' +
+          '<circle cx="' + ((x1 + x2) / 2).toFixed(1) + '" cy="' + ((y1 + y2) / 2).toFixed(1) + '" r="' + tcaR.toFixed(1) + '" class="rm-tca" fill="' + col + '"><title>TCA ' + S.fmtTime(c.tca) + ' · ' + c.riskLevel + '</title></circle>';
       }).join("");
       var dots = pts.map(function (p) {
         var x = raanX(p.raanDeg + p.phaseDeg * 0.15), y = altY(p.altitudeKm);
         var col = RISK_COLORS[p.riskLevel] || RISK_COLORS.none;
         var r = p.kind === "satellite" ? 5.5 : 3.5;
         var cls = p.kind === "satellite" ? "rm-sat" : "rm-obj";
-        return '<g transform="translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')" class="rm-node">' +
+        var nodeCls = "rm-node" + (p._sim ? " rm-sim" : "");
+        return '<g transform="translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ')" class="' + nodeCls + '" style="color:' + col + ';">' +
           (p.kind === "satellite" ? '<rect x="-' + r + '" y="-' + r + '" width="' + (r * 2) + '" height="' + (r * 2) + '" rx="2" fill="' + col + '" stroke="#04101F" stroke-width="1"/>' : '<circle r="' + r + '" fill="' + col + '" stroke="#04101F" stroke-width="1"/>') +
           (p.riskLevel !== "none" ? '<circle r="' + (r + 4) + '" fill="none" stroke="' + col + '" stroke-opacity="0.5" class="rm-halo"/>' : "") +
           '<text x="0" y="' + (-(r + 4)) + '" class="rm-label" text-anchor="middle">' + p.name + '</text>' +
@@ -412,8 +541,8 @@
     }
 
     /* ---------- helpers ---------- */
-    function kv(k, v, color) {
-      return '<div class="ai-kv"><div class="k">' + k + '</div><div class="v num" style="' + (color ? "color:" + color : "") + '">' + v + '</div></div>';
+    function kv(k, v, color, id) {
+      return '<div class="ai-kv"><div class="k">' + k + '</div><div class="v num"' + (id ? ' id="' + id + '"' : "") + ' style="' + (color ? "color:" + color : "") + '">' + v + '</div></div>';
     }
     function riskBadgeClass(level) {
       return level === "CRITICAL" ? "crit" : level === "HIGH" ? "high" : level === "MEDIUM" ? "medium" : "info";

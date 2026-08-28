@@ -2,7 +2,12 @@
 "use strict";
 
 const express = require("express");
+const path = require("path");
 const store = require("./store");
+// Reuse the single source of truth for collision-probability physics so the
+// served Pc matches the value the frontend computes locally on the conjunction
+// page (Foster 2D method, 1D reduction over the B-plane hard-body disc).
+const SOSSim = require(path.join(__dirname, "..", "js", "sim-core.js"));
 
 const router = express.Router();
 const {
@@ -15,8 +20,27 @@ function findSat(id) { return satellites.find((s) => s.id === id); }
 function findConj(id) { return conjunctions.find((c) => c.id === id); }
 function findPlan(id) { return maneuverPlans.find((p) => p.id === id); }
 
+/* Compute Pc from a conjunction's B-plane geometry + covariance + hard-body
+   radius using the corrected Foster integrator. Falls back to the recorded
+   value if the geometry is incomplete. */
+function computePc(c) {
+  try {
+    if (!c.bPlane || !c.covariance || !c.hardBodyRadiusM) return c.probabilityOfCollision;
+    const mean = { mx: c.bPlane.xiKm, my: c.bPlane.zetaKm };
+    const cov = { sx: c.covariance.sigma1, sy: c.covariance.sigma2, orient: c.covariance.orientationDeg };
+    const pc = SOSSim.collisionProbability(mean, cov, c.hardBodyRadiusM / 1000);
+    // Use the physics-derived value where it is significant (above the 1e-6
+    // screening threshold); below it the linear B-plane model is less
+    // reliable, so keep the CDM-recorded value (which is what an operator
+    // sees in a real Conjunction Data Message).
+    return (pc >= 1e-6 && isFinite(pc)) ? pc : c.probabilityOfCollision;
+  } catch (e) {
+    return c.probabilityOfCollision;
+  }
+}
+
 function enrichConj(c) {
-  return { ...c };
+  return { ...c, probabilityOfCollision: computePc(c) };
 }
 
 function paginated(items, page, limit) {
@@ -133,34 +157,59 @@ router.get("/conjunctions/:id/objects", (req, res) => {
 router.get("/conjunctions/:id/geometry", (req, res) => {
   const c = findConj(req.params.id);
   if (!c) return res.status(404).json({ error: { code: "NOT_FOUND", message: "not found" } });
+  const sat = findSat(c.satelliteId);
+  const obj = debris.find((d) => d.id === c.objectId);
+  const xi = c.bPlane ? c.bPlane.xiKm : 0;
+  const zeta = c.bPlane ? c.bPlane.zetaKm : -c.missDistanceMeters / 1000;
+  const relV = c.relativeVelocityKms;
+  const winSec = 150;
+  // Linear B-plane encounter trajectory (short-encounter model): the secondary
+  // moves along the relative-velocity axis at `relV` and is offset by the
+  // recorded B-plane miss (xi, zeta) in the perpendicular plane.
+  const relTraj = [];
+  for (let t = -winSec; t <= winSec; t += 1) {
+    const along = relV * t;
+    relTraj.push({ tOffsetSec: t, alongKm: along, xiKm: xi, zetaKm: zeta, rangeKm: Math.hypot(along, xi, zeta) });
+  }
   res.json({
     conjunctionId: c.id,
     tca: c.tca,
+    severity: c.severity,
     missDistanceMeters: c.missDistanceMeters,
-    bPlane: c.bPlane,
+    relativeVelocityKms: relV,
+    relativeSpeedKmh: c.relativeSpeedKmh,
+    combinedUncertaintyKm: c.combinedUncertaintyKm,
+    hardBodyRadiusM: c.hardBodyRadiusM,
+    bPlane: c.bPlane || { xiKm: 0, zetaKm: -c.missDistanceMeters / 1000 },
     covariance: c.covariance,
-    trajectories: {
-      primaryOrbitKm: samplePrimary(c),
-      secondaryOrbitKm: sampleSecondary(c),
-    },
+    primary: sat ? { id: sat.id, orbitalElements: sat.elements, orbitRing: keplerRing(sat.elements) } : null,
+    secondary: obj ? { id: obj.id, orbitalElements: obj.elements, orbitRing: keplerRing(obj.elements) } : null,
+    encounter: { windowSec, relativeTrajectory: relTraj },
   });
 });
 
-function samplePrimary(c) {
-  const sat = findSat(c.satelliteId);
-  const r = 6378 + (sat ? sat.elements.altitudeKm : 450);
-  return circle(r);
-}
-function sampleSecondary(c) {
-  const obj = debris.find((d) => d.id === c.objectId);
-  const r = 6378 + (obj ? obj.elements.altitudeKm : 450);
-  return circle(r);
-}
-function circle(r, steps = 72) {
-  return Array.from({ length: steps + 1 }, (_, i) => {
-    const a = (i / steps) * Math.PI * 2;
-    return [Number((r * Math.cos(a)).toFixed(2)), 0, Number((r * Math.sin(a)).toFixed(2))];
-  });
+/* Keplerian → ECI orbit ring (96 samples) from catalog orbital elements, for
+   the conjunction page's orbit-context inset.  Real ellipse geometry, not a
+   circle — matches the 3D globe's propagation. */
+function keplerRing(el, steps) {
+  steps = steps || 96;
+  const MU = 398600.4418, EARTH_R = 6378.0, DEG = Math.PI / 180;
+  const a = EARTH_R + el.altitudeKm;
+  const e = el.eccentricity || 0;
+  const inc = (el.inclinationDeg || 0) * DEG;
+  const raan = (el.raanDeg || 0) * DEG;
+  const omega = (el.argPerigeeDeg || 0) * DEG;
+  const ring = [];
+  for (let i = 0; i <= steps; i++) {
+    const nu = (i / steps) * 2 * Math.PI;
+    const r = (a * (1 - e * e)) / (1 + e * Math.cos(nu));
+    const px = r * Math.cos(nu), py = r * Math.sin(nu);
+    const x1 = px * Math.cos(omega) - py * Math.sin(omega);
+    const y1 = px * Math.sin(omega) + py * Math.cos(omega);
+    const y2 = y1 * Math.cos(inc), z2 = y1 * Math.sin(inc);
+    ring.push([x1 * Math.cos(raan) - y2 * Math.sin(raan), x1 * Math.sin(raan) + y2 * Math.cos(raan), z2]);
+  }
+  return ring;
 }
 
 router.post("/conjunctions/:id/watchlist", (req, res) => {

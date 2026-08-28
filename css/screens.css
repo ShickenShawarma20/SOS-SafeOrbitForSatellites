@@ -542,6 +542,22 @@ tr.row-med  { box-shadow: inset 3px 0 0 var(--warn); }
 .rm-halo { animation: pulse 2.4s infinite; transform-box: fill-box; transform-origin: center; }
 .rm-label { font: 600 8.5px var(--mono); fill: rgba(200,225,250,.85); paint-order: stroke; stroke: #04101F; stroke-width: 2.4; stroke-linejoin: round; }
 .rm-node { cursor: pointer; }
+.rm-node.rm-sim { animation: rmSimPulse 1.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes rmSimPulse {
+  0%, 100% { filter: drop-shadow(0 0 1px currentColor); }
+  50%      { filter: drop-shadow(0 0 7px currentColor); }
+}
+.rm-sim-banner {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  z-index: 6; pointer-events: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 999px;
+  font: 700 10px var(--mono); letter-spacing: 0.1em;
+  color: #FDE68A; background: rgba(250,204,21,0.14);
+  border: 1px solid rgba(250,204,21,0.55);
+  backdrop-filter: blur(6px);
+  animation: pulse 1.2s infinite;
+}
 .rm-legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 14px; border-top: 1px solid var(--border); background: rgba(5,10,18,.35); }
 
 /* assessments list */
