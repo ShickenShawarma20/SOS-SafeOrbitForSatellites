@@ -12,10 +12,16 @@
 </head>
 <body>
 
-<div class="yt-bg" aria-hidden="true">
-  <div id="ytPlayer"></div>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<video class="vid-bg" autoplay muted loop playsinline preload="auto" id="vidBg" aria-hidden="true">
+  <source src="/assets/space-earth.mp4" type="video/mp4">
+</video>
+<div class="vid-overlay" aria-hidden="true"></div>
+
+<div class="sat-orbit" aria-hidden="true">
+  <div class="sat-path"><div class="sat-dot"></div></div>
 </div>
-<div class="yt-overlay" aria-hidden="true"></div>
 
 <main class="landing">
 
@@ -27,22 +33,23 @@
         <circle cx="19" cy="7.6" r="1.5" fill="currentColor" stroke="none"/>
       </svg>
       <span class="brand-name">SOS</span>
-      <span class="brand-sub">SafeOrbitForSattelites</span>
+      <span class="brand-sub">SafeOrbitForSatellites</span>
     </div>
-    <div class="status-pill">
-      <span class="status-dot"></span>
-      <span>SYSTEM ONLINE</span>
+    <div class="head-right">
+      <div class="utc-clock" id="utcClock">--:--:-- UTC</div>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>SYSTEM ONLINE</span>
+      </div>
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero reveal" data-parallax="0.3">
     <div class="hero-badge">Space Situational Awareness &middot; SIH 2026</div>
     <h1 class="hero-title">Safe Orbit<br>for Satellites</h1>
-    <p class="hero-tag">
-      An autonomous mission-control console that watches LEO satellites,
-      detects debris conjunctions, and plans collision-avoidance maneuvers &mdash;
-      all visualised on a live 3D orbital digital twin.
-    </p>
+    <div class="hero-tag-wrap">
+      <p class="hero-tag" id="heroTag"></p><span class="cursor-blink" aria-hidden="true">&#9608;</span>
+    </div>
     <div class="hero-actions">
       <a class="btn-launch" href="index.html" onclick="window.location.assign(this.href); return false;">
         <span>Launch Console</span>
@@ -56,7 +63,7 @@
   </section>
 
   <section class="features">
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="6"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-22 12 12)"/></svg>
       </div>
@@ -64,7 +71,7 @@
       <p>Real-time WebGL Earth with Keplerian orbit propagation, debris tracks, and TCA encounter markers in the ECI frame.</p>
     </article>
 
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
       </div>
@@ -72,7 +79,7 @@
       <p>Covariance dispersion ellipses (1&sigma;&ndash;3&sigma;) against Hard-Body-Radii keep-out circles on the encounter plane.</p>
     </article>
 
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 19c6 0 4-11 10-11h4"/><path d="m15.5 5 3 3-3 3"/><circle cx="4" cy="19" r="1.6"/></svg>
       </div>
@@ -80,7 +87,7 @@
       <p>Tsiolkovsky propellant optimization, multi-axis burn simulation, and 72-hour secondary conjunction screening.</p>
     </article>
 
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>
       </div>
@@ -88,7 +95,7 @@
       <p>Closed-loop policy engine with threshold-based auto-burn execution for zero-latency collision avoidance.</p>
     </article>
 
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 1 4 4v1a4 4 0 0 1-1 2.6L12 14 9 10.6A4 4 0 0 1 8 8V7a4 4 0 0 1 4-4Z"/><path d="M12 14v4M8 21h8M9.5 18h5"/></svg>
       </div>
@@ -96,7 +103,7 @@
       <p>Structured burn directives, risk urgency classification, and telecommand checklists with deterministic fallback.</p>
     </article>
 
-    <article class="feature-card">
+    <article class="feature-card reveal" data-tilt>
       <div class="feature-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 21v-8M8 21l2.5-5M16 21l-2.5-5"/><path d="M7.5 8a6 6 0 0 1 9 0M9.5 10.5a3.2 3.2 0 0 1 5 0"/></svg>
       </div>
@@ -105,14 +112,14 @@
     </article>
   </section>
 
-  <section class="stats-bar">
-    <div class="stat"><div class="stat-val num">21,430</div><div class="stat-lbl">Tracked Objects</div></div>
-    <div class="stat"><div class="stat-val num">12</div><div class="stat-lbl">Console Pages</div></div>
-    <div class="stat"><div class="stat-val num">72h</div><div class="stat-lbl">Forward Screening</div></div>
-    <div class="stat"><div class="stat-val num">SGP4</div><div class="stat-lbl">Live Propagation</div></div>
+  <section class="stats-bar reveal">
+    <div class="stat"><div class="stat-val num" data-count="21430">0</div><div class="stat-lbl">Tracked Objects</div></div>
+    <div class="stat"><div class="stat-val num" data-count="12">0</div><div class="stat-lbl">Console Pages</div></div>
+    <div class="stat"><div class="stat-val num" data-count="72" data-suffix="h">0</div><div class="stat-lbl">Forward Screening</div></div>
+    <div class="stat"><div class="stat-val num" data-text="SGP4">0</div><div class="stat-lbl">Live Propagation</div></div>
   </section>
 
-  <footer class="landing-foot">
+  <footer class="landing-foot reveal">
     <div class="tech-badges">
       <span class="tech">Node.js</span>
       <span class="tech">Express</span>
@@ -126,19 +133,6 @@
 
 </main>
 
-<script>
-  var ytVideoId = "_XE_1isOEBA";
-  var tag = document.createElement("script");
-  tag.src = "https://www.youtube.com/iframe_api";
-  document.head.appendChild(tag);
-  window.onYouTubeIframeAPIReady = function () {
-    new YT.Player("ytPlayer", {
-      videoId: ytVideoId,
-      playerVars: { autoplay: 1, mute: 1, loop: 1, controls: 0, showinfo: 0, modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1, playlist: ytVideoId },
-      events: { onReady: function (e) { e.target.playVideo(); e.target.mute(); } }
-    });
-  };
-</script>
-
+<script src="/js/landing.js"></script>
 </body>
 </html>

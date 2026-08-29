@@ -56,11 +56,13 @@
 .bento {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  align-items: start;
   gap: 12px;
 }
 .bento .m1 { grid-column: span 8; }
-.bento .m2 { grid-column: span 4; }
-.bento .m3 { grid-column: span 5; }
+.bento .m2 { grid-column: span 4; grid-row: span 4; }
+.bento .m3 { grid-column: span 8; }
 .bento .m4 { grid-column: span 7; }
 .bento .m5a { grid-column: span 7; }
 .bento .m5b { grid-column: span 5; }
@@ -345,7 +347,7 @@
 
 @media (max-width: 1360px) {
   .bento .m1 { grid-column: span 12; }
-  .bento .m2 { grid-column: span 12; }
+  .bento .m2 { grid-column: span 12; grid-row: auto; }
   .bento .m3 { grid-column: span 6; }
   .bento .m4 { grid-column: span 6; }
   .bento .m5a { grid-column: span 6; }
