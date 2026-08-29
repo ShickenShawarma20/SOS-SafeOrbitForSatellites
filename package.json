@@ -8,7 +8,7 @@
     "dev": "npx tsx server/src/index.ts",
     "build": "node scripts/build.js",
     "build:ts": "tsc -p server/tsconfig.json",
-    "serve:static": "npx --yes serve -l 3000 ."
+    "serve:static": "npx --yes serve -l 3000 public"
   },
   "dependencies": {
     "cors": "^2.8.5",

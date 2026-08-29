@@ -28,7 +28,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-const staticRoot = path.resolve(__dirname, "../..");
+const staticRoot = path.resolve(__dirname, "../../public");
 
 /* Clean URLs — /satellite -> /satellite.html */
 ["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "ai", "tracking", "reports"].forEach(

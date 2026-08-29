@@ -127,29 +127,25 @@
 ## 📂 Project Structure
 
 ```
-├── server.ts                       # Express backend server with Gemini 3.7 API integration
-├── src/
-│   ├── App.tsx                     # Main operator console dashboard layout
-│   ├── main.tsx                    # React application root entry point
-│   ├── index.css                   # Tailwind CSS styling and theme configuration
-│   ├── types.ts                    # TypeScript definitions for orbital elements, CDMs, telemetry
-│   ├── components/
-│   │   ├── OrbitalGlobe3D.tsx          # Three.js 3D Earth digital twin & trajectory visualizer
-│   │   ├── BPlaneCollisionPlot.tsx     # B-Plane encounter plane and covariance error ellipses
-│   │   ├── ManeuverSimulationLab.tsx   # Delta-V propellant optimization and burn simulation
-│   │   ├── AiFlightDirectorAdvisor.tsx # Gemini 3.7 AI Flight Director & interactive chat console
-│   │   ├── ConjunctionRankingTable.tsx # Live conjunction risk assessment & priority ranking
-│   │   ├── SatelliteFleetManager.tsx   # Constellation health, fuel, and status manager
-│   │   ├── SpaceWeatherBar.tsx         # Real-time solar flux (F10.7) & Kp geomagnetic telemetry
-│   │   ├── CdmExporterModal.tsx        # CCSDS Conjunction Data Message exporter (JSON/XML)
-│   │   └── AutonomousAutoPilotModal.tsx# Closed-loop autonomous avoidance policy modal
-│   ├── utils/
-│   │   ├── orbitalMechanics.ts     # Keplerian-to-Cartesian conversion, B-Plane & orbit math
-│   │   └── aiAssessmentFallback.ts # Deterministic astrodynamics fallback & heuristic models
-│   └── data/
-│       └── mockOrbitalData.ts      # Active satellite catalog, debris objects, CDMs, weather
-├── package.json                    # Project dependencies and build scripts
-└── vite.config.ts                  # Vite build and development configuration
+├── public/                      # Static frontend (Vercel outputDirectory)
+│   ├── index.html               # Mission Control dashboard (home)
+│   ├── *.html                   # Other pages: ai, analytics, autopilot, conjunction, ...
+│   ├── css/                      # Stylesheets (base, components, screens, ...)
+│   └── js/                       # Frontend scripts
+│       ├── data/                 # World map / geo data
+│       ├── pages/                # Per-page controllers
+│       └── vendor/               # Vendored satellite.js + loader
+├── api/v1/                      # Vercel serverless functions (tracking + catch-all)
+├── server/src/                  # Express backend (Render): routes, services, data
+├── scripts/                     # Build scripts
+├── tests/                       # Ad-hoc Puppeteer test scripts
+├── logs/                        # Server logs
+├── docs/                        # Documentation & team work plans
+├── Assets/                      # Screenshots & presentation template
+├── package.json                 # Dependencies and build scripts
+├── vercel.json                   # Vercel config (outputDirectory: public)
+├── render.yaml                   # Render backend config
+└── README.md
 ```
 
 ---
