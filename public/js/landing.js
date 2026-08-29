@@ -109,6 +109,50 @@
     setTimeout(typeChar, 600);
   }
 
+  /* ---------- Loading screen transition ---------- */
+  var launchBtn = document.getElementById("launchBtn");
+  if (launchBtn) {
+    launchBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      var overlay = document.getElementById("loaderOverlay");
+      var bar = document.getElementById("loaderBar");
+      var pct = document.getElementById("loaderPct");
+      var status = document.getElementById("loaderStatus");
+      if (!overlay || !bar || !pct) { window.location.assign("index.html"); return; }
+
+      var steps = [
+        { pct: 15, text: "Booting mission-control systems\u2026" },
+        { pct: 32, text: "Establishing CelesTrak TLE link\u2026" },
+        { pct: 50, text: "Initializing SGP4 propagator\u2026" },
+        { pct: 68, text: "Loading 3D orbital digital twin\u2026" },
+        { pct: 85, text: "Screening 21,430 catalogued objects\u2026" },
+        { pct: 100, text: "Console ready." },
+      ];
+      var si = 0;
+
+      overlay.classList.add("active");
+      bar.style.width = "0%";
+      pct.textContent = "0%";
+
+      function next() {
+        if (si >= steps.length) {
+          window.location.assign("index.html");
+          return;
+        }
+        var s = steps[si];
+        if (status) {
+          status.style.opacity = "0";
+          setTimeout(function () { status.textContent = s.text; status.style.opacity = "1"; }, 120);
+        }
+        bar.style.width = s.pct + "%";
+        pct.textContent = s.pct + "%";
+        si++;
+        setTimeout(next, s.pct === 100 ? 500 : 500 + Math.random() * 350);
+      }
+      setTimeout(next, 350);
+    });
+  }
+
   /* ---------- Ensure video plays (browsers can block autoplay) ---------- */
   var vid = document.getElementById("vidBg");
   if (vid) {

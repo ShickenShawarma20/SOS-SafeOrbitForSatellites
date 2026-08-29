@@ -12,6 +12,24 @@
 </head>
 <body>
 
+<div class="loader-overlay" id="loaderOverlay" aria-hidden="true">
+  <div class="loader-content">
+    <div class="loader-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.2"/>
+        <ellipse cx="12" cy="12" rx="9" ry="4.4" transform="rotate(-28 12 12)"/>
+        <circle cx="19" cy="7.6" r="1.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+    <div class="loader-title">INITIALIZING CONSOLE</div>
+    <div class="loader-status" id="loaderStatus">Booting mission-control systems&hellip;</div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar" id="loaderBar"></div>
+    </div>
+    <div class="loader-pct" id="loaderPct">0%</div>
+  </div>
+</div>
+
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
 <video class="vid-bg" autoplay muted loop playsinline preload="auto" id="vidBg" aria-hidden="true">
@@ -45,13 +63,13 @@
   </header>
 
   <section class="hero reveal" data-parallax="0.3">
-    <div class="hero-badge">Space Situational Awareness &middot; SIH 2026</div>
+    <div class="hero-badge">Team SixthSense &middot; SIH 2026</div>
     <h1 class="hero-title">Safe Orbit<br>for Satellites</h1>
     <div class="hero-tag-wrap">
       <p class="hero-tag" id="heroTag"></p><span class="cursor-blink" aria-hidden="true">&#9608;</span>
     </div>
     <div class="hero-actions">
-      <a class="btn-launch" href="index.html" onclick="window.location.assign(this.href); return false;">
+      <a class="btn-launch" href="index.html" id="launchBtn">
         <span>Launch Console</span>
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -69,6 +87,7 @@
       </div>
       <h3>3D Orbital Digital Twin</h3>
       <p>Real-time WebGL Earth with Keplerian orbit propagation, debris tracks, and TCA encounter markers in the ECI frame.</p>
+      <div class="card-tags"><span class="tag">WebGL</span><span class="tag">ECI Frame</span><span class="tag">Three.js</span></div>
     </article>
 
     <article class="feature-card reveal" data-tilt>
@@ -77,6 +96,7 @@
       </div>
       <h3>B-Plane Encounter Modeler</h3>
       <p>Covariance dispersion ellipses (1&sigma;&ndash;3&sigma;) against Hard-Body-Radii keep-out circles on the encounter plane.</p>
+      <div class="card-tags"><span class="tag">Covariance</span><span class="tag">HBR</span><span class="tag">B-Plane</span></div>
     </article>
 
     <article class="feature-card reveal" data-tilt>
@@ -85,6 +105,7 @@
       </div>
       <h3>Maneuver Simulation Lab</h3>
       <p>Tsiolkovsky propellant optimization, multi-axis burn simulation, and 72-hour secondary conjunction screening.</p>
+      <div class="card-tags"><span class="tag">Tsiolkovsky</span><span class="tag">&Delta;V</span><span class="tag">72h Screening</span></div>
     </article>
 
     <article class="feature-card reveal" data-tilt>
@@ -93,6 +114,7 @@
       </div>
       <h3>Autonomous Autopilot</h3>
       <p>Closed-loop policy engine with threshold-based auto-burn execution for zero-latency collision avoidance.</p>
+      <div class="card-tags"><span class="tag">Closed-Loop</span><span class="tag">Auto-Burn</span><span class="tag">Zero-Latency</span></div>
     </article>
 
     <article class="feature-card reveal" data-tilt>
@@ -101,6 +123,7 @@
       </div>
       <h3>AI Flight Director</h3>
       <p>Structured burn directives, risk urgency classification, and telecommand checklists with deterministic fallback.</p>
+      <div class="card-tags"><span class="tag">AI Engine</span><span class="tag">Directives</span><span class="tag">Fallback</span></div>
     </article>
 
     <article class="feature-card reveal" data-tilt>
@@ -109,6 +132,7 @@
       </div>
       <h3>Fleet Telemetry &amp; Weather</h3>
       <p>Constellation fuel monitoring, space-weather telemetry (F&#8321;&#8320;.&#8327;, K&#8345;), and CCSDS CDM export.</p>
+      <div class="card-tags"><span class="tag">F&#8321;&#8320;.&#8327;</span><span class="tag">K&#8345; Index</span><span class="tag">CCSDS CDM</span></div>
     </article>
   </section>
 

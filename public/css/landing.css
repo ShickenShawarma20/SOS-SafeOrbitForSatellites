@@ -1,5 +1,31 @@
 /* SOS · SafeOrbitForSattelites — Landing / splash screen */
 
+/* ---------- Loading screen ---------- */
+.loader-overlay { position: fixed; inset: 0; z-index: 9999; display: flex;
+                   align-items: center; justify-content: center;
+                   background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(16px);
+                   opacity: 0; pointer-events: none;
+                   transition: opacity 0.4s ease; }
+.loader-overlay.active { opacity: 1; pointer-events: auto; }
+.loader-content { text-align: center; max-width: 420px; padding: 0 28px; }
+.loader-logo { width: 64px; height: 64px; margin: 0 auto 22px; color: var(--accent);
+               filter: drop-shadow(0 0 18px rgba(56,189,248,.4));
+               animation: loaderSpin 2s linear infinite; }
+@keyframes loaderSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loader-title { font-family: var(--mono); font-size: 14px; font-weight: 800;
+                letter-spacing: .2em; color: var(--text-hi); margin-bottom: 10px; }
+.loader-status { font-size: 12px; color: var(--text-mid); margin-bottom: 22px;
+                 min-height: 16px; transition: opacity 0.2s ease; }
+.loader-bar-wrap { width: 280px; height: 4px; margin: 0 auto;
+                   background: rgba(56,189,248,.1); border-radius: 999px;
+                   overflow: hidden; }
+.loader-bar { height: 100%; width: 0%; border-radius: 999px;
+              background: linear-gradient(90deg, #38BDF8, #22D3EE);
+              box-shadow: 0 0 12px rgba(56,189,248,.5);
+              transition: width 0.25s ease-out; }
+.loader-pct { font-family: var(--mono); font-size: 11px; font-weight: 700;
+              color: var(--accent); margin-top: 10px; letter-spacing: .05em; }
+
 /* ---------- Scroll progress bar ---------- */
 .scroll-progress { position: fixed; top: 0; left: 0; height: 2px; width: 0%;
                    background: linear-gradient(90deg, #38BDF8, #22D3EE); z-index: 100;
@@ -28,7 +54,7 @@
 .sat-dot::after { content: ""; position: absolute; top: -2px; left: -2px;
                   width: 12px; height: 12px; border-radius: 50%;
                   border: 1px solid rgba(56,189,248,.4); animation: pulse 2s ease-in-out infinite; }
-@keyframes orbitSpin { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
+@keyframes orbitSpin { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 @keyframes pulse { 0%,100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.8); opacity: 0; } }
 
 /* ---------- Layout ---------- */
@@ -48,12 +74,16 @@
              letter-spacing: .06em; padding: 5px 12px; border-radius: 8px;
              background: rgba(15,15,15,.6); border: 1px solid var(--border); }
 
-.status-pill { display: flex; align-items: center; gap: 7px; padding: 6px 14px; border-radius: 999px;
+.status-pill { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: var(--radius);
                background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.3);
                font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--nominal);
-               letter-spacing: .1em; }
+               letter-spacing: .1em; position: relative; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--nominal);
-              box-shadow: 0 0 8px rgba(34,197,94,.7); animation: blink 2s ease-in-out infinite; }
+              box-shadow: 0 0 8px rgba(34,197,94,.7); position: relative; }
+.status-dot::after { content: ""; position: absolute; inset: -3px; border-radius: 50%;
+                     background: var(--nominal); opacity: .5;
+                     animation: statusPing 2s cubic-bezier(0,0,0.2,1) infinite; }
+@keyframes statusPing { 0% { transform: scale(1); opacity: .5; } 75%,100% { transform: scale(2.5); opacity: 0; } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
 
 /* ---------- Hero ---------- */
@@ -61,7 +91,7 @@
         padding: 60px 0 40px; will-change: transform; }
 .hero-badge { font-family: var(--mono); font-size: 10.5px; font-weight: 700;
               letter-spacing: .12em; color: var(--accent); text-transform: uppercase;
-              padding: 6px 16px; border-radius: 999px; background: var(--accent-dim);
+              padding: 6px 16px; border-radius: var(--radius); background: var(--accent-dim);
               border: 1px solid rgba(56,189,248,.3); margin-bottom: 26px; }
 .hero-title { font-size: clamp(40px, 7vw, 68px); font-weight: 900; line-height: 1.02;
               letter-spacing: -.03em; color: var(--text-hi); margin-bottom: 22px;
@@ -76,7 +106,7 @@
 
 /* ---------- Buttons ---------- */
 .btn-launch { display: inline-flex; align-items: center; gap: 9px;
-              padding: 14px 32px; border-radius: 999px; font-size: 15px; font-weight: 700;
+              padding: 14px 32px; border-radius: var(--radius); font-size: 15px; font-weight: 700;
               color: #04101F; text-decoration: none; cursor: pointer; border: none;
               background: linear-gradient(135deg, #38BDF8, #22D3EE);
               box-shadow: 0 8px 32px rgba(56,189,248,.35), inset 0 1px 0 rgba(255,255,255,.3);
@@ -88,7 +118,7 @@
 .btn-launch:hover svg { transform: translateX(4px); }
 
 .btn-ghost { display: inline-flex; align-items: center; gap: 8px;
-             padding: 14px 22px; border-radius: 999px; font-size: 14px; font-weight: 600;
+             padding: 14px 22px; border-radius: var(--radius); font-size: 14px; font-weight: 600;
              color: var(--text-mid); text-decoration: none; cursor: pointer;
              background: rgba(148,163,184,.06); border: 1px solid var(--border);
              transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-base) var(--ease-out); }
@@ -99,26 +129,35 @@
 .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px;
             perspective: 1000px; }
 
-.feature-card { background: rgba(15,15,15,.6); backdrop-filter: blur(10px);
-                border: 1px solid var(--border); border-radius: var(--radius-lg);
-                padding: 22px 20px; transition: border-color var(--dur-base), box-shadow var(--dur-base);
-                transform-style: preserve-3d; will-change: transform; }
-.feature-card:hover { border-color: rgba(56,189,248,.4);
-                      box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 30px rgba(56,189,248,.08); }
-.feature-icon { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center;
-                justify-content: center; color: var(--accent); margin-bottom: 14px;
-                background: var(--accent-dim); border: 1px solid rgba(56,189,248,.2);
+.feature-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius);
+                padding: 22px 20px; transform-style: preserve-3d; will-change: transform;
+                transition: all 0.3s ease; }
+.feature-card:hover { border-color: rgba(56, 189, 248, 0.4);
+                      box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 30px rgba(6,182,212,0.15);
+                      transform: translateY(-4px); }
+.feature-icon { width: 42px; height: 42px; border-radius: var(--radius-sm); display: flex; align-items: center;
+                justify-content: center; color: #67E8F9; margin-bottom: 14px;
+                background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.35);
+                box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
                 transition: transform var(--dur-base) var(--ease-out); transform: translateZ(20px); }
 .feature-icon svg { width: 22px; height: 22px; }
 .feature-card h3 { font-size: 14.5px; font-weight: 700; color: var(--text-hi); margin-bottom: 7px; letter-spacing: -.01em;
                    transform: translateZ(15px); }
 .feature-card p { font-size: 12.5px; line-height: 1.55; color: var(--text-mid); transform: translateZ(10px); }
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px;
+             border-top: 1px solid rgba(255, 255, 255, 0.06); transform: translateZ(8px); }
+.card-tags .tag { font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--text-low);
+                  padding: 3px 8px; border-radius: 5px; background: rgba(56, 189, 248, 0.06);
+                  border: 1px solid rgba(56, 189, 248, 0.15); letter-spacing: .04em;
+                  text-transform: uppercase; transition: color var(--dur-base), border-color var(--dur-base); }
+.card-tags .tag:hover { color: #67E8F9; border-color: rgba(6, 182, 212, 0.3); }
 
 /* ---------- Stats bar ---------- */
 .stats-bar { display: flex; justify-content: center; gap: 44px; flex-wrap: wrap;
-             padding: 24px 28px; border-radius: var(--radius-lg);
-             background: rgba(10,10,10,.5); backdrop-filter: blur(10px);
-             border: 1px solid var(--border); }
+             padding: 24px 28px; border-radius: var(--radius);
+             background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(12px);
+             border: 1px solid rgba(255, 255, 255, 0.08); }
 .stat { text-align: center; }
 .stat-val { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent);
             line-height: 1; margin-bottom: 5px; }
@@ -128,8 +167,9 @@
 .landing-foot { text-align: center; margin-top: auto; padding-top: 14px; }
 .tech-badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
 .tech { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--text-low);
-        padding: 4px 10px; border-radius: 6px; background: rgba(148,163,184,.06);
-        border: 1px solid var(--border); letter-spacing: .03em;
+        padding: 4px 10px; border-radius: var(--radius-sm); background: rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.08); letter-spacing: .03em;
+        backdrop-filter: blur(6px);
         transition: color var(--dur-base), border-color var(--dur-base); }
 .tech:hover { color: var(--accent); border-color: rgba(56,189,248,.3); }
 .foot-text { font-size: 11.5px; color: var(--text-low); }
