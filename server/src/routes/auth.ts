@@ -4,9 +4,9 @@ import { AppError } from "../middleware/error.js";
 const router = Router();
 
 let currentOperator = {
-  name: "Alex Morgan",
+  name: "Team SixthSense",
   role: "Mission Controller",
-  initials: "AM",
+  initials: "TS",
 };
 
 router.post("/login", (req, res) => {
