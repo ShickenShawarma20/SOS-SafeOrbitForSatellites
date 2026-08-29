@@ -1,9 +1,6 @@
 # SIH 2026 — Idea Presentation (Filled Content)
 
-> This document contains the **ready-to-paste content for every slide** of the
-> SIH2026-IDEA-Presentation-Format.pptx template. Copy each section into the
-> corresponding slide. Keep points concise — avoid paragraphs. Use diagrams and
-> infographics where noted. Export to PDF before uploading to the portal.
+> Ready-to-paste content for every slide of the SIH2026-IDEA-Presentation-Format.pptx template. Keep points short. Use diagrams where noted. Export to PDF before uploading.
 
 ---
 
@@ -20,73 +17,36 @@ SMART INDIA HACKATHON 2026
 | **Theme** | Space Technology |
 | **PS Category** | Software |
 | **Team ID** | *(fill from SIH portal)* |
-| **Team Name** | *(fill from SIH portal — registered name)* |
+| **Team Name** | *(fill from SIH portal)* |
 
-**Project Name:** SOS · SafeOrbitForSattelites
-
-**Tagline:** *Autonomous Space Situational Awareness & Collision Avoidance
-Flight Director Console*
+**Project:** SOS · SafeOrbitForSattelites
+**Tagline:** *Autonomous SSA & Collision Avoidance Flight Director Console*
 
 ---
 
 ## SLIDE 2 — IDEA TITLE / PROPOSED SOLUTION
 
 ### Solution Name
-**SOS (Safe Orbit for Satellites)** — an intelligent, full-stack Space
-Situational Awareness (SSA) and Autonomous Collision Avoidance System for
-safeguarding LEO satellites from hypervelocity debris encounters.
+**SOS (Safe Orbit for Satellites)** — full-stack SSA & autonomous collision avoidance for LEO satellites.
 
-### Detailed Explanation of the Proposed Solution
-
-- **3D Orbital Digital Twin** — a real-time WebGL Earth globe (Three.js) that
-  propagates satellite & debris positions using authentic Keplerian orbital
-  elements (two-body propagation in the ECI frame). Operators see the *actual*
-  orbits, not animations.
-- **Conjunction Detection & Assessment** — the backend continuously screens
-  the catalogued object set (~21,430 tracked objects), computes Time of
-  Closest Approach (TCA), miss distance, and collision probability (Pc) using
-  a Foster 2D Gaussian integrator over the B-plane encounter geometry with
-  covariance ellipses and Hard-Body-Radius keep-out circles.
-- **AI Flight Director (AI Engine)** — reads each conjunction and generates
-  a structured flight directive: fuel-optimal burn epoch, ΔV vector, risk
-  urgency class, and a telecommand checklist. A deterministic astrodynamics
-  fallback engine keeps the system running even if the AI is unavailable.
-- **Maneuver Planner & Simulation Lab** — proposes multiple candidate burns
-  (prograde/retrograde/radial/cross-track), computes propellant cost via the
-  Tsiolkovsky rocket equation, predicts post-burn miss distance & Pc, and
-  re-screens the post-burn trajectory for 72 hours to catch secondary
-  conjunctions.
-- **Autonomous Autopilot Engine** — a closed-loop policy engine that
-  auto-executes avoidance burns when Pc exceeds a configurable threshold,
-  with a 5-stage execution pipeline (telecommand signing → attitude slew →
-  burn → orbit determination → secondary screening).
-- **Live SGP4 Tracking** — fetches real TLEs from CelesTrak and propagates ISRO
-  satellite positions client-side via satellite.js, with time-scrub controls.
-- **CCSDS CDM Exporter** — exports Conjunction Data Messages in XML/JSON/KVN
-  (CCSDS 508.0-B-1) for inter-agency coordination.
+### Key Features
+- **3D Orbital Digital Twin** — WebGL Earth globe (Three.js) with real Keplerian propagation (ECI frame). Operators see actual orbits, not animations.
+- **Conjunction Detection** — screens ~21,430 tracked objects; computes TCA, miss distance & collision probability (Pc) via Foster 2D Gaussian integrator over B-plane geometry.
+- **AI Flight Director** — generates burn epoch, ΔV vector, risk class & telecommand checklist; deterministic astrodynamics fallback if AI is down.
+- **Maneuver Planner & Simulation Lab** — candidate burns (prograde/retrograde/radial/cross-track), propellant cost via Tsiolkovsky equation, 72h post-burn re-screen.
+- **Autonomous Autopilot** — closed-loop auto-burn when Pc exceeds threshold; 5-stage pipeline (sign → slew → burn → orbit det. → re-screen).
+- **Live SGP4 Tracking** — real TLEs from CelesTrak, ISRO fleet tracking via satellite.js.
+- **CCSDS CDM Exporter** — XML/JSON/KVN (CCSDS 508.0-B-1) for inter-agency coordination.
 
 ### How It Addresses the Problem
+- **Problem:** 21,000+ debris objects in LEO; Kessler risk rising. Tools are fragmented & manual — warnings without burn plans.
+- **Solution:** One console that **detects → assesses (real physics) → recommends burn (AI) → executes** autonomously. Response time: hours → minutes.
 
-- **Problem:** 21,000+ tracked debris objects in LEO; collision risk is
-  growing (Kessler Syndrome). Current tools are fragmented, manual, and
-  slow — operators get warnings but no actionable, physics-backed burn plans.
-- **Our Solution:** One console that *detects* the threat, *assesses* the
-  risk with real physics, *recommends* an optimal burn using AI, and can
-  *execute* it autonomously — reducing response time from hours to minutes.
-
-### Innovation and Uniqueness
-
-- **Real astrodynamics, not mocks** — Keplerian propagation, RK4 integrators,
-  golden-section TCA search, and numerical Pc integration (Foster method)
-  run live in the browser and backend.
-- **AI + deterministic fallback** — the system never goes dark; if the AI Engine is
-  rate-limited, a built-in astrodynamics engine produces deterministic
-  directives.
-- **B-plane encounter visualization** — covariance ellipses and Hard-Body
-  Radius keep-out circles rendered on a live canvas, so operators *see* the
-  risk geometry.
-- **End-to-end autonomy** — from detection to burn execution to
-  post-burn verification, all in one console.
+### Innovation
+- **Real astrodynamics** — Keplerian propagation, RK4, golden-section TCA, Foster Pc (live in browser).
+- **AI + deterministic fallback** — system never goes dark.
+- **B-plane visualization** — covariance ellipses & Hard-Body keep-out circles on live canvas.
+- **End-to-end autonomy** — detection to execution to verification, one console.
 
 ---
 
@@ -96,149 +56,94 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | HTML5, CSS3, Vanilla JS (ES6+), Three.js (WebGL 3D globe), Canvas 2D (B-plane, charts) |
-| **Backend** | Node.js, Express, TypeScript (tsx), REST API |
-| **AI / LLM** | AI Engine (deterministic fallback engine) |
-| **Astrodynamics** | satellite.js (SGP4), custom Keplerian/RK4 propagator, Foster Pc integrator |
-| **Orbital Data** | CelesTrak TLE/GP API (real NORAD catalog data), CCSDS 508.0-B-1 CDM format |
-| **Deployment** | Vercel (serverless), Render (Node host), static CDN |
+| **Frontend** | HTML5, CSS3, Vanilla JS (ES6+), Three.js, Canvas 2D |
+| **Backend** | Node.js, Express, TypeScript, REST API |
+| **AI / LLM** | AI Engine + deterministic fallback |
+| **Astrodynamics** | satellite.js (SGP4), custom Keplerian/RK4, Foster Pc |
+| **Orbital Data** | CelesTrak TLE/GP API, CCSDS 508.0-B-1 CDM |
+| **Deployment** | Vercel (serverless), Render, static CDN |
 | **Dev Tools** | Git, npm, esbuild, tsc |
 
-### Methodology & Implementation Process
-
+### Methodology Pipeline
 ```
-  ┌──────────────────────────────────────────────────────────────┐
-  │                    DATA INGESTION LAYER                      │
-  │  CelesTrak TLE API  →  SGP4 propagation  →  ECI state vectors │
-  └───────────────────────────┬──────────────────────────────────┘
-                              │
-  ┌───────────────────────────▼──────────────────────────────────┐
-  │                  CONJUNCTION SCREENING ENGINE                │
-  │  Catalog cross-screen  →  TCA search (golden-section)        │
-  │  →  B-plane projection  →  Foster Pc integration             │
-  └───────────────────────────┬──────────────────────────────────┘
-                              │
-  ┌───────────────────────────▼──────────────────────────────────┐
-  │                 AI FLIGHT DIRECTOR (AI ENGINE)               │
-  │  CDM + elements + fuel  →  burn directive + ΔV + checklist   │
-  │  (deterministic fallback if AI unavailable)                 │
-  └───────────────────────────┬──────────────────────────────────┘
-                              │
-  ┌───────────────────────────▼──────────────────────────────────┐
-  │              MANEUVER PLANNING & SIMULATION                  │
-  │  Candidate burns  →  Tsiolkovsky fuel cost  →  72h re-screen │
-  └───────────────────────────┬──────────────────────────────────┘
-                              │
-  ┌───────────────────────────▼──────────────────────────────────┐
-  │            AUTONOMOUS AUTOPILOT EXECUTION                    │
-  │  Policy gate  →  5-stage pipeline  →  Post-burn verification │
-  └───────────────────────────┬──────────────────────────────────┘
-                              │
-  ┌───────────────────────────▼──────────────────────────────────┐
-  │              3D OPERATIONAL CONSOLE (FRONTEND)               │
-  │  Three.js globe  ·  B-plane plot  ·  Telemetry  ·  AI insight│
-  └──────────────────────────────────────────────────────────────┘
+DATA INGESTION (CelesTrak TLE → SGP4 → ECI vectors)
+        ↓
+CONJUNCTION SCREENING (TCA search → B-plane → Foster Pc)
+        ↓
+AI FLIGHT DIRECTOR (CDM + fuel → burn directive + ΔV + checklist)
+        ↓
+MANEUVER PLANNING (candidate burns → Tsiolkovsky cost → 72h re-screen)
+        ↓
+AUTONOMOUS AUTOPILOT (policy gate → 5-stage pipeline → verification)
+        ↓
+3D OPERATIONAL CONSOLE (globe · B-plane · telemetry · AI insight)
 ```
 
-### Key Algorithmic Components
-
-1. **Keplerian → ECI conversion** — 3-1-3 Euler rotation
-   (Rz(Ω)·Rx(i)·Rz(ω)) maps orbital elements to 3D Cartesian positions.
-2. **TCA search** — golden-section minimization of inter-object range over
-   time, seeded by a coarse grid sweep.
-3. **Collision probability (Pc)** — Foster 2D method: 1D-reduction Simpson
-   quadrature (N=512) of a 2D Gaussian over the combined hard-body disc,
-   with covariance orientation.
-4. **Tsiolkovsky rocket equation** — Δm = m₀(1 − e^(−ΔV/(Isp·g₀))).
-5. **SGP4 propagation** — satellite.js propagates real TLEs for live
-   tracking of ISRO fleet.
+### Key Algorithms
+1. **Keplerian → ECI** — 3-1-3 Euler rotation: Rz(Ω)·Rx(i)·Rz(ω).
+2. **TCA search** — golden-section minimization of inter-object range.
+3. **Pc (Foster 2D)** — Simpson quadrature (N=512) over combined hard-body disc.
+4. **Tsiolkovsky** — Δm = m₀(1 − e^(−ΔV/(Isp·g₀)).
+5. **SGP4** — satellite.js propagates real TLEs for ISRO fleet.
 
 ---
 
 ## SLIDE 4 — FEASIBILITY AND VIABILITY
 
-### Feasibility Analysis
+### Feasibility
+- **Technical: PROVEN** — working prototype (12 pages, Express/TS backend, Three.js globe, live SGP4, AI Engine). All core algorithms implemented & tested.
+- **Data: SOLVED** — free CelesTrak GP/TLE API (no key, 3× daily updates) + bundled offline snapshot.
+- **Deployment: READY** — static frontend + serverless functions. No special hardware.
+- **Scalability: DESIGNED** — TLE cache (6h refresh); Pc is O(N²) but ms per pair; horizontal scaling supported.
 
-- **Technical feasibility: PROVEN** — a working prototype exists with 12
-  pages, a live Express/TypeScript backend, a Three.js 3D globe, real SGP4
-  tracking from CelesTrak, and an AI Engine integration. All core
-  algorithms (Pc, TCA, maneuver planning) are implemented and tested.
-- **Data feasibility: SOLVED** — orbital data is freely available from
-  CelesTrak's public GP/TLE API (no API key required, 3× daily updates).
-  The system includes a bundled TLE snapshot for offline fallback.
-- **Deployment feasibility: READY** — the app deploys as a static frontend
-  + serverless functions (Vercel) or a Node host (Render). No specialised
-  hardware required.
-- **Scalability: DESIGNED** — the backend caches TLEs and refreshes every 6
-  hours; the Pc computation is O(N²) over the catalog but runs in
-  milliseconds per conjunction pair. The architecture supports horizontal
-  scaling of the screening engine.
+### Challenges & Mitigations
 
-### Potential Challenges and Risks
+| Challenge | Mitigation |
+|-----------|------------|
+| TLE accuracy (~1 km uncertainty) | Use latest CDM; show covariance ellipses |
+| AI API rate limits | Deterministic astrodynamics fallback guarantees uptime |
+| Catalog growth (~10%/yr) | Parallel screening; per-pair cache; Pc threshold pruning |
+| Real-burn safety | 72h re-screen gate; operator sign-off; DRY RUN mode |
+| Space weather (drag) | F10.7/Kp/drag multiplier feed covariance model |
 
-| Challenge | Risk | Mitigation |
-|-----------|------|------------|
-| **TLE accuracy degradation** | TLEs have ~1 km positional uncertainty; Pc may drift from reality | Use latest CDM data when available; show covariance ellipses so operators understand uncertainty |
-| **AI Engine API rate limits** | AI may be unavailable during peak usage | Deterministic astrodynamics fallback engine guarantees continuous operation |
-| **Catalog growth** | 21,000+ objects today, growing ~10% per year | Screening is parallelizable; cache per-pair geometry; prune low-risk pairs by Pc threshold |
-| **Real-burn execution safety** | Autonomous burns carry physical risk | 72-hour secondary screening gate; operator sign-off required for non-autonomous mode; DRY RUN simulation mode |
-| **Space weather variability** | Solar storms alter drag & orbit prediction | Space weather telemetry (F10.7, Kp, drag multiplier) feeds into covariance growth model |
-
-### Strategies for Overcoming Challenges
-
-- **Dual-mode AI** — the AI Engine for rich reasoning + deterministic fallback for
-  guaranteed uptime. The system never goes dark.
-- **CCSDS standard compliance** — CDM export in XML/JSON/KVN ensures
-  interoperability with existing agency infrastructure (ISRO, NASA CARA,
-  ESA).
-- **Layered autonomy** — STANDBY (manual) → DRY RUN (simulate only) → ARMED
-  (auto-execute), so operators choose their trust level.
-- **72-hour forward screening** — every proposed burn is checked against the
-  full catalog for 3 days post-burn to prevent creating *new* conjunctions.
+### Strategies
+- **Dual-mode AI** — rich reasoning + deterministic fallback. Never goes dark.
+- **CCSDS compliance** — interoperable with ISRO, NASA CARA, ESA.
+- **Layered autonomy** — STANDBY → DRY RUN → ARMED (operator chooses trust level).
+- **72h forward screening** — prevents burns from creating new conjunctions.
 
 ---
 
 ## SLIDE 5 — IMPACT AND BENEFITS
 
-### Potential Impact on Target Audience
+### Impact on Audience
 
 | Audience | Impact |
 |----------|--------|
-| **Satellite operators (ISRO, NSIL)** | Reduced collision response time from hours to minutes; fewer manual calculations; lower risk of satellite loss |
-| **Mission control teams** | A single console replaces fragmented tools; situational awareness at a glance |
-| **Space traffic management agencies** | CCSDS-compliant CDM export enables inter-agency coordination |
-| **Constellation operators** | Fleet-wide autonomous clearance — one click screens and clears the entire constellation |
-| **The orbital environment** | Prevents collisions that create more debris; directly fights Kessler Syndrome |
+| **ISRO, NSIL** | Response time hours → minutes; lower satellite loss risk |
+| **Mission control** | One console replaces fragmented tools |
+| **Space traffic agencies** | CCSDS CDM export enables inter-agency coordination |
+| **Constellation operators** | Fleet-wide autonomous clearance in one click |
+| **Orbital environment** | Prevents debris-generating collisions; fights Kessler Syndrome |
 
-### Benefits of the Solution
+### Benefits
 
 **Social:**
-- Protects satellite services that millions depend on — weather forecasting
-  (INSAT-3DS), disaster warning, communication, navigation (NavIC),
-  earth observation (EOS series).
-- Prevents cascading debris generation (Kessler Syndrome) that could render
-  LEO unusable for future generations.
+- Protects satellite services millions depend on (weather, disaster warning, NavIC, EOS).
+- Prevents Kessler Syndrome from rendering LEO unusable.
 
 **Economic:**
-- A single satellite costs ₹200–₹2,000 crore to build and launch; avoiding
-  one collision saves the full asset value plus downstream service revenue.
-- Reduces operator workload — one console replaces 5+ disparate tools,
-  cutting staffing costs.
-- Autonomous mode reduces response time, minimizing service disruption
-  windows.
+- One satellite = ₹200–₹2,000 crore; avoiding one collision saves full asset + revenue.
+- One console replaces 5+ tools → lower staffing cost.
+- Autonomous mode cuts service disruption windows.
 
 **Environmental:**
-- Every collision avoided prevents thousands of new debris fragments that
-  would persist in orbit for decades.
-- Preserves LEO as a sustainable resource for future satellite missions and
-  human spaceflight.
+- Each avoided collision prevents thousands of long-lived debris fragments.
+- Preserves LEO for future missions & human spaceflight.
 
 **Technological:**
-- First Indian SSA console integrating the AI Engine with real
-  astrodynamics physics for civilian satellite operations.
-- Open, extensible architecture — new object types, constellations, and
-  screening algorithms can be added without rearchitecting.
-- Live SGP4 tracking from real CelesTrak data — not a simulation.
+- First Indian SSA console integrating AI Engine with real astrodynamics.
+- Open, extensible architecture. Live SGP4 tracking — not a simulation.
 
 ---
 
@@ -248,59 +153,50 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 
 | Reference | Description |
 |-----------|-------------|
-| **CCSDS 508.0-B-1** | Conjunction Data Message (CDM) standard — the international format for sharing conjunction warnings between agencies |
-| **NASA CARA** | Conjunction Assessment Risk Analysis — Pc threshold framework (Critical ≥ 1×10⁻⁴, High ≥ 1×10⁻⁵) |
-| **Foster, J. L. (1992)** | "A Parametric Approach to Collision Probability" — the 2D Gaussian integration method for Pc estimation used in our engine |
-| **Bate, Mueller & White** | *Fundamentals of Astrodynamics* — Keplerian orbit propagation, two-body problem, Lambert's problem |
-| **Vallado, D.** | *Fundamentals of Astrodynamics and Applications* — SGP4/SDP4 propagation, coordinate frame conversions |
-| **Tsiolkovsky rocket equation** | Δm = m₀(1 − e^(−ΔV/(Isp·g₀)) — propellant mass calculation for maneuver planning |
+| **CCSDS 508.0-B-1** | CDM standard for inter-agency conjunction warnings |
+| **NASA CARA** | Pc threshold framework (Critical ≥ 1×10⁻⁴, High ≥ 1×10⁻⁵) |
+| **Foster, J. L. (1992)** | 2D Gaussian Pc integration method used in engine |
+| **Bate, Mueller & White** | *Fundamentals of Astrodynamics* — Keplerian propagation |
+| **Vallado, D.** | SGP4/SDP4 propagation, frame conversions |
+| **Tsiolkovsky equation** | Δm = m₀(1 − e^(−ΔV/(Isp·g₀)) |
 
 ### Data Sources
 
-| Source | URL | Use |
-|--------|-----|-----|
-| **CelesTrak** | https://celestrak.org/NORAD/elements/gp.php | Real TLE/GP orbital data for ISRO fleet (free, no key) |
-| **Space-Track** | https://www.space-track.org | Catalogued object data (supplementary) |
-| **NOAA SWPC** | https://swpc.noaa.gov | Space weather data (F10.7 solar flux, Kp geomagnetic index) |
+| Source | Use |
+|--------|-----|
+| **CelesTrak** | Real TLE/GP for ISRO fleet (free, no key) |
+| **Space-Track** | Catalogued object data (supplementary) |
+| **NOAA SWPC** | Space weather (F10.7, Kp) |
 
 ### Technology References
 
-| Technology | URL |
+| Technology | Use |
 |-----------|-----|
-| **Three.js** | https://threejs.org (WebGL 3D rendering) |
-| **satellite.js** | https://github.com/nasa/satellite.js (SGP4 propagation) |
-| **AI Engine** | AI Flight Director (deterministic fallback engine) |
-| **Express.js** | https://expressjs.com (REST API backend) |
+| **Three.js** | WebGL 3D rendering |
+| **satellite.js** | SGP4 propagation |
+| **AI Engine** | AI Flight Director + fallback |
+| **Express.js** | REST API backend |
 
 ### Project Links
 
 | Resource | Location |
 |----------|----------|
-| **Source code** | GitHub repository *(fill repo URL)* |
+| **Source code** | GitHub *(fill repo URL)* |
 | **Live demo** | *(fill deployed URL)* |
 | **Workflow doc** | `docs/WORKFLOW.md` |
 | **Feature guide** | `docs/FEATURES.md` |
 
 ---
 
-## PRESENTATION TIPS (from the template's instruction slide)
+## PRESENTATION TIPS
 
-- Keep maximum **6 slides** (including title slide).
-- **Avoid paragraphs** — use points, diagrams, infographics, pictures.
-- Keep explanations **precise and easy to understand**.
-- The idea should be **unique and novel**.
-- Use **only the provided template** without changing the idea-detail
-  pointers.
-- **Save as PDF** and upload to the portal — no PPT or Word format accepted.
-- **Delete the instruction slide** before uploading.
+- Max **6 slides** (incl. title). **Avoid paragraphs** — use points/diagrams.
+- Keep explanations **precise**. Idea must be **unique & novel**.
+- Use only the provided template. **Save as PDF** (no PPT/Word).
+- **Delete instruction slide** before uploading.
 
-### Suggested Diagrams/Infographics to Add
-
-1. **Slide 2** — Screenshot of the 3D globe with satellite orbits + the
-   collision-avoidance demo (5-phase DETECT → BURN → CLEAR flow).
-2. **Slide 3** — The architecture flow diagram (above) + a screenshot of the
-   B-plane encounter plot with covariance ellipses.
-3. **Slide 4** — The 5-stage autopilot execution pipeline diagram.
-4. **Slide 5** — Before/after comparison: Pc 2.8×10⁻⁴ (critical, red) →
-   2.2×10⁻⁶ (safe, green) after the burn, with the AI Risk Map showing the
-   live color transition.
+### Suggested Diagrams
+1. **Slide 2** — 3D globe screenshot + DETECT → BURN → CLEAR flow.
+2. **Slide 3** — Architecture pipeline + B-plane covariance plot.
+3. **Slide 4** — 5-stage autopilot pipeline diagram.
+4. **Slide 5** — Before/after: Pc 2.8×10⁻⁴ (red) → 2.2×10⁻⁶ (green) with AI Risk Map.
