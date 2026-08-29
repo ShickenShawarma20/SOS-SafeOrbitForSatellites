@@ -49,7 +49,6 @@
     { id: "home", label: "Home", href: "index.html", icon: I.home },
     { id: "track", label: "Live Tracking", href: "tracking.html", icon: I.satellite },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
-    { id: "ai", label: "AI Command Center", href: "ai.html", icon: I.ai, badge: "7" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
     { id: "maneuvers", label: "Maneuvers", href: "maneuvers.html", icon: I.maneuver },
     { id: "orbits", label: "Orbits", href: "orbits.html", icon: I.orbit },

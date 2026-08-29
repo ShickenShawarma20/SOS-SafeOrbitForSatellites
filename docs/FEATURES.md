@@ -18,15 +18,14 @@ the slide deck, and any new team member trying to understand the product.
 3. [Autonomous Autopilot Engine](#3--autonomous-autopilot-engine-autopilothtml)
 4. [Live Tracking](#4--live-tracking-trackinghtml)
 5. [Conjunctions](#5--conjunctions-conjunctionhtml)
-6. [AI Command Center](#6--ai-command-center-aihtml)
-7. [Satellite Registry](#7--satellite-registry-satellitehtml)
-8. [Maneuver Planner](#8--maneuver-planner-maneuvershtml)
-9. [Orbital Registry](#9--orbital-registry-orbitshtml)
-10. [Ground Stations](#10--ground-stations-groundstationshtml)
-11. [Analytics](#11--analytics-analyticshtml)
-12. [Settings](#12--settings-settingshtml)
-13. [Cross-Cutting Features](#13--cross-cutting-features)
-14. [Backend API Endpoints](#14--backend-api-endpoints)
+6. [Satellite Registry](#6--satellite-registry-satellitehtml)
+7. [Maneuver Planner](#7--maneuver-planner-maneuvershtml)
+8. [Orbital Registry](#8--orbital-registry-orbitshtml)
+9. [Ground Stations](#9--ground-stations-groundstationshtml)
+10. [Analytics](#10--analytics-analyticshtml)
+11. [Settings](#11--settings-settingshtml)
+12. [Cross-Cutting Features](#12--cross-cutting-features)
+13. [Backend API Endpoints](#13--backend-api-endpoints)
 
 ---
 
@@ -52,7 +51,7 @@ The primary landing dashboard — a one-screen situational-awareness summary.
 - **Alert Summary donut** — total conjunctions in the last 48 h broken down by
   Critical / High / Medium / Low.
 - **AI Assessment bar** — risk trend (increasing/decreasing), previous→current
-  Pc, primary driver, confidence, and quick links to analysis / AI center.
+  Pc, primary driver, confidence, and a link to the conjunction analysis.
 - **Upcoming Conjunctions table** — next 5 conjunctions screened against the
   full catalogued-object count.
 - **Next Maneuver card** — satellite, burn window, ΔV, purpose, fuel impact,
@@ -174,31 +173,7 @@ Deep-dive page for a single conjunction event (default
 
 ---
 
-## 6. AI Command Center (`ai.html`)
-
-The Gemini 3.7 Flight Director's dashboard (with deterministic fallback).
-
-### Features
-- **Header** — AI engine online badge, "Run New Analysis" button.
-- **Top metrics** — satellites monitored, objects tracked, conjunctions
-  analyzed, high-risk events, active assessments, recommendations.
-- **AI Risk Map** — SVG orbital risk map with risk-level filters
-  (All/Critical/High/Medium/Low) and an altitude filter; objects colored by
-  risk, with dashed risk corridors.
-- **Active AI Assessments** — list of in-progress assessments with reasoning
-  drawer.
-- **AI Recommendation** — structured directive (urgency class, recommended
-  burn epoch, ΔV, direction, rationale, telecommand checklist).
-- **AI Engine Health** — model update, data latency, prediction quality.
-- **Safety Validation** — ordered safety chain checklist.
-- **Data Quality** — quality warnings with badge.
-- **AI Activity Log** — live feed of AI engine events.
-- **Reasoning Drawer** — slide-out with full AI reasoning for an assessment.
-- **AI Simulation modal** — run a what-if simulation.
-
----
-
-## 7. Satellite Registry (`satellite.html`)
+## 6. Satellite Registry (`satellite.html`)
 
 Two-mode page: a fleet list (no `?id`) and a per-satellite detail view.
 
@@ -224,7 +199,7 @@ Two-mode page: a fleet list (no `?id`) and a per-satellite detail view.
 
 ---
 
-## 8. Maneuver Planner (`maneuvers.html`)
+## 7. Maneuver Planner (`maneuvers.html`)
 
 Plan, compare, and approve a collision-avoidance burn for a conjunction.
 
@@ -249,7 +224,7 @@ Plan, compare, and approve a collision-avoidance burn for a conjunction.
 
 ---
 
-## 9. Orbital Registry (`orbits.html`)
+## 8. Orbital Registry (`orbits.html`)
 
 Catalog of every tracked satellite's Keplerian elements, on a 3D globe.
 
@@ -267,7 +242,7 @@ Catalog of every tracked satellite's Keplerian elements, on a 3D globe.
 
 ---
 
-## 10. Ground Stations (`groundstations.html`)
+## 9. Ground Stations (`groundstations.html`)
 
 Global ground-station network coverage view.
 
@@ -281,7 +256,7 @@ Global ground-station network coverage view.
 
 ---
 
-## 11. Analytics (`analytics.html`)
+## 10. Analytics (`analytics.html`)
 
 30-day operations performance dashboard.
 
@@ -299,7 +274,7 @@ Global ground-station network coverage view.
 
 ---
 
-## 12. Settings (`settings.html`)
+## 11. Settings (`settings.html`)
 
 System-wide configuration.
 
@@ -321,7 +296,7 @@ System-wide configuration.
 
 ---
 
-## 13. Cross-Cutting Features
+## 12. Cross-Cutting Features
 
 These span every page:
 
@@ -350,7 +325,7 @@ These span every page:
 
 ---
 
-## 14. Backend API Endpoints
+## 13. Backend API Endpoints
 
 Base URL: `/api/v1` (Express, `server/api.js`). All return JSON.
 

@@ -20,10 +20,10 @@ spinning 3D globe. Think of it as an air-traffic-control screen, but for space.
 
 | Part | What it is | Folder / Files |
 |------|------------|----------------|
-| **Frontend (the console)** | The web pages the operator sees — dashboard, alerts, maneuver planner, AI chat. | `index.html`, `*.html`, `js/`, `css/` |
+| **Frontend (the console)** | The web pages the operator sees — dashboard, alerts, maneuver planner. | `index.html`, `*.html`, `js/`, `css/` |
 | **3D Globe Engine** | A Three.js Earth that shows satellites and debris moving along real orbits. | `js/orbital.js`, `js/sim-core.js` |
 | **Backend API** | A Node/Express server that stores satellites, conjunctions, and maneuver plans and serves them as JSON. | `server/` |
-| **AI Flight Director** | A Gemini-powered advisor that reads a conjunction and writes a burn recommendation (with a built-in math fallback if the AI is unavailable). | `server/index.js`, `js/pages/ai.js` |
+| **AI Flight Director** | A Gemini-powered advisor that reads a conjunction and writes a burn recommendation (with a built-in math fallback if the AI is unavailable). Powers the dashboard's AI Assessment bar. | `server/` (route `/api/v1/ai`) |
 | **Orbital Math** | The physics: turning orbit shapes into 3D positions, finding the moment of closest approach, and estimating collision probability. | `js/sim-core.js`, `js/orbital.js` |
 
 ---
@@ -57,8 +57,9 @@ This is the core workflow — what happens from "everything is fine" to
   encounter point.
 
 ### Step 3 — ASSESS (how bad is it?)
-- The **AI Flight Director** (`js/pages/ai.js`, backend `/api/ai/assess`)
-  reads the conjunction and decides an **urgency class** (IMMEDIATE / MONITOR).
+- The **AI Flight Director** (backend `/api/v1/ai/assessments`) reads the
+  conjunction and decides an **urgency class** (IMMEDIATE / MONITOR). The
+  result powers the dashboard's **AI Assessment bar** (risk trend, Pc, driver).
 - Behind the scenes, `js/sim-core.js` does the real physics:
   - Propagates both orbits forward in time (RK4 integrator).
   - Searches for the exact **TCA** (golden-section search).
@@ -102,12 +103,11 @@ This is the core workflow — what happens from "everything is fine" to
 ```
   Browser (operator)                         Express backend (server/)
   ┌────────────────────┐    fetch /api/v1    ┌──────────────────────┐
-  │  3D Globe (orbital)│ ──────────────────▶ │  /conjunctions       │
+  │ 3D Globe (orbital)│ ──────────────────▶ │  /conjunctions       │
   │  Dashboard cards   │ ◀────────────────── │  /maneuvers/plans    │
   │  Maneuver Planner  │    JSON response    │  /satellites         │
-  │  AI Chat           │ ── POST /api/ai ──▶ │  /api/ai/assess      │
-  └────────────────────┘                     │  /api/ai/chat        │
-                                             │         │            │
+  │  AI Assessment bar │ ── GET /ai/assess ─▶│  /ai/assessments     │
+  └────────────────────┘                     │         │            │
                                              │  ┌──────▼───────┐    │
                                              │  │ Gemini 3.7   │    │
                                              │  │ (fallback if │    │
