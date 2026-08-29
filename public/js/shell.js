@@ -88,9 +88,9 @@
           <div class="sys-row"><span>Coverage</span><b id="sysCoverage">98.7%</b></div>
         </div>
         <div class="operator">
-          <div class="avatar" id="opAvatar">AM</div>
+          <div class="avatar" id="opAvatar">TS</div>
           <div class="who">
-            <div class="name" id="opName">Alex Morgan</div>
+            <div class="name" id="opName">Team SixthSense</div>
             <div class="role" id="opRole">Mission Controller</div>
           </div>
         </div>
