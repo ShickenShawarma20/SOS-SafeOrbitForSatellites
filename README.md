@@ -27,7 +27,6 @@
 ### 🤖 3. AI Astrodynamics Flight Director (Powered by AI Engine)
 - **Automated Conjunction Assessment**: Analyzes Conjunction Data Messages (CDMs), satellite mass, thruster $I_{sp}$, and collision probabilities ($P_c$).
 - **Structured Flight Directives**: Generates fuel-optimal burn epochs, $\Delta V$ vectors, risk urgency classifications, and operator telecommand checklists.
-- **Interactive Advisory Assistant**: Real-time multi-turn astrodynamics chat interface for flight operators.
 - **Fault-Tolerant Fallback**: Built-in deterministic astrodynamics calculation engine with in-memory caching to guarantee continuous flight operations during rate limits.
 
 ### 🚀 4. Collision Avoidance Maneuver Lab
@@ -163,7 +162,7 @@
 
 - **Lead Astrodynamicist / Systems Architect**: Orbital mathematics, collision probability modeling, B-plane mechanics.
 - **3D Graphics & WebGL Engineer**: Three.js rendering, orbital track shaders, lighting, dynamic camera controls.
-- **AI Systems & Prompt Engineer**: AI Engine JSON schema formatting, astrodynamics prompt design, multi-turn chat.
+- **AI Systems & Prompt Engineer**: AI Engine JSON schema formatting, astrodynamics prompt design, deterministic fallback design.
 - **Frontend / Console UI Lead**: Operations dashboard layout, responsiveness, telemetry widgets, data flow.
 - **Backend & Integration Specialist**: Express API routes, caching layer, rate-limit resilience, CDM format parsers.
 - **Product & Presentation Lead**: Hackathon slide deck, live demo script, business case, pitch presentation.

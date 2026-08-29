@@ -300,7 +300,7 @@ System-wide configuration.
 
 These span every page:
 
-- **Persistent shell** (`js/shell.js`) — sidebar navigation (13 items with
+- **Persistent shell** (`js/shell.js`) — sidebar navigation (12 items with
   badges), topbar with live UTC clock, top KPIs, notifications bell, settings
   link, and operator profile.
 - **3D Orbital Engine** (`js/orbital.js`) — reusable Three.js Earth globe with
@@ -355,9 +355,7 @@ Base URL: `/api/v1` (Express, `server/api.js`). All return JSON.
 | GET | `/catalog/stats` | Tracked-objects count |
 | GET | `/groundstations` | Ground-station list |
 | GET | `/network/status` | Network coverage & latency |
-| GET | `/ai/assessments` | AI assessment list |
-| POST | `/api/ai/assess` | AI (or fallback) directive for a conjunction |
-| POST | `/api/ai/chat` | AI (or fallback) conversational reply |
+| GET | `/ai/assessments` | AI assessment list (powers dashboard insight bar) |
 | GET | `/notifications?unread=true` | Unread notifications |
 | GET | `/tracking/fleet` | TLE fleet for live SGP4 tracking |
 | GET | `/auth/me` | Operator profile |

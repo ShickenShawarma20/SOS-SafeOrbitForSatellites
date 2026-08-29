@@ -109,7 +109,7 @@ This is the core workflow — what happens from "everything is fine" to
   │  AI Assessment bar │ ── GET /ai/assess ─▶│  /ai/assessments     │
   └────────────────────┘                     │         │            │
                                              │  ┌──────▼───────┐    │
-                                             │  │  AI Engine  │    │
+                                             │  │  AI Engine   │    │
                                              │  │ (fallback if │    │
                                              │  │  unavailable) │    │
                                              │  └──────────────┘    │

@@ -9,12 +9,12 @@
   - `server.ts` (AI Engine API integration)
   - `src/components/AiFlightDirectorAdvisor.tsx` (AI console UI)
   - `src/utils/aiAssessmentFallback.ts` (Deterministic mathematical fallback engine)
-* **Goal**: Build the intelligent AI Astrodynamics Flight Director that processes Conjunction Data Messages, generates structured flight directives, provides operator telecommand checklists, and enables real-time interactive chat.
+* **Goal**: Build the intelligent AI Astrodynamics Flight Director that processes Conjunction Data Messages, generates structured flight directives, and provides operator telecommand checklists.
 
 ---
 
 ### 📚 Concepts to Master
-1. **Google Gen AI SDK**: Connecting to AI Engine (`@google/genai`), managing system instructions, and temperature controls.
+1. **Google Gen AI SDK**: Connecting to the AI Engine, managing system instructions, and temperature controls.
 2. **Structured JSON Schema Output**: Forcing the LLM to return strictly typed JSON matching `ManeuverDirective` (burn epoch, $\Delta V$ components, risk level, checklist).
 3. **Astrodynamics Prompt Engineering**: Crafting domain-specific system prompts with satellite physics rules, collision thresholds, and operational constraints.
 4. **Deterministic Fallbacks**: Ensuring flight directives are instantly generated mathematically even if the AI API is rate-limited or offline.
@@ -25,7 +25,7 @@
 
 #### Phase 1: AI Engine API Server & Backend Routes (Hours 0 - 8)
 - [ ] Set up `server.ts` using Express to handle AI assessment requests.
-- [ ] Initialize the Google Gen AI client with environment variable `GEMINI_API_KEY`.
+- [ ] Initialize the Google Gen AI client with environment variable `AI_API_KEY`.
 - [ ] Create endpoint `POST /api/assess-conjunction`:
   - Receives satellite telemetry, debris telemetry, and miss distance.
   - Sends a structured prompt to AI Engine.
@@ -37,19 +37,18 @@
   - Directives: Calculate optimal burn direction (prograde vs. retrograde vs. cross-track), minimize fuel, ensure $>10\text{ km}$ safety clearance, and format a 4-step operator telecommand checklist.
 - [ ] Define the strict JSON response schema enforcing fields: `burnEpoch`, `deltaV` (prograde, radial, normal, magnitude), `fuelKg`, `projectedMissDistanceKm`, `riskAssessment`, `telecommandChecklist`.
 
-#### Phase 3: Interactive Operator Advisory Chat (Hours 14 - 22)
-- [ ] Create endpoint `POST /api/chat-advisor` in `server.ts` supporting multi-turn chat with conversation history.
-- [ ] Build the interactive chat UI inside `AiFlightDirectorAdvisor.tsx`:
-  - Quick action suggestion chips (*"What if we delay the burn?", "Calculate cross-track option", "Explain the B-plane risk"*).
-  - Streaming or real-time message bubble display with flight officer avatars.
-
-#### Phase 4: Deterministic Astrodynamics Fallback Engine (Hours 22 - 28)
+#### Phase 3: Deterministic Astrodynamics Fallback Engine (Hours 14 - 22)
 - [ ] Implement `src/utils/aiAssessmentFallback.ts`:
-  - If the Gemini API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Member 1**.
+  - If the AI Engine API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Member 1**.
   - Generate standard procedural telecommands deterministically.
   - Ensure the user interface indicates `Mode: AI-Powered (AI Engine)` or `Mode: Deterministic Fallback Active`.
 
-#### Phase 5: UI Polish & Directive Transfer (Hours 28 - 36)
+> **Note:** The standalone AI Command Center page (with its interactive chat UI)
+> has been removed from the console. The AI Engine now powers the dashboard's
+> AI Assessment bar directly. Time from the former chat phase is reallocated to
+> the fallback engine below.
+
+#### Phase 4: UI Polish & Directive Transfer (Hours 22 - 28)
 - [ ] Add an "Apply Directive to Maneuver Lab" button that transfers the AI's recommended $\Delta V$ values directly to **Member 4**'s Maneuver Simulation Lab.
 - [ ] Add copy-to-clipboard functionality for the operator telecommand checklist.
 

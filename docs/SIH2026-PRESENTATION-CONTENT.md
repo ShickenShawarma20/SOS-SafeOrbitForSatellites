@@ -79,7 +79,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 - **Real astrodynamics, not mocks** — Keplerian propagation, RK4 integrators,
   golden-section TCA search, and numerical Pc integration (Foster method)
   run live in the browser and backend.
-- **AI + deterministic fallback** — the system never goes dark; if Gemini is
+- **AI + deterministic fallback** — the system never goes dark; if the AI Engine is
   rate-limited, a built-in astrodynamics engine produces deterministic
   directives.
 - **B-plane encounter visualization** — covariance ellipses and Hard-Body
@@ -98,7 +98,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 |-------|-----------|
 | **Frontend** | HTML5, CSS3, Vanilla JS (ES6+), Three.js (WebGL 3D globe), Canvas 2D (B-plane, charts) |
 | **Backend** | Node.js, Express, TypeScript (tsx), REST API |
-| **AI / LLM** | AI Engine (`@google/genai`), deterministic fallback engine |
+| **AI / LLM** | AI Engine (deterministic fallback engine) |
 | **Astrodynamics** | satellite.js (SGP4), custom Keplerian/RK4 propagator, Foster Pc integrator |
 | **Orbital Data** | CelesTrak TLE/GP API (real NORAD catalog data), CCSDS 508.0-B-1 CDM format |
 | **Deployment** | Vercel (serverless), Render (Node host), static CDN |
@@ -136,7 +136,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
                               │
   ┌───────────────────────────▼──────────────────────────────────┐
   │              3D OPERATIONAL CONSOLE (FRONTEND)               │
-  │  Three.js globe  ·  B-plane plot  ·  Telemetry  ·  AI chat   │
+  │  Three.js globe  ·  B-plane plot  ·  Telemetry  ·  AI insight│
   └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -161,7 +161,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 
 - **Technical feasibility: PROVEN** — a working prototype exists with 12
   pages, a live Express/TypeScript backend, a Three.js 3D globe, real SGP4
-  tracking from CelesTrak, and a AI Engine AI integration. All core
+  tracking from CelesTrak, and an AI Engine integration. All core
   algorithms (Pc, TCA, maneuver planning) are implemented and tested.
 - **Data feasibility: SOLVED** — orbital data is freely available from
   CelesTrak's public GP/TLE API (no API key required, 3× daily updates).
@@ -179,14 +179,14 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 | Challenge | Risk | Mitigation |
 |-----------|------|------------|
 | **TLE accuracy degradation** | TLEs have ~1 km positional uncertainty; Pc may drift from reality | Use latest CDM data when available; show covariance ellipses so operators understand uncertainty |
-| **Gemini API rate limits** | AI may be unavailable during peak usage | Deterministic astrodynamics fallback engine guarantees continuous operation |
+| **AI Engine API rate limits** | AI may be unavailable during peak usage | Deterministic astrodynamics fallback engine guarantees continuous operation |
 | **Catalog growth** | 21,000+ objects today, growing ~10% per year | Screening is parallelizable; cache per-pair geometry; prune low-risk pairs by Pc threshold |
 | **Real-burn execution safety** | Autonomous burns carry physical risk | 72-hour secondary screening gate; operator sign-off required for non-autonomous mode; DRY RUN simulation mode |
 | **Space weather variability** | Solar storms alter drag & orbit prediction | Space weather telemetry (F10.7, Kp, drag multiplier) feeds into covariance growth model |
 
 ### Strategies for Overcoming Challenges
 
-- **Dual-mode AI** — Gemini for rich reasoning + deterministic fallback for
+- **Dual-mode AI** — the AI Engine for rich reasoning + deterministic fallback for
   guaranteed uptime. The system never goes dark.
 - **CCSDS standard compliance** — CDM export in XML/JSON/KVN ensures
   interoperability with existing agency infrastructure (ISRO, NASA CARA,
@@ -234,7 +234,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
   human spaceflight.
 
 **Technological:**
-- First Indian SSA console integrating AI (AI Engine) with real
+- First Indian SSA console integrating the AI Engine with real
   astrodynamics physics for civilian satellite operations.
 - Open, extensible architecture — new object types, constellations, and
   screening algorithms can be added without rearchitecting.
@@ -269,7 +269,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 |-----------|-----|
 | **Three.js** | https://threejs.org (WebGL 3D rendering) |
 | **satellite.js** | https://github.com/nasa/satellite.js (SGP4 propagation) |
-| **AI Engine** | https://ai.google.dev/ (AI Flight Director) |
+| **AI Engine** | AI Flight Director (deterministic fallback engine) |
 | **Express.js** | https://expressjs.com (REST API backend) |
 
 ### Project Links
