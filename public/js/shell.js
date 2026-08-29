@@ -44,9 +44,9 @@
   };
 
   const NAV = [
+    { id: "home", label: "Home", href: "index.html", icon: I.home },
     { id: "console", label: "SSA Console", href: "console.html", icon: I.console, badge: "1" },
     { id: "autopilot", label: "Autopilot Engine", href: "autopilot.html", icon: I.autopilot, badge: "4" },
-    { id: "home", label: "Home", href: "index.html", icon: I.home },
     { id: "track", label: "Live Tracking", href: "tracking.html", icon: I.satellite },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
