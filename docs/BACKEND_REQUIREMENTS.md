@@ -251,7 +251,7 @@ Backend requirements to stay consistent with the client sim:
 
 ## 10. AI Flight Director (per README architecture)
 
-- `POST /api/v1/ai/assess {conjunctionId}` — Gemini-powered structured flight directive (burn epoch, ΔV vector, urgency class, telecommand checklist)
+- `POST /api/v1/ai/assess {conjunctionId}` — AI Engine structured flight directive (burn epoch, ΔV vector, urgency class, telecommand checklist)
 - `POST /api/v1/ai/chat {sessionId, message}` — multi-turn astrodynamics advisor chat
 - Backend must implement **deterministic fallback engine + caching** so these respond even without API key / during rate limits.
 
@@ -279,7 +279,7 @@ Client sends subscribe messages: `{ "subscribe": ["conjunction", "telemetry.SAT-
 ## 13. Non-functional requirements
 
 1. **Latency:** REST responses < 300 ms; telemetry push ≤ 1–2 s (matches "Data Latency 1.2 s" UI claim).
-2. **Availability:** graceful degradation — if AI/Gemini unavailable, deterministic fallback; if WS drops, frontend falls back to polling (`Retry-After` headers).
+2. **Availability:** graceful degradation — if the AI Engine is unavailable, deterministic fallback; if WS drops, frontend falls back to polling (`Retry-After` headers).
 3. **CORS:** allow the static frontend origin(s).
 4. **Caching:** conjunction summaries/KPIs cacheable (~15–60 s); CDM history immutable.
 5. **Validation:** all POST bodies validated; audit-log every state-changing action.

@@ -23,7 +23,7 @@ spinning 3D globe. Think of it as an air-traffic-control screen, but for space.
 | **Frontend (the console)** | The web pages the operator sees — dashboard, alerts, maneuver planner. | `index.html`, `*.html`, `js/`, `css/` |
 | **3D Globe Engine** | A Three.js Earth that shows satellites and debris moving along real orbits. | `js/orbital.js`, `js/sim-core.js` |
 | **Backend API** | A Node/Express server that stores satellites, conjunctions, and maneuver plans and serves them as JSON. | `server/` |
-| **AI Flight Director** | A Gemini-powered advisor that reads a conjunction and writes a burn recommendation (with a built-in math fallback if the AI is unavailable). Powers the dashboard's AI Assessment bar. | `server/` (route `/api/v1/ai`) |
+| **AI Flight Director** | An AI Engine advisor that reads a conjunction and writes a burn recommendation (with a built-in math fallback if the AI is unavailable). Powers the dashboard's AI Assessment bar. | `server/` (route `/api/v1/ai`) |
 | **Orbital Math** | The physics: turning orbit shapes into 3D positions, finding the moment of closest approach, and estimating collision probability. | `js/sim-core.js`, `js/orbital.js` |
 
 ---
@@ -109,7 +109,7 @@ This is the core workflow — what happens from "everything is fine" to
   │  AI Assessment bar │ ── GET /ai/assess ─▶│  /ai/assessments     │
   └────────────────────┘                     │         │            │
                                              │  ┌──────▼───────┐    │
-                                             │  │ Gemini 3.7   │    │
+                                             │  │  AI Engine  │    │
                                              │  │ (fallback if │    │
                                              │  │  unavailable) │    │
                                              │  └──────────────┘    │
@@ -121,7 +121,7 @@ This is the core workflow — what happens from "everything is fine" to
 - Every page is a **page loader** under `js/pages/` that fetches what it needs
   and fills in the HTML. The persistent sidebar/topbar shell (`js/shell.js`)
   wraps every page.
-- If the backend or Gemini is down, the app keeps working: the 3D globe runs
+- If the backend or the AI Engine is down, the app keeps working: the 3D globe runs
   its own Kepler math, and the AI endpoints return deterministic fallback
   answers (`server/index.js`).
 

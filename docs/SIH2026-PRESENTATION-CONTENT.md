@@ -47,7 +47,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
   Closest Approach (TCA), miss distance, and collision probability (Pc) using
   a Foster 2D Gaussian integrator over the B-plane encounter geometry with
   covariance ellipses and Hard-Body-Radius keep-out circles.
-- **AI Flight Director (Gemini 3.7)** — reads each conjunction and generates
+- **AI Flight Director (AI Engine)** — reads each conjunction and generates
   a structured flight directive: fuel-optimal burn epoch, ΔV vector, risk
   urgency class, and a telecommand checklist. A deterministic astrodynamics
   fallback engine keeps the system running even if the AI is unavailable.
@@ -98,7 +98,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 |-------|-----------|
 | **Frontend** | HTML5, CSS3, Vanilla JS (ES6+), Three.js (WebGL 3D globe), Canvas 2D (B-plane, charts) |
 | **Backend** | Node.js, Express, TypeScript (tsx), REST API |
-| **AI / LLM** | Google Gemini 3.7 Flash (`@google/genai`), deterministic fallback engine |
+| **AI / LLM** | AI Engine (`@google/genai`), deterministic fallback engine |
 | **Astrodynamics** | satellite.js (SGP4), custom Keplerian/RK4 propagator, Foster Pc integrator |
 | **Orbital Data** | CelesTrak TLE/GP API (real NORAD catalog data), CCSDS 508.0-B-1 CDM format |
 | **Deployment** | Vercel (serverless), Render (Node host), static CDN |
@@ -119,7 +119,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
   └───────────────────────────┬──────────────────────────────────┘
                               │
   ┌───────────────────────────▼──────────────────────────────────┐
-  │                 AI FLIGHT DIRECTOR (GEMINI 3.7)               │
+  │                 AI FLIGHT DIRECTOR (AI ENGINE)               │
   │  CDM + elements + fuel  →  burn directive + ΔV + checklist   │
   │  (deterministic fallback if AI unavailable)                 │
   └───────────────────────────┬──────────────────────────────────┘
@@ -161,7 +161,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 
 - **Technical feasibility: PROVEN** — a working prototype exists with 12
   pages, a live Express/TypeScript backend, a Three.js 3D globe, real SGP4
-  tracking from CelesTrak, and a Gemini 3.7 AI integration. All core
+  tracking from CelesTrak, and a AI Engine AI integration. All core
   algorithms (Pc, TCA, maneuver planning) are implemented and tested.
 - **Data feasibility: SOLVED** — orbital data is freely available from
   CelesTrak's public GP/TLE API (no API key required, 3× daily updates).
@@ -234,7 +234,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
   human spaceflight.
 
 **Technological:**
-- First Indian SSA console integrating AI (Gemini 3.7) with real
+- First Indian SSA console integrating AI (AI Engine) with real
   astrodynamics physics for civilian satellite operations.
 - Open, extensible architecture — new object types, constellations, and
   screening algorithms can be added without rearchitecting.
@@ -269,7 +269,7 @@ safeguarding LEO satellites from hypervelocity debris encounters.
 |-----------|-----|
 | **Three.js** | https://threejs.org (WebGL 3D rendering) |
 | **satellite.js** | https://github.com/nasa/satellite.js (SGP4 propagation) |
-| **Google Gemini 3.7** | https://ai.google.dev/ (AI Flight Director) |
+| **AI Engine** | https://ai.google.dev/ (AI Flight Director) |
 | **Express.js** | https://expressjs.com (REST API backend) |
 
 ### Project Links

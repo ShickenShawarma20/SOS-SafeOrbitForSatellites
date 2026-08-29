@@ -4,9 +4,9 @@
 ---
 
 ### 👤 Role Overview
-* **Domain**: Google Gemini 3.7 AI Integration, Astrodynamics Prompt Engineering & Fallback Systems.
+* **Domain**: AI Engine AI Integration, Astrodynamics Prompt Engineering & Fallback Systems.
 * **Assigned Files**:
-  - `server.ts` (Gemini 3.7 API integration)
+  - `server.ts` (AI Engine API integration)
   - `src/components/AiFlightDirectorAdvisor.tsx` (AI console UI)
   - `src/utils/aiAssessmentFallback.ts` (Deterministic mathematical fallback engine)
 * **Goal**: Build the intelligent AI Astrodynamics Flight Director that processes Conjunction Data Messages, generates structured flight directives, provides operator telecommand checklists, and enables real-time interactive chat.
@@ -14,7 +14,7 @@
 ---
 
 ### 📚 Concepts to Master
-1. **Google Gen AI SDK**: Connecting to Gemini 3.7 Flash (`@google/genai`), managing system instructions, and temperature controls.
+1. **Google Gen AI SDK**: Connecting to AI Engine (`@google/genai`), managing system instructions, and temperature controls.
 2. **Structured JSON Schema Output**: Forcing the LLM to return strictly typed JSON matching `ManeuverDirective` (burn epoch, $\Delta V$ components, risk level, checklist).
 3. **Astrodynamics Prompt Engineering**: Crafting domain-specific system prompts with satellite physics rules, collision thresholds, and operational constraints.
 4. **Deterministic Fallbacks**: Ensuring flight directives are instantly generated mathematically even if the AI API is rate-limited or offline.
@@ -23,12 +23,12 @@
 
 ### 📋 Step-by-Step Action Plan
 
-#### Phase 1: Gemini 3.7 API Server & Backend Routes (Hours 0 - 8)
+#### Phase 1: AI Engine API Server & Backend Routes (Hours 0 - 8)
 - [ ] Set up `server.ts` using Express to handle AI assessment requests.
 - [ ] Initialize the Google Gen AI client with environment variable `GEMINI_API_KEY`.
 - [ ] Create endpoint `POST /api/assess-conjunction`:
   - Receives satellite telemetry, debris telemetry, and miss distance.
-  - Sends a structured prompt to Gemini 3.7 Flash.
+  - Sends a structured prompt to AI Engine.
   - Returns the validated JSON flight directive to the frontend.
 
 #### Phase 2: System Prompt Design & Schema Definition (Hours 8 - 14)
@@ -47,7 +47,7 @@
 - [ ] Implement `src/utils/aiAssessmentFallback.ts`:
   - If the Gemini API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Member 1**.
   - Generate standard procedural telecommands deterministically.
-  - Ensure the user interface indicates `Mode: AI-Powered (Gemini 3.7)` or `Mode: Deterministic Fallback Active`.
+  - Ensure the user interface indicates `Mode: AI-Powered (AI Engine)` or `Mode: Deterministic Fallback Active`.
 
 #### Phase 5: UI Polish & Directive Transfer (Hours 28 - 36)
 - [ ] Add an "Apply Directive to Maneuver Lab" button that transfers the AI's recommended $\Delta V$ values directly to **Member 4**'s Maneuver Simulation Lab.
@@ -66,4 +66,4 @@
 ---
 
 ### 🎤 Hackathon Presentation Role
-* **Your Pitch Moment**: Show how Gemini 3.7 evaluates the collision threat in under 2 seconds, generates precise $\Delta V$ flight directives, and answers live questions from flight operators during high-pressure conjunctions.
+* **Your Pitch Moment**: Show how AI Engine evaluates the collision threat in under 2 seconds, generates precise $\Delta V$ flight directives, and answers live questions from flight operators during high-pressure conjunctions.

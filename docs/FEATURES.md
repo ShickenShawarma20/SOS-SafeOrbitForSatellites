@@ -315,7 +315,7 @@ These span every page:
 - **Shared API client** (`js/api.js`) — `window.SOS.api(path)` with JSON,
   pagination, formatting helpers (`fmtPc`, `fmtDist`, `fmtTime`, etc.), and a
   configurable base URL (`?api=…` or `localStorage.sos_api_base`).
-- **Deterministic AI fallback** — when Gemini is unavailable, the backend
+- **Deterministic AI fallback** — when the AI Engine is unavailable, the backend
   (`server/index.js`) returns rule-based assessments and chat replies so the
   console keeps working.
 - **CCSDS CDM export** — Conjunction Data Messages in XML / JSON / KVN
@@ -374,7 +374,6 @@ Base URL: `/api/v1` (Express, `server/api.js`). All return JSON.
       ├── Autopilot (autopilot.html)   ── fleet-wide auto-burn
       ├── Live Tracking (tracking.html)── SGP4 real-time
       ├── Conjunctions (conjunction.html) ── single event deep-dive
-      ├── AI Center (ai.html)          ── Gemini Flight Director
       ├── Satellites (satellite.html)  ── registry + per-sat detail
       ├── Maneuvers (maneuvers.html)   ── burn planner
       ├── Orbits (orbits.html)         ── Keplerian catalog + 3D

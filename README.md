@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?logo=threedotjs&logoColor=white)](https://threejs.org/)
-[![Gemini 3.7](https://img.shields.io/badge/Google_Gemini-3.7_Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![AI Engine](https://img.shields.io/badge/AI_Engine-Flight_Director-4285F4)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -24,7 +24,7 @@
 - **Covariance Dispersion Ellipses**: Computes combined $1\sigma$, $2\sigma$, and $3\sigma$ positional error boundaries against Hard Body Radii (HBR).
 - **Drag-Induced Dispersion**: Visualizes orbital uncertainty growth driven by space weather surges.
 
-### 🤖 3. AI Astrodynamics Flight Director (Powered by Gemini 3.7)
+### 🤖 3. AI Astrodynamics Flight Director (Powered by AI Engine)
 - **Automated Conjunction Assessment**: Analyzes Conjunction Data Messages (CDMs), satellite mass, thruster $I_{sp}$, and collision probabilities ($P_c$).
 - **Structured Flight Directives**: Generates fuel-optimal burn epochs, $\Delta V$ vectors, risk urgency classifications, and operator telecommand checklists.
 - **Interactive Advisory Assistant**: Real-time multi-turn astrodynamics chat interface for flight operators.
@@ -63,7 +63,7 @@
                                   └──────────────────────┬───────────────────────┘
                                                          │
                                            ┌─────────────┴─────────────┐
-                                           │     GOOGLE GEMINI 3.7     │
+                                            │         AI ENGINE         │
                                            │  (Flight Director Model)  │
                                            └───────────────────────────┘
 ```
@@ -75,7 +75,7 @@
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide Icons, Recharts
 - **3D Visualization**: Three.js, WebGL, Custom BufferGeometry & Shaders
 - **Backend**: Node.js, Express, tsx, esbuild
-- **AI / LLM**: Google Gen AI SDK (`@google/genai`), Gemini 3.7 Flash
+- **AI / LLM**: AI Engine (deterministic fallback engine)
 - **Astrodynamics Standards**: CCSDS 508.0-B-1 (Conjunction Data Message format)
 
 ---
@@ -100,13 +100,13 @@
    ```
 
 3. **Configure Environment Variables (Optional):**
-   Copy the example environment file and add your Gemini API Key:
+   Copy the example environment file and add your AI Engine API Key:
    ```bash
    cp .env.example .env
    ```
-   Add your Gemini API Key in `.env`:
+   Add your AI Engine API Key in `.env`:
    ```env
-   GEMINI_API_KEY=your_gemini_api_key_here
+   AI_API_KEY=your_ai_engine_api_key_here
    ```
    *(Note: The system includes a deterministic astrodynamics fallback engine that operates seamlessly even if an API key is not supplied).*
 
@@ -163,7 +163,7 @@
 
 - **Lead Astrodynamicist / Systems Architect**: Orbital mathematics, collision probability modeling, B-plane mechanics.
 - **3D Graphics & WebGL Engineer**: Three.js rendering, orbital track shaders, lighting, dynamic camera controls.
-- **AI Systems & Prompt Engineer**: Gemini 3.7 JSON schema formatting, astrodynamics prompt design, multi-turn chat.
+- **AI Systems & Prompt Engineer**: AI Engine JSON schema formatting, astrodynamics prompt design, multi-turn chat.
 - **Frontend / Console UI Lead**: Operations dashboard layout, responsiveness, telemetry widgets, data flow.
 - **Backend & Integration Specialist**: Express API routes, caching layer, rate-limit resilience, CDM format parsers.
 - **Product & Presentation Lead**: Hackathon slide deck, live demo script, business case, pitch presentation.
