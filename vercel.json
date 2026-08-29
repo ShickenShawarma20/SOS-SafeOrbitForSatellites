@@ -5,6 +5,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/landing.html"
+    },
+    {
       "source": "/api/v1/tracking/fleet",
       "destination": "/api/v1/tracking/fleet"
     },

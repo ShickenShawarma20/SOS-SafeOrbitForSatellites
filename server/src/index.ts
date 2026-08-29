@@ -30,6 +30,9 @@ app.use(express.json());
 
 const staticRoot = path.resolve(__dirname, "../../public");
 
+/* Landing page at root */
+app.get("/", (_req, res) => res.sendFile(path.join(staticRoot, "landing.html")));
+
 /* Clean URLs — /satellite -> /satellite.html */
 ["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "tracking", "reports"].forEach(
   (name) => {
