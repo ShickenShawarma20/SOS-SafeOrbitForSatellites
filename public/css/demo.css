@@ -122,6 +122,31 @@
   min-height: 58px;
 }
 
+/* color legend — makes the orbit/corridor color coding self-explanatory */
+.demo-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: rgba(2, 6, 23, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+.demo-legend .lg-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 9.5px "Inter", system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  color: var(--text-mid);
+}
+.demo-legend .lg-item i {
+  width: 9px; height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+  box-shadow: 0 0 6px currentColor;
+}
+
 .demo-telemetry { display: flex; flex-direction: column; gap: 4px; }
 .demo-tl-row {
   display: flex;

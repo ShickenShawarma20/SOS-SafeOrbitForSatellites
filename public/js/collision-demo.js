@@ -31,10 +31,10 @@
      enter(viewer) hook for camera/speed/layer changes. */
   var PHASES = [
     {
-      key: "DETECT", dur: 4.5, label: "DETECTION",
+      key: "DETECT", dur: 4.5, label: "DETECTION", _baseSpeed: 2.2,
       narration: "Conjunction detected. Satellite SAT-51656 on a close-approach course with catalogued debris OBJ-8821.",
       enter: function (v) {
-        v.setSpeed(30);
+        v.setSpeed(2.2);
         v._zoomTarget = 2.6;
         v.focusSatellite("SAT-51656", true);
         setText("demoStatus", "MONITORING");
@@ -44,18 +44,18 @@
       }
     },
     {
-      key: "THREAT", dur: 5.0, label: "THREAT ASSESSMENT",
+      key: "THREAT", dur: 5.0, label: "THREAT ASSESSMENT", _baseSpeed: 1.6,
       narration: "AI Flight Director assessing risk. Probability of collision 2.8×10⁻⁴ exceeds the safe threshold. Time to closest approach is critical.",
       enter: function (v) {
-        v.setSpeed(15);
+        v.setSpeed(1.6);
         v._zoomTarget = 3.0;
       }
     },
     {
-      key: "PLAN", dur: 5.0, label: "MANEUVER PLANNING",
+      key: "PLAN", dur: 5.0, label: "MANEUVER PLANNING", _baseSpeed: 2.0,
       narration: "Computing optimal avoidance burn. Recommended plan: 0.42 m/s prograde ΔV. Predicted new miss distance 2.45 km — risk reduced 92.1%.",
       enter: function (v) {
-        v.setSpeed(20);
+        v.setSpeed(2.0);
         v._zoomTarget = 2.2;
         highlightPostBurnOrbit(v, true);
         setText("demoDv", "0.42 m/s prograde");
@@ -63,10 +63,10 @@
       }
     },
     {
-      key: "BURN", dur: 3.5, label: "BURN EXECUTION",
+      key: "BURN", dur: 3.5, label: "BURN EXECUTION", _baseSpeed: 2.6,
       narration: "Executing collision-avoidance maneuver. Thrusters firing… satellite transferring to the diverted orbit.",
       enter: function (v) {
-        v.setSpeed(60);
+        v.setSpeed(2.6);
         triggerBurnFlash(v);
         hideConjunction(v);
         v.focusSatellite("SAT-51656 (post-burn)", true);
@@ -76,10 +76,10 @@
       }
     },
     {
-      key: "CLEAR", dur: 5.5, label: "COLLISION AVOIDED",
+      key: "CLEAR", dur: 5.5, label: "COLLISION AVOIDED", _baseSpeed: 3.0,
       narration: "Maneuver complete. SAT-51656 now on a safe diverted orbit. New miss distance 2.45 km. Collision avoided.",
       enter: function (v) {
-        v.setSpeed(80);
+        v.setSpeed(3.0);
         v._zoomTarget = 1.3;
         highlightPostBurnOrbit(v, true);
         spawnSuccessRing(v);
@@ -142,6 +142,11 @@
           '<button class="demo-close" id="demoCloseBtn" aria-label="Close demo">✕</button>' +
         '</div>' +
         '<div class="demo-narration" id="demoNarration"></div>' +
+        '<div class="demo-legend">' +
+          '<span class="lg-item"><i style="background:#06b6d4"></i>Current Orbit</span>' +
+          '<span class="lg-item"><i style="background:#ef4444"></i>Debris + Collision Corridor</span>' +
+          '<span class="lg-item"><i style="background:#10b981"></i>Diverted Post-Burn Orbit</span>' +
+        '</div>' +
         '<div class="demo-telemetry">' +
           row("Satellite", "SAT-51656") +
           row("Debris Object", "OBJ-8821") +
@@ -282,6 +287,7 @@
       last = now;
       updateProgress(now);
       updateCountdown(now);
+      updateNearSpeed(now);   /* slow the sim so the audience can watch the pass */
       effects = effects.filter(function (e) {
         var alive = e.update(dt, now);
         if (!alive && e.obj) { removeObj(e.obj); e.obj = null; }
@@ -290,6 +296,39 @@
       rafId = requestAnimationFrame(frame);
     }
     rafId = requestAnimationFrame(frame);
+  }
+
+  /* When the satellite and debris close in on each other the markers fly past
+     far too fast to follow.  This drops the sim multiplier as the separation
+     shrinks so the close approach reads as a slow, deliberate flyby — the
+     "aha" moment of the whole demo.  The base speed for each phase is restored
+     as the objects pull apart again. */
+  function updateNearSpeed(now) {
+    if (!viewer || !hasThree) return;
+    var base = _baseSpeedForPhase(now);
+    var a = satPos(viewer, "SAT-51656"), b = satPos(viewer, "OBJ-8821");
+    if (!a || !b) return;
+    var sep = a.distanceTo(b);
+    /* very close (< 1.2 units) → nearly stop; between 1.2–5 units → ramp */
+    if (sep < 1.2) {
+      viewer.simSpeed = Math.max(0.6, base * 0.06);
+    } else if (sep < 5) {
+      var k = (sep - 1.2) / 3.8;          /* 0..1 as sep goes 1.2..5 */
+      viewer.simSpeed = Math.max(0.6, base * (0.06 + k * 0.6));
+    } else {
+      viewer.simSpeed = base;
+    }
+  }
+
+  function _baseSpeedForPhase(now) {
+    var elapsed = (now - demoStart) / 1000;
+    var acc = 0, i = 0;
+    for (i = 0; i < PHASES.length; i++) {
+      if (elapsed < acc + PHASES[i].dur) break;
+      acc += PHASES[i].dur;
+    }
+    var idx = Math.min(i, PHASES.length - 1);
+    return PHASES[idx]._baseSpeed || 20;
   }
 
   function updateProgress(now) {
@@ -324,33 +363,94 @@
     return p;
   }
 
-  /* Red pulsing threat line between satellite and debris. */
+  /* Red pulsing threat connector between satellite and debris PLUS a visible
+     collision corridor (danger volume) so the audience can see exactly where
+     the two objects would meet.  The corridor is an additive-blended tube
+     stretched from the satellite toward the debris, with a red pulsing "fuse"
+     line and two velocity-vector arrowheads showing the closing motion. */
   function addThreatLine(v) {
     if (!hasThree) return;
-    var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-    var mat = new THREE.LineBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.9, linewidth: 2 });
-    var line = new THREE.Line(geo, mat);
-    v.scene.add(line);
+
+    /* 1) glowing fuse line */
+    var fuseGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    var fuseMat = new THREE.LineBasicMaterial({ color: 0xffb4b4, transparent: true, opacity: 0.9 });
+    var fuse = new THREE.Line(fuseGeo, fuseMat);
+    v.scene.add(fuse);
+
+    /* 2) collision corridor tube — a cylinder pivoted at its base; we point it
+       at the debris and stretch it to the current separation so it reads as a
+       visible "danger zone" connecting the two objects. */
+    var cylGeo = new THREE.CylinderGeometry(0.06, 0.06, 1, 10, 1, true);
+    cylGeo.translate(0, 0.5, 0);
+    cylGeo.rotateX(-Math.PI / 2);
+    var cylMat = new THREE.MeshBasicMaterial({
+      color: 0xef4444, transparent: true, opacity: 0.3,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+    });
+    var corridor = new THREE.Mesh(cylGeo, cylMat);
+    v.scene.add(corridor);
+
+    /* 3) two velocity-vector cones — one at each object, oriented toward the
+       other so the audience sees the closing (mutual-approach) direction. */
+    var arrMat = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.95, depthWrite: false });
+    var arrGeo = new THREE.ConeGeometry(0.1, 0.2, 10);
+    var arrA = new THREE.Mesh(arrGeo, arrMat); v.scene.add(arrA);
+    var arrB = new THREE.Mesh(arrGeo, arrMat); v.scene.add(arrB);
+
     var born = performance.now();
     effects.push({
-      obj: line,
+      obj: fuse,
+      update: function (dt, now) { return alive(now) && _updFuse(now); }
+    }, {
+      obj: corridor,
       update: function (dt, now) {
-        if (now - born > (PHASES[2].dur + PHASES[0].dur + PHASES[1].dur) * 1000) {
-          mat.opacity = Math.max(0, mat.opacity - dt / 400);
-          if (mat.opacity <= 0) return false;
-        }
+        if (!alive(now)) { cylMat.opacity = Math.max(0, cylMat.opacity - dt / 500); return cylMat.opacity > 0; }
         var a = satPos(v, "SAT-51656"), b = satPos(v, "OBJ-8821");
         if (a && b) {
-          var arr = geo.attributes.position.array;
-          arr[0] = a.x; arr[1] = a.y; arr[2] = a.z;
-          arr[3] = b.x; arr[4] = b.y; arr[5] = b.z;
-          geo.attributes.position.needsUpdate = true;
+          var len = Math.max(0.1, a.distanceTo(b));
+          corridor.position.copy(a);
+          corridor.lookAt(b);
+          corridor.scale.set(1, 1, len);
+          var pulse = (Math.sin(now / 180) + 1) / 2;
+          cylMat.opacity = Math.min(0.55, 0.15 + pulse * 0.35);
         }
-        var pulse = (Math.sin(now / 180) + 1) / 2;
-        mat.opacity = Math.min(mat.opacity, 0.55 + pulse * 0.4);
         return true;
       }
+    }, {
+      obj: arrA,
+      update: function (dt, now) { return _updCone(dt, now, arrA, "SAT-51656", "OBJ-8821"); }
+    }, {
+      obj: arrB,
+      update: function (dt, now) { return _updCone(dt, now, arrB, "OBJ-8821", "SAT-51656"); }
     });
+
+    function alive(now) {
+      return (now - born) <= (PHASES[2].dur + PHASES[0].dur + PHASES[1].dur) * 1000;
+    }
+    function _updFuse(now) {
+      var a = satPos(v, "SAT-51656"), b = satPos(v, "OBJ-8821");
+      if (a && b) {
+        var arr = fuseGeo.attributes.position.array;
+        arr[0] = a.x; arr[1] = a.y; arr[2] = a.z;
+        arr[3] = b.x; arr[4] = b.y; arr[5] = b.z;
+        fuseGeo.attributes.position.needsUpdate = true;
+        var pulse = (Math.sin(now / 180) + 1) / 2;
+        fuseMat.opacity = Math.min(1, 0.55 + pulse * 0.45);
+      }
+      return true;
+    }
+    function _updCone(dt, now, mesh, from, to) {
+      if (!alive(now)) { arrMat.opacity = Math.max(0, arrMat.opacity - dt / 500); return arrMat.opacity > 0; }
+      var a = satPos(v, from), b = satPos(v, to);
+      if (a && b) {
+        mesh.position.copy(a);
+        mesh.lookAt(b);
+        mesh.position.y += 0.02;
+        var pulse = (Math.sin(now / 160) + 1) / 2;
+        arrMat.opacity = Math.min(0.95, pulse * 0.5 + 0.5);
+      }
+      return true;
+    }
   }
 
   /* Expanding burn flash at the satellite location + screen flash. */
