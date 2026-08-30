@@ -9,7 +9,7 @@ const puppeteer = require("puppeteer-core");
   const errors = [];
   page.on("pageerror", (e) => errors.push("PAGEERROR: " + e.message));
   page.on("console", (m) => { if (m.type() === "error") errors.push("CONSOLE: " + m.text()); });
-  await page.goto("http://localhost:3030/index.html", { waitUntil: "networkidle2", timeout: 30000 });
+  await page.goto("http://localhost:3000/index.html", { waitUntil: "networkidle2", timeout: 30000 });
   await new Promise((r) => setTimeout(r, 3500));
   const result = await page.evaluate(() => {
     const v = window.sosOrbitalViewer;
