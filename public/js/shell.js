@@ -61,14 +61,14 @@
   function sidebar(active) {
     return `
     <aside class="sidebar" id="sidebar">
-      <div class="brand">
+      <a class="brand" href="landing.html" aria-label="SOS Home (landing page)" title="Go to landing page">
         <div class="brand-mark">${I.logo}</div>
         <div class="brand-text">
           <div class="brand-name">SOS</div>
           <div class="brand-sub">SafeOrbitForSattelites</div>
           <div class="brand-tag">COLLISION AVOIDANCE</div>
         </div>
-      </div>
+      </a>
       <nav class="nav" aria-label="Primary">
         ${NAV.map(
           (n) => `
