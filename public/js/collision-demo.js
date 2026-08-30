@@ -38,6 +38,8 @@
         v._zoomTarget = 2.6;
         v.focusSatellite("SAT-51656", true);
         setText("demoStatus", "MONITORING");
+        setText("demoKeepOut", "Hard-Body 10 m");
+        setText("demoRisk", "—");
         setText("demoDv", "—");
         setText("demoMiss", "742 m");
         setText("demoPc", "2.8 × 10⁻⁴");
@@ -59,6 +61,7 @@
         v._zoomTarget = 2.2;
         highlightPostBurnOrbit(v, true);
         setText("demoDv", "0.42 m/s prograde");
+        setText("demoRisk", "92.1%");
         setText("demoStatus", "PLAN READY");
       }
     },
@@ -150,10 +153,12 @@
         '<div class="demo-telemetry">' +
           row("Satellite", "SAT-51656") +
           row("Debris Object", "OBJ-8821") +
+          row("Keep-Out Radius", "Hard-Body 10 m", "demoKeepOut") +
           row("TCA Countdown", "T-00:30", "demoCountdown") +
           row("Collision Prob.", "2.8 × 10⁻⁴", "demoPc") +
           row("Miss Distance", "742 m", "demoMiss") +
-          row("ΔV Maneuver", "—", "demoDv") +
+          row("ΔV Maneuver", "0.42 m/s prograde", "demoDv") +
+          row("Risk Reduction", "92.1%", "demoRisk") +
           row("Status", "STANDBY", "demoStatus") +
         '</div>' +
         '<div class="demo-progress"><div class="demo-progress-fill" id="demoProgressFill"></div></div>' +
@@ -363,6 +368,27 @@
     return p;
   }
 
+  /* Make a descriptive 3D callout label that floats near an object.  Judges
+     get a direct, jargon-forward read-out of what each visual element means:
+     the corridor, the keep-out radius, and the closing velocity are all
+     labeled in-scene instead of only in the corner panel. */
+  function addCallout(v, text, color) {
+    var c = document.createElement("canvas");
+    c.width = 256; c.height = 40;
+    var g = c.getContext("2d");
+    g.textBaseline = "middle";
+    g.font = "800 18px 'JetBrains Mono', Consolas, monospace";
+    g.fillStyle = color;
+    g.shadowColor = color; g.shadowBlur = 14;
+    g.fillText(text, 8, 22);
+    var tex = new THREE.CanvasTexture(c);
+    tex.minFilter = THREE.LinearFilter;
+    var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+    spr.scale.set(1.5, 0.24, 1);
+    v.scene.add(spr);
+    return spr;
+  }
+
   /* Red pulsing threat connector between satellite and debris PLUS a visible
      collision corridor (danger volume) so the audience can see exactly where
      the two objects would meet.  The corridor is an additive-blended tube
@@ -389,6 +415,22 @@
     });
     var corridor = new THREE.Mesh(cylGeo, cylMat);
     v.scene.add(corridor);
+
+    /* 2b) hard-body keep-out radius — a pulsing translucent sphere at the
+       debris marking the "danger zone" the satellite must not enter. */
+    var koGeo = new THREE.SphereGeometry(0.3, 20, 16);
+    var koMat = new THREE.MeshBasicMaterial({
+      color: 0xef4444, transparent: true, opacity: 0.14,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    });
+    var keepOut = new THREE.Mesh(koGeo, koMat);
+    v.scene.add(keepOut);
+
+    /* 2c) descriptive in-scene callouts */
+    var callCorridor = addCallout(v, "CLOSE-APPROACH CORRIDOR", "#ffb4b4");
+    var callKeepOut = addCallout(v, "HARD-BODY KEEP-OUT RADIUS", "#ffd9a0");
+    var callSat = addCallout(v, "SAT-51656 · THREATENED", "#ffb4b4");
+    var callDebris = addCallout(v, "OBJ-8821 · CATALOGUED", "#fca5a5");
 
     /* 3) two velocity-vector cones — one at each object, oriented toward the
        other so the audience sees the closing (mutual-approach) direction. */
@@ -422,10 +464,60 @@
     }, {
       obj: arrB,
       update: function (dt, now) { return _updCone(dt, now, arrB, "OBJ-8821", "SAT-51656"); }
+    }, {
+      obj: keepOut,
+      update: function (dt, now) {
+        if (!alive(now)) { koMat.opacity = Math.max(0, koMat.opacity - dt / 500); return koMat.opacity > 0; }
+        var b = satPos(v, "OBJ-8821");
+        if (b) {
+          keepOut.position.copy(b);
+          var pulse = (Math.sin(now / 200) + 1) / 2;
+          keepOut.scale.setScalar(0.7 + pulse * 0.5);
+          koMat.opacity = Math.min(0.3, pulse * 0.2 + 0.1);
+        }
+        return true;
+      }
+    }, {
+      obj: callCorridor,
+      update: function (dt, now) { return _updCallout(dt, now, callCorridor, _corridorMid(now)); }
+    }, {
+      obj: callKeepOut,
+      update: function (dt, now) {
+        var b = satPos(v, "OBJ-8821");
+        if (!b) return true;
+        callKeepOut.position.copy(b);
+        callKeepOut.position.y += 0.5;
+        return true;
+      }
+    }, {
+      obj: callSat,
+      update: function (dt, now) {
+        var a = satPos(v, "SAT-51656");
+        if (!a) return true;
+        callSat.position.copy(a);
+        callSat.position.y += 0.5;
+        return true;
+      }
+    }, {
+      obj: callDebris,
+      update: function (dt, now) {
+        var b = satPos(v, "OBJ-8821");
+        if (!b) return true;
+        callDebris.position.copy(b);
+        callDebris.position.y -= 0.5;
+        return true;
+      }
     });
 
-    function alive(now) {
-      return (now - born) <= (PHASES[2].dur + PHASES[0].dur + PHASES[1].dur) * 1000;
+    function _corridorMid(now) {
+      var a = satPos(v, "SAT-51656"), b = satPos(v, "OBJ-8821");
+      if (!a || !b) return new THREE.Vector3();
+      return a.clone().lerp(b, 0.5);
+    }
+    function _updCallout(dt, now, spr, pos) {
+      if (pos) spr.position.copy(pos);
+      spr.position.y += 0.02;
+      return true;
     }
     function _updFuse(now) {
       var a = satPos(v, "SAT-51656"), b = satPos(v, "OBJ-8821");
@@ -487,6 +579,45 @@
           trail.scale.setScalar(0.6 + age * 3);
           trailMat.opacity = Math.max(0, 0.9 - age / 0.9);
           return trailMat.opacity > 0;
+        }
+      });
+
+      /* 4) orbital-transfer arc — a glowing quadratic curve that the satellite
+         traces as it climbs from the current (cyan) orbit to the diverted
+         (green) post-burn orbit during the burn, so judges see the maneuver
+         as a real orbital transfer, not a jump-cut. */
+      var arcGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
+      var arcMat = new THREE.LineBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.9 });
+      var arc = new THREE.Line(arcGeo, arcMat);
+      v.scene.add(arc);
+      var callBurn = addCallout(v, "DELTA-V · PROGRADE BURN", "#fde68a");
+      var a0 = performance.now();
+      effects.push({
+        obj: arc,
+        update: function (dt, now) {
+          var age = (now - a0) / 1000;
+          if (age > 2.8) { arcMat.opacity = Math.max(0, arcMat.opacity - dt / 500); return arcMat.opacity > 0; }
+          var A = satPos(v, "SAT-51656"), B = satPos(v, "SAT-51656 (post-burn)");
+          if (A && B) {
+            var mid = A.clone().lerp(B, 0.5);
+            mid.y += 0.5;               /* bow the arc outward */
+            var arr = arcGeo.attributes.position.array;
+            arr[0] = A.x; arr[1] = A.y; arr[2] = A.z;
+            arr[3] = mid.x; arr[4] = mid.y; arr[5] = mid.z;
+            arr[6] = B.x; arr[7] = B.y; arr[8] = B.z;
+            arcGeo.attributes.position.needsUpdate = true;
+            arcMat.opacity = Math.min(0.9, 0.45 + age * 0.4);
+          }
+          return true;
+        }
+      }, {
+        obj: callBurn,
+        update: function (dt, now) {
+          var mid = satPos(v, "SAT-51656") ? satPos(v, "SAT-51656").clone().lerp(satPos(v, "SAT-51656 (post-burn)"), 0.5) : null;
+          if (!mid) return true;
+          mid.y += 0.85;
+          callBurn.position.copy(mid);
+          return true;
         }
       });
     }

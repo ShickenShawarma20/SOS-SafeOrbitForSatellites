@@ -172,6 +172,8 @@
 .demo-tl-row .v[id="demoStatus"] { color: #FCA5A5; }
 .demo-tl-row .v[id="demoMiss"] { color: #FDBA74; }
 .demo-tl-row .v[id="demoDv"] { color: var(--accent); }
+.demo-tl-row .v[id="demoRisk"] { color: #22C55E; }
+.demo-tl-row .v[id="demoKeepOut"] { color: #FDBA74; }
 
 /* progress bar */
 .demo-progress {
