@@ -6,9 +6,9 @@
 ### 👤 Role Overview
 * **Domain**: AI Engine AI Integration, Astrodynamics Prompt Engineering & Fallback Systems.
 * **Assigned Files**:
-  - `server.ts` (AI Engine API integration)
-  - `src/components/AiFlightDirectorAdvisor.tsx` (AI console UI)
-  - `src/utils/aiAssessmentFallback.ts` (Deterministic mathematical fallback engine)
+  - `server/src/routes/ai.ts` (AI Engine API integration)
+  - `server/src/data/ai.ts` (AI assessment data + fallback)
+  - `server/src/routes/ai.ts` (Deterministic mathematical fallback engine)
 * **Goal**: Build the intelligent AI Astrodynamics Flight Director that processes Conjunction Data Messages, generates structured flight directives, and provides operator telecommand checklists.
 
 ---
@@ -38,7 +38,7 @@
 - [ ] Define the strict JSON response schema enforcing fields: `burnEpoch`, `deltaV` (prograde, radial, normal, magnitude), `fuelKg`, `projectedMissDistanceKm`, `riskAssessment`, `telecommandChecklist`.
 
 #### Phase 3: Deterministic Astrodynamics Fallback Engine (Hours 14 - 22)
-- [ ] Implement `src/utils/aiAssessmentFallback.ts`:
+- [ ] Implement `server/src/routes/ai.ts` (deterministic fallback):
   - If the AI Engine API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Member 1**.
   - Generate standard procedural telecommands deterministically.
   - Ensure the user interface indicates `Mode: AI-Powered (AI Engine)` or `Mode: Deterministic Fallback Active`.

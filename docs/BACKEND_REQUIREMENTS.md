@@ -1,6 +1,10 @@
 # SOS · SafeOrbitForSattelites — Backend Requirements for Frontend
 
-This document catalogs **every backend feature, API endpoint, data contract, and real-time channel** the frontend needs to work properly. It is derived from a full audit of the current frontend (all data is currently hard-coded mock data; this doc defines what must be served by the Express/Astro backend).
+This document catalogs **every backend feature, API endpoint, data contract, and real-time channel** the frontend needs to work properly. It is derived from a full audit of the current frontend. The Express/Astro backend now serves real computed conjunction, maneuver, analytics, and tracking data (with pre-seeded mock data used only as a full demo fallback); this doc defines the contracts the frontend relies on.
+
+> **Convention:** Every page shares a persistent sidebar + topbar shell
+> (`js/shell.js`). For a step-by-step operational walkthrough, see the
+> [OPERATIONS_GUIDE.md](OPERATIONS_GUIDE.md).
 
 ---
 

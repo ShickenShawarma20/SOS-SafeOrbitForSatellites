@@ -6,10 +6,10 @@
 ### 👤 Role Overview
 * **Domain**: Main Dashboard Architecture, Component Assembly, Threat Ranking Matrix, Autonomous Autopilot Policy & Presentation Lead.
 * **Assigned Files**:
-  - `src/App.tsx` (Main Operations Console)
-  - `src/components/ConjunctionRankingTable.tsx`
-  - `src/components/AutonomousAutoPilotModal.tsx`
-  - `src/index.css` (Tailwind CSS styling & Dark Theme)
+  - `public/index.html` (Main Operations Console / dashboard)
+  - `public/conjunction.html` (Conjunction detail page with risk ranking)
+  - `public/autopilot.html` (Autonomous Autopilot Engine page)
+  - `public/css/base.css` (Dark theme styling)
 * **Goal**: Assemble all modular components into a breathtaking, unified Space Mission Control Console, build the live conjunction threat ranking table and autopilot policy modal, and lead the hackathon pitch deck and live demo.
 
 ---
@@ -26,7 +26,7 @@
 
 #### Phase 1: Dashboard Layout & Theme Foundation (Hours 0 - 8)
 - [ ] Configure `index.css` with a sleek dark space theme (slate/zinc background, glowing cyan accents, glassmorphic cards, crisp typography).
-- [ ] Build the layout structure in `src/App.tsx`:
+- [ ] Build the layout structure in `public/index.html`:
   - **Top Navigation Bar**: System status indicators, UTC mission clock, active satellite selector, and modal trigger buttons (Autopilot, CDM Exporter).
   - **Upper Banner**: Space Weather Telemetry Bar (`SpaceWeatherBar.tsx`).
   - **Main Viewport (Left/Center)**: 3D Orbital Earth Digital Twin (`OrbitalGlobe3D.tsx`).

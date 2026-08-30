@@ -381,3 +381,5 @@ Base URL: `/api/v1` (Express, `server/api.js`). All return JSON.
 ```
 
 For the plain-language workflow, see [`WORKFLOW.md`](./WORKFLOW.md).
+For the full API contract, see [`BACKEND_REQUIREMENTS.md`](./BACKEND_REQUIREMENTS.md).
+For a step-by-step operational walkthrough, see [`OPERATIONS_GUIDE.md`](./OPERATIONS_GUIDE.md).

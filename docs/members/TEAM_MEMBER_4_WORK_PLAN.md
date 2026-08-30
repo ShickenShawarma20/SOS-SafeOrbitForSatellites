@@ -6,8 +6,9 @@
 ### 👤 Role Overview
 * **Domain**: Collision Avoidance Maneuver Design, Multi-Axis $\Delta V$ Optimization & B-Plane Encounter Lab.
 * **Assigned Files**:
-  - `src/components/ManeuverSimulationLab.tsx`
-  - `src/components/BPlaneCollisionPlot.tsx`
+  - `public/maneuvers.html` (Maneuver planner page)
+  - `public/js/approach.js` (B-Plane encounter geometry canvas)
+  - `server/src/services/maneuver.ts` (Maneuver computation, CW equations)
 * **Goal**: Build the interactive Maneuver Simulation Lab and the 2D B-Plane encounter visualizer where operators can test multi-axis thruster burns, optimize fuel consumption, and verify collision clearance.
 
 ---

@@ -183,8 +183,10 @@ AUTONOMOUS AUTOPILOT (policy gate → 5-stage pipeline → verification)
 |----------|----------|
 | **Source code** | GitHub *(fill repo URL)* |
 | **Live demo** | *(fill deployed URL)* |
+| **Operations guide** | `docs/OPERATIONS_GUIDE.md` |
 | **Workflow doc** | `docs/WORKFLOW.md` |
 | **Feature guide** | `docs/FEATURES.md` |
+| **API contract** | `docs/BACKEND_REQUIREMENTS.md` |
 
 ---
 

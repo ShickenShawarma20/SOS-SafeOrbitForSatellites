@@ -183,8 +183,12 @@ eye; closing the demo restores the real fleet.
 ## 8. Running It
 
 ```bash
-npm install      # install dependencies
+npm install      # install backend dependencies
 npm run dev      # start backend + static frontend (http://localhost:3000)
 ```
 
 Open the home page, hit **COLLISION-AVOIDANCE DEMO**, and watch the globe.
+
+> **Note:** The frontend is pure HTML/CSS/JS and needs no build step or npm
+> packages. For a complete step-by-step operational walkthrough, see the
+> [OPERATIONS_GUIDE.md](OPERATIONS_GUIDE.md).

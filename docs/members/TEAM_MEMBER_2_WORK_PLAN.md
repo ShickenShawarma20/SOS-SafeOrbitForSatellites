@@ -6,7 +6,8 @@
 ### 👤 Role Overview
 * **Domain**: 3D Digital Twin, WebGL Rendering, Orbit Trajectory Shaders & Camera Rig.
 * **Assigned Files**:
-  - `src/components/OrbitalGlobe3D.tsx`
+  - `public/js/orbital.js` (Three.js 3D Earth globe + Keplerian visualization)
+  - `public/js/sim-core.js` (Client-side astrodynamics)
 * **Goal**: Build the photorealistic, interactive 3D Earth digital twin showing real-time satellite positions, glowing orbital tracks, close-encounter hazard markers, and post-maneuver trajectory branching.
 
 ---

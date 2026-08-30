@@ -1,11 +1,12 @@
 # 🛰️ SOS: Safe Orbit for Satellites
 ### Autonomous Space Situational Awareness (SSA) & Collision Avoidance Flight Director Console
 
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)](https://www.ecma-international.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?logo=threedotjs&logoColor=white)](https://threejs.org/)
 [![AI Engine](https://img.shields.io/badge/AI_Engine-Flight_Director-4285F4)](#)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **SOS (Safe Orbit for Satellites)** is an intelligent, full-stack Space Situational Awareness (SSA) and Autonomous Collision Avoidance System designed to safeguard Low Earth Orbit (LEO) satellites from hypervelocity space debris encounters and prevent Kessler Syndrome.
@@ -47,7 +48,7 @@
 ```
                                   ┌──────────────────────────────────────────────┐
                                   │            SOS OPERATIONAL CONSOLE           │
-                                  │               (React 18 + Vite)              │
+                                  │          (HTML5 + CSS3 + ES6+ JS)            │
                                   └───────┬───────────────────────────────┬──────┘
                                           │                               │
                  ┌────────────────────────┴─────────┐   ┌─────────────────┴───────────────────┐
@@ -61,20 +62,22 @@
                                   │      (Cached State & Astrodynamics Math)     │
                                   └──────────────────────┬───────────────────────┘
                                                          │
-                                           ┌─────────────┴─────────────┐
-                                            │         AI ENGINE         │
-                                           │  (Flight Director Model)  │
-                                           └───────────────────────────┘
+                                          ┌─────────────┴─────────────┐
+                                          │         AI ENGINE         │
+                                          │  (Flight Director Model)  │
+                                          └───────────────────────────┘
 ```
 
 ---
 
 ## 📦 Tech Stack
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Lucide Icons, Recharts
+- **Frontend**: Vanilla HTML5, CSS3, ES6+ JavaScript (no build step required)
 - **3D Visualization**: Three.js, WebGL, Custom BufferGeometry & Shaders
-- **Backend**: Node.js, Express, tsx, esbuild
+- **Charts**: Recharts & dependency-free Canvas 2D visualizations
+- **Backend**: Node.js, Express, TypeScript (compiled to CommonJS), tsx
 - **AI / LLM**: AI Engine (deterministic fallback engine)
+- **Live Tracking**: satellite.js v7 (SGP4/SDP4) with CelesTrak TLE data
 - **Astrodynamics Standards**: CCSDS 508.0-B-1 (Conjunction Data Message format)
 
 ---
@@ -93,10 +96,12 @@
    cd SOS-SafeOrbitForSattelites
    ```
 
-2. **Install dependencies:**
+2. **Install backend dependencies:**
    ```bash
    npm install
    ```
+   *(Only the Node.js/Express backend needs installation. The frontend is pure
+   HTML/CSS/JS and needs no build step or npm packages.)*
 
 3. **Configure Environment Variables (Optional):**
    Copy the example environment file and add your AI Engine API Key:
@@ -127,23 +132,48 @@
 
 ```
 ├── public/                      # Static frontend (Vercel outputDirectory)
+│   ├── landing.html             # Public landing/marketing page
 │   ├── index.html               # Mission Control dashboard (home)
-│   ├── *.html                   # Other pages: ai, analytics, autopilot, conjunction, ...
-│   ├── css/                      # Stylesheets (base, components, screens, ...)
-│   └── js/                       # Frontend scripts
-│       ├── data/                 # World map / geo data
-│       ├── pages/                # Per-page controllers
-│       └── vendor/               # Vendored satellite.js + loader
+│   ├── console.html             # SSA Tactical Console (expert bento grid)
+│   ├── autopilot.html           # Autonomous Autopilot Engine
+│   ├── tracking.html            # Live SGP4 satellite tracking
+│   ├── conjunction.html         # Single conjunction deep-dive
+│   ├── satellite.html           # Satellite registry & detail view
+│   ├── maneuvers.html           # Maneuver planner
+│   ├── orbits.html              # Orbital elements catalog + 3D globe
+│   ├── groundstations.html      # Ground station network coverage
+│   ├── analytics.html           # 30-day operations performance
+│   ├── reports.html             # Reports page
+│   ├── settings.html            # System configuration
+│   ├── css/                     # Stylesheets (base, components, screens, ...)
+│   └── js/                      # Frontend scripts
+│       ├── orbital.js           # Three.js 3D Earth globe + Keplerian visualization
+│       ├── sim-core.js          # Client-side astrodynamics (RK4, TCA, B-plane, Pc)
+│       ├── tracking.js          # Real-time SGP4 tracking engine
+│       ├── api.js               # Shared API client (window.SOS.api)
+│       ├── shell.js             # Persistent sidebar + topbar navigation shell
+│       ├── data/                # World map / geo data
+│       ├── pages/               # Per-page controllers (12 files)
+│       └── vendor/              # Vendored satellite.js + loader
 ├── api/v1/                      # Vercel serverless functions (tracking + catch-all)
 ├── server/src/                  # Express backend (Render): routes, services, data
-├── scripts/                     # Build scripts
+│   ├── index.ts                 # Express app entry point
+│   ├── routes/                  # 17 API route modules
+│   └── services/                # kepler.ts, maneuver.ts, propagator.ts, tle-fetcher.ts
+├── scripts/                     # Build scripts (scripts/build.js)
 ├── tests/                       # Ad-hoc Puppeteer test scripts
 ├── logs/                        # Server logs
 ├── docs/                        # Documentation & team work plans
+│   ├── OPERATIONS_GUIDE.md      # Step-by-step operational guide
+│   ├── FEATURES.md              # Complete feature & page guide
+│   ├── BACKEND_REQUIREMENTS.md  # Full API contract specification
+│   ├── WORKFLOW.md              # Plain-language workflow explanation
+│   ├── SIH2026-PRESENTATION-CONTENT.md  # Hackathon presentation content
+│   └── members/                 # 6 team member work plans
 ├── Assets/                      # Screenshots & presentation template
 ├── package.json                 # Dependencies and build scripts
-├── vercel.json                   # Vercel config (outputDirectory: public)
-├── render.yaml                   # Render backend config
+├── vercel.json                  # Vercel config (outputDirectory: public)
+├── render.yaml                  # Render backend config
 └── README.md
 ```
 
@@ -151,10 +181,12 @@
 
 ## 📜 Standards & Methodologies
 
-- **Orbital Mechanics**: Two-body Keplerian problem solved via perifocal-to-ECI coordinate rotation matrices.
+- **Orbital Mechanics**: Two-body problem solved via Keplerian-to-ECI coordinate rotation matrices (3-1-3 Euler) and RK4 (4th-order Runge-Kutta) trajectory propagation.
 - **Conjunction Data Standards**: Implements CCSDS 508.0-B-1 Conjunction Data Message schema.
 - **Propulsion Modeling**: Non-linear Tsiolkovsky rocket equation with dry mass, propellant reserves, and specific impulse ($I_{sp}$).
-- **Covariance Analysis**: 3-sigma position dispersion matrices transformed into encounter B-Plane coordinates $(\vec{\xi}, \vec{\zeta})$.
+- **Collision Probability (Pc)**: Foster 2D Gaussian numerical integration over the encounter B-Plane (Simpson quadrature) and B-Plane covariance analysis.
+- **Maneuver Miss-Distance**: Clohessy-Wiltshire (Hill) equations for post-burn along-track/radial/cross-track displacement.
+- **Live Tracking**: SGP4/SDP4 propagation via satellite.js v7 on CelesTrak public TLE data.
 
 ---
 

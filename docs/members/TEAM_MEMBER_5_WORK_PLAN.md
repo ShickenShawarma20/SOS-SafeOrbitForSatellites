@@ -6,10 +6,10 @@
 ### 👤 Role Overview
 * **Domain**: Constellation Health Telemetry, Space Weather Integration, Standard CCSDS CDM Formats & Mock Orbital Datasets.
 * **Assigned Files**:
-  - `src/components/SatelliteFleetManager.tsx`
-  - `src/components/SpaceWeatherBar.tsx`
-  - `src/components/CdmExporterModal.tsx`
-  - `src/data/mockOrbitalData.ts`
+  - `public/satellite.html` (Satellite registry/fleet page)
+  - `public/console.html` (Space Weather strip)
+  - `public/js/shell.js` (CDM export modal)
+  - `server/src/data/isro-fleet.ts` (Real ISRO satellite fleet data)
 * **Goal**: Manage fleet-level propellant budgets, provide real-time solar/geomagnetic atmospheric drag feeds, build realistic orbital mock datasets, and export compliant CCSDS Conjunction Data Messages.
 
 ---
@@ -24,7 +24,7 @@
 ### 📋 Step-by-Step Action Plan
 
 #### Phase 1: Mock Datasets & Scenario Design (Hours 0 - 8)
-- [ ] Build `src/data/mockOrbitalData.ts`:
+- [ ] Build `server/src/data/isro-fleet.ts`:
   - **Active Satellite Fleet**: Create 3 active satellites (e.g., `SOS-1 [LEO 550km]`, `SOS-2 [Sun-Sync 700km]`, `SENTINEL-X [LEO 600km]`) with realistic Keplerian orbital elements, mass (500 kg), propellant reserve (50 kg), and $I_{sp}$ (220 s).
   - **Space Debris Catalog**: Create 5 realistic debris objects (Cosmos 1408 ASAT debris, Fengyun-1C fragment, defunct rocket upper stage, SL-16 booster).
   - **Conjunction Events**: Create 3 critical conjunction events with varying miss distances (142m, 420m, 1.8km), collision probabilities, and B-plane parameters.

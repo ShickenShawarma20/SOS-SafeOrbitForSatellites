@@ -6,8 +6,8 @@
 ### 👤 Role Overview
 * **Domain**: Orbital Mechanics, Celestial Coordinate Transformations & Mathematical Formulations.
 * **Assigned Files**:
-  - `src/utils/orbitalMechanics.ts`
-  - `src/types.ts` (Core astrodynamics interfaces)
+  - `server/src/services/kepler.ts` (Keplerian propagation, RK4, TCA, B-plane)
+  - `server/src/types.ts` (Core astrodynamics interfaces)
 * **Goal**: Provide the core mathematical algorithms that convert orbital parameters into 3D space vectors, compute B-Plane collision coordinates, and calculate precise miss distances.
 
 ---
@@ -23,7 +23,7 @@
 ### 📋 Step-by-Step Action Plan
 
 #### Phase 1: Mathematical Foundations & Types (Hours 0 - 6)
-- [ ] Define the TypeScript types for `OrbitalElements`, `Vector3D`, `ECICoordinates`, `BPlaneParameters`, and `CovarianceMatrix` in `src/types.ts`.
+- [ ] Define the TypeScript types for `OrbitalElements`, `Vector3D`, `ECICoordinates`, `BPlaneParameters`, and `CovarianceMatrix` in `server/src/types.ts`.
 - [ ] Implement the Keplerian-to-Cartesian conversion function:
   - Calculate orbital radius $r$ from semi-major axis, eccentricity, and true anomaly.
   - Form the position vector in the perifocal plane.
