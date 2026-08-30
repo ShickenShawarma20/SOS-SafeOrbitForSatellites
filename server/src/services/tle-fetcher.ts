@@ -151,10 +151,13 @@ export async function refreshFleetTles(): Promise<void> {
     cache.status = "error";
   }
 
-  // If the live fetch completely failed, fall back to the bundled snapshot so
-  // the system remains demonstrable.  Snapshot entries are clearly labeled via
+  // If the live fetch partially or fully failed, fall back to the bundled
+  // snapshot for any satellite that did not get a fresh live TLE so the system
+  // remains demonstrable.  Snapshot entries are clearly labeled via
   // source = "CelesTrak (cached)" so they are never presented as fresh live data.
-  if (successCount === 0) {
+  // Partial failures keep good snapshot data instead of flipping good entries
+  // to ok=false with empty elements.
+  if (failCount > 0) {
     loadSnapshotFallback();
   }
 
