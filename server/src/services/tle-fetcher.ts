@@ -53,6 +53,14 @@ const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 // Stale threshold: 72 hours → data considered stale.
 const STALE_THRESHOLD_MS = 72 * 60 * 60 * 1000;
 
+// Per-request timeout.  When traffic is routed around CloudflareWARP via the
+// local Wi-Fi path, latency is higher, so be generous.
+const FETCH_TIMEOUT_MS = 25000;
+// CelesTrak intermittently returns 503 (rate-limit) under concurrent load.
+// Retry transient failures with exponential backoff.
+const FETCH_MAX_ATTEMPTS = 4;
+const FETCH_BACKOFF_MS = 800;
+
 const cache: FleetCache = {
   fetchedAt: null,
   tles: new Map(),
@@ -72,16 +80,34 @@ function tleEpochToIso(epochField: string): string {
   return new Date(ms).toISOString();
 }
 
-/* Fetch a single satellite's TLE from CelesTrak. */
+/* Fetch a single satellite's TLE from CelesTrak.
+ * Retries on transient failures (503/502/504, timeouts, network errors) with
+ * exponential backoff — CelesTrak rate-limits under concurrent access. */
 async function fetchSingleTle(noradId: number): Promise<{ line1: string; line2: string; name: string } | null> {
   const url = `${CELESTRAK_BASE}?CATNR=${noradId}&FORMAT=tle`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
-  if (!res.ok) throw new Error(`CelesTrak HTTP ${res.status}`);
-  const text = (await res.text()).trim();
-  const lines = text.split("\n").map((l) => l.replace(/\r$/, ""));
-  // CelesTrak returns: line0 = name, line1 = TLE line 1, line2 = TLE line 2
-  if (lines.length < 3 || !lines[1].startsWith("1 ") || !lines[2].startsWith("2 ")) return null;
-  return { name: lines[0].trim(), line1: lines[1], line2: lines[2] };
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      if (res.ok) {
+        const text = (await res.text()).trim();
+        const lines = text.split("\n").map((l) => l.replace(/\r$/, ""));
+        // CelesTrak returns: line0 = name, line1 = TLE line 1, line2 = TLE line 2
+        if (lines.length < 3 || !lines[1].startsWith("1 ") || !lines[2].startsWith("2 ")) return null;
+        return { name: lines[0].trim(), line1: lines[1], line2: lines[2] };
+      }
+      // 404 / 4xx → not retryable, the satellite simply isn't in the catalog.
+      if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
+      // 429 / 5xx → transient, retry after backoff.
+      lastErr = new Error(`CelesTrak HTTP ${res.status}`);
+    } catch (e) {
+      lastErr = e; // timeout / network error → retry
+    }
+    if (attempt < FETCH_MAX_ATTEMPTS) {
+      await new Promise((r) => setTimeout(r, FETCH_BACKOFF_MS * attempt));
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("CelesTrak fetch failed");
 }
 
 /* Refresh TLEs for the entire fleet.  Fetches concurrently but in small batches
@@ -94,8 +120,8 @@ export async function refreshFleetTles(): Promise<void> {
   let successCount = 0;
   let failCount = 0;
 
-  // Fetch in batches of 4 to be polite to the provider.
-  const BATCH = 4;
+  // Fetch in small batches to avoid triggering CelesTrak's rate-limiter (503).
+  const BATCH = 2;
   for (let i = 0; i < ISRO_FLEET.length; i += BATCH) {
     const batch = ISRO_FLEET.slice(i, i + BATCH);
     const results = await Promise.allSettled(batch.map((m) => fetchSingleTle(m.noradId)));
