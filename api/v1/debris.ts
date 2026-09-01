@@ -217,10 +217,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "public, max-age=300");
 
-  const urlPath = req.url?.split("?")[0] || "";
+  // In Vercel, req.url is relative to the function file.
+  // For api/v1/debris.ts:  /api/v1/debris -> url = "/" or "/api/v1/debris"
+  //                        /api/v1/debris/OBJ-8821 -> url = "/OBJ-8821"
+  const urlPath = (req.url || "").split("?")[0].replace(/^\/api\/v1\/debris/, "") || "/";
 
   // GET /api/v1/debris — list all
-  if (urlPath === "/api/v1/debris" || urlPath === "/api/v1/debris/") {
+  if (urlPath === "/" || urlPath === "") {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const type = req.query.type as string | undefined;
@@ -244,40 +247,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // GET /api/v1/debris/:id — single object
-  const idMatch = urlPath.match(/^\/api\/v1\/debris\/([^/]+)$/);
-  if (idMatch) {
-    const id = decodeURIComponent(idMatch[1]);
-    const debris = DEBRIS_OBJECTS.find((d) => d.id === id);
-    if (!debris) {
-      res.status(404).json({ error: { code: "NOT_FOUND", message: `Debris ${id} not found` } });
-      return;
-    }
+  // Parse sub-path: /:id, /:id/conjunctions, /:id/geometry
+  const parts = urlPath.replace(/^\//, "").split("/");
+  const id = decodeURIComponent(parts[0]);
 
-    // Sub-route: /:id/conjunctions
-    if (req.url?.includes("/conjunctions")) {
-      const related = CONJUNCTIONS.filter((c) => c.objectId === debris.id);
-      res.status(200).json(related);
-      return;
-    }
-
-    // Sub-route: /:id/geometry
-    if (req.url?.includes("/geometry")) {
-      const el = debris.elements;
-      const EARTH_R = 6378;
-      res.status(200).json({
-        id: debris.id,
-        noradId: debris.noradId,
-        type: debris.type,
-        orbitalElements: debris.elements,
-        orbitRing: [],
-      });
-      return;
-    }
-
-    res.status(200).json(debris);
+  const debris = DEBRIS_OBJECTS.find((d) => d.id === id);
+  if (!debris) {
+    res.status(404).json({ error: { code: "NOT_FOUND", message: `Debris ${id} not found` } });
     return;
   }
 
-  res.status(404).json({ error: { code: "NOT_FOUND", message: "Not found" } });
+  const subRoute = parts[1] || "";
+
+  if (subRoute === "conjunctions") {
+    const related = CONJUNCTIONS.filter((c) => c.objectId === debris.id);
+    res.status(200).json(related);
+    return;
+  }
+
+  if (subRoute === "geometry") {
+    res.status(200).json({
+      id: debris.id,
+      noradId: debris.noradId,
+      type: debris.type,
+      orbitalElements: debris.elements,
+      orbitRing: [],
+    });
+    return;
+  }
+
+  res.status(200).json(debris);
 }
