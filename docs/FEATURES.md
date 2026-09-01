@@ -4,10 +4,6 @@ This document lists **every page** in the application, **what it does**, and
 **every feature** it exposes. It is the single reference for the hackathon demo,
 the slide deck, and any new team member trying to understand the product.
 
-> **Convention:** Every page shares a persistent sidebar + topbar shell
-> (`js/shell.js`) with a live UTC clock, top KPIs (active satellites,
-> conjunction alerts, maneuvers planned, system health), notifications, and
-> settings. Page-specific content is described below.
 
 ---
 
