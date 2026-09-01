@@ -1,4 +1,4 @@
-# 🛰️ Team Member 5: Fleet Telemetry, Space Weather & Standards Specialist
+# 🛰️ Fleet Telemetry, Space Weather & Standards Specialist
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -52,19 +52,19 @@
   - Provide both **JSON** and **XML** tabs with syntax highlighting and one-click "Copy to Clipboard" and "Download CDM File" buttons.
 
 #### Phase 5: Integration & Data Flow (Hours 28 - 36)
-- [ ] Ensure that when **Member 4** executes a maneuver, the propellant consumed is deducted from the active satellite's fuel reserve in real time.
-- [ ] Ensure space weather drag multipliers scale the error ellipses in **Member 4**'s B-plane plot and **Member 3**'s AI risk score.
+- [ ] Ensure that when the **Maneuver Optimization Lead** executes a maneuver, the propellant consumed is deducted from the active satellite's fuel reserve in real time.
+- [ ] Ensure space weather drag multipliers scale the error ellipses in the **Maneuver Optimization Lead**'s B-plane plot and the **AI Flight Director**'s AI risk score.
 
 ---
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**:
-  - From **Member 1**: Orbital element schemas and coordinate formats.
-  - From **Member 4**: Fuel mass consumed ($\Delta m$) from authorized avoidance burns.
+  - From **Lead Astrodynamicist**: Orbital element schemas and coordinate formats.
+  - From **Maneuver Optimization Lead**: Fuel mass consumed ($\Delta m$) from authorized avoidance burns.
 * **Outputs to Provide**:
-  - To **Member 2, 3, 4, 6**: The master `mockOrbitalData.ts` containing all satellites, debris, and active conjunctions.
-  - To **Member 4**: Space weather drag multipliers for covariance scaling.
-  - To **Member 6**: The completed `SatelliteFleetManager.tsx`, `SpaceWeatherBar.tsx`, and `CdmExporterModal.tsx` components.
+  - To **3D Graphics Engineer, AI Flight Director, Maneuver Lead, Console UI Lead**: The master `mockOrbitalData.ts` containing all satellites, debris, and active conjunctions.
+  - To **Maneuver Optimization Lead**: Space weather drag multipliers for covariance scaling.
+  - To **Operations Console UI Lead**: The completed `SatelliteFleetManager.tsx`, `SpaceWeatherBar.tsx`, and `CdmExporterModal.tsx` components.
 
 ---
 

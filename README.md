@@ -169,7 +169,7 @@
 │   ├── BACKEND_REQUIREMENTS.md  # Full API contract specification
 │   ├── WORKFLOW.md              # Plain-language workflow explanation
 │   ├── SIH2026-PRESENTATION-CONTENT.md  # Hackathon presentation content
-│   └── members/                 # 6 team member work plans
+│   └── members/                 # Role-based work plans & step-by-step guides
 ├── Assets/                      # Screenshots & presentation template
 ├── package.json                 # Dependencies and build scripts
 ├── vercel.json                  # Vercel config (outputDirectory: public)
@@ -190,14 +190,14 @@
 
 ---
 
-## 👥 Hackathon Team Roles
+## 👥 Hackathon Team Roles & Work Plans
 
-- **Lead Astrodynamicist / Systems Architect**: Orbital mathematics, collision probability modeling, B-plane mechanics.
-- **3D Graphics & WebGL Engineer**: Three.js rendering, orbital track shaders, lighting, dynamic camera controls.
-- **AI Systems & Prompt Engineer**: AI Engine JSON schema formatting, astrodynamics prompt design, deterministic fallback design.
-- **Frontend / Console UI Lead**: Operations dashboard layout, responsiveness, telemetry widgets, data flow.
-- **Backend & Integration Specialist**: Express API routes, caching layer, rate-limit resilience, CDM format parsers.
-- **Product & Presentation Lead**: Hackathon slide deck, live demo script, business case, pitch presentation.
+- [**Lead Astrodynamicist & Mathematical Architect**](docs/members/LEAD_ASTRODYNAMICIST_WORK_PLAN.md): Orbital mechanics, coordinate transformations, B-plane collision geometry, and covariance propagation.
+- [**3D Graphics & WebGL Engineer**](docs/members/3D_GRAPHICS_WEBGL_ENGINEER_WORK_PLAN.md): Three.js 3D Earth digital twin, orbital trajectory shaders, lighting, and dynamic camera controls.
+- [**AI Flight Director & Prompt Engineer**](docs/members/AI_FLIGHT_DIRECTOR_WORK_PLAN.md): AI Engine JSON schema formatting, astrodynamics prompt design, and deterministic fallback engine.
+- [**Astrodynamics Lab & Maneuver Optimization Lead**](docs/members/MANEUVER_OPTIMIZATION_LEAD_WORK_PLAN.md): 3-axis burn mechanics, Tsiolkovsky propellant calculation, B-plane encounter plot, and minimum-fuel optimizer.
+- [**Fleet Telemetry, Space Weather & Standards Specialist**](docs/members/FLEET_TELEMETRY_STANDARDS_SPECIALIST_WORK_PLAN.md): Constellation telemetry, real-time space weather ($F_{10.7}, K_p$) drag scaling, and CCSDS 508.0-B-1 CDM export.
+- [**Operations Console UI Lead & Hackathon Presenter**](docs/members/OPERATIONS_CONSOLE_UI_LEAD_WORK_PLAN.md): Mission control console dashboard, conjunction threat ranking matrix, autonomous autopilot policy, and pitch presentation.
 
 ---
 

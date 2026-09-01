@@ -1,4 +1,4 @@
-# 🛰️ Team Member 3: AI Flight Director & Prompt Engineer
+# 🛰️ AI Flight Director & Prompt Engineer
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -39,7 +39,7 @@
 
 #### Phase 3: Deterministic Astrodynamics Fallback Engine (Hours 14 - 22)
 - [ ] Implement `server/src/routes/ai.ts` (deterministic fallback):
-  - If the AI Engine API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Member 1**.
+  - If the AI Engine API returns an error or no API key is provided, compute the recommended $\Delta V$ using classical analytical formulas from **Lead Astrodynamicist**.
   - Generate standard procedural telecommands deterministically.
   - Ensure the user interface indicates `Mode: AI-Powered (AI Engine)` or `Mode: Deterministic Fallback Active`.
 
@@ -49,18 +49,18 @@
 > the fallback engine below.
 
 #### Phase 4: UI Polish & Directive Transfer (Hours 22 - 28)
-- [ ] Add an "Apply Directive to Maneuver Lab" button that transfers the AI's recommended $\Delta V$ values directly to **Member 4**'s Maneuver Simulation Lab.
+- [ ] Add an "Apply Directive to Maneuver Lab" button that transfers the AI's recommended $\Delta V$ values directly to the **Maneuver Optimization Lead**'s Maneuver Simulation Lab.
 - [ ] Add copy-to-clipboard functionality for the operator telecommand checklist.
 
 ---
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**:
-  - From **Member 1**: Satellite state vectors, B-plane parameters, and mathematical fallback formulas.
-  - From **Member 5**: Conjunction Data Messages (CDMs) and satellite fuel reserves.
+  - From **Lead Astrodynamicist**: Satellite state vectors, B-plane parameters, and mathematical fallback formulas.
+  - From **Fleet Telemetry & Standards Specialist**: Conjunction Data Messages (CDMs) and satellite fuel reserves.
 * **Outputs to Provide**:
-  - To **Member 4**: Recommended $\Delta V$ burn vectors to populate the Maneuver Lab.
-  - To **Member 6**: The complete `AiFlightDirectorAdvisor.tsx` component for dashboard embedding.
+  - To **Maneuver Optimization Lead**: Recommended $\Delta V$ burn vectors to populate the Maneuver Lab.
+  - To **Operations Console UI Lead**: The complete `AiFlightDirectorAdvisor.tsx` component for dashboard embedding.
 
 ---
 

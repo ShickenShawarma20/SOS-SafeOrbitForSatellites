@@ -1,4 +1,4 @@
-# 🛰️ Team Member 4: Astrodynamics Lab & Maneuver Optimization Lead
+# 🛰️ Astrodynamics Lab & Maneuver Optimization Lead
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -41,7 +41,7 @@
   - Add $\Delta \vec{V}$ to the satellite's velocity vector at the chosen burn epoch.
   - Compute the new modified orbital elements (new semi-major axis, eccentricity, inclination).
   - Calculate the new projected miss distance at the time of closest approach (TCA).
-- [ ] Connect with **Member 2** so moving the $\Delta V$ sliders updates the green diverted trajectory line on the 3D globe in real time!
+- [ ] Connect with **3D Graphics & WebGL Engineer** so moving the $\Delta V$ sliders updates the green diverted trajectory line on the 3D globe in real time!
 
 #### Phase 3: Auto-Solve Minimum Fuel Optimizer (Hours 16 - 22)
 - [ ] Implement the "Auto-Solve Optimal Burn" feature:
@@ -58,18 +58,18 @@
 
 #### Phase 5: 72-Hour Forward Screening & Polish (Hours 28 - 36)
 - [ ] Build a secondary conjunction risk chart showing distance-to-nearest-objects over the next 72 hours after the burn.
-- [ ] Add an "Execute & Authorize Maneuver" action button that triggers the satellite telemetry update in **Member 5**'s Fleet Manager.
+- [ ] Add an "Execute & Authorize Maneuver" action button that triggers the satellite telemetry update in the **Fleet Telemetry Specialist**'s Fleet Manager.
 
 ---
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**:
-  - From **Member 1**: Orbital perturbation math and B-plane transformation equations.
-  - From **Member 3**: AI-recommended $\Delta V$ burn values.
-  - From **Member 5**: Satellite mass ($m_0$) and thruster specific impulse ($I_{sp}$).
+  - From **Lead Astrodynamicist**: Orbital perturbation math and B-plane transformation equations.
+  - From **AI Flight Director & Prompt Engineer**: AI-recommended $\Delta V$ burn values.
+  - From **Fleet Telemetry & Standards Specialist**: Satellite mass ($m_0$) and thruster specific impulse ($I_{sp}$).
 * **Outputs to Provide**:
-  - To **Member 2**: New post-burn orbital elements to render the green diverted orbit on the 3D globe.
-  - To **Member 6**: The completed `ManeuverSimulationLab.tsx` and `BPlaneCollisionPlot.tsx` components.
+  - To **3D Graphics & WebGL Engineer**: New post-burn orbital elements to render the green diverted orbit on the 3D globe.
+  - To **Operations Console UI Lead**: The completed `ManeuverSimulationLab.tsx` and `BPlaneCollisionPlot.tsx` components.
 
 ---
 

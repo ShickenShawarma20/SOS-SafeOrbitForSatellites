@@ -1,4 +1,4 @@
-# 🛰️ Team Member 6: Operations Console UI Lead & Hackathon Presenter
+# 🛰️ Operations Console UI Lead & Hackathon Presenter
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -50,11 +50,11 @@
 
 #### Phase 4: Full-Stack Component Integration & State Management (Hours 22 - 28)
 - [ ] Wire up global React state connecting:
-  - Selected Satellite from **Member 5**'s Fleet Manager.
+  - Selected Satellite from **Fleet Telemetry Specialist**'s Fleet Manager.
   - Selected Conjunction from the Threat Table.
-  - 3D Globe camera focus and trajectory updates from **Member 2**.
-  - AI Flight Directive from **Member 3**.
-  - Delta-V maneuver simulation state from **Member 4**.
+  - 3D Globe camera focus and trajectory updates from **3D Graphics & WebGL Engineer**.
+  - AI Flight Directive from **AI Flight Director & Prompt Engineer**.
+  - Delta-V maneuver simulation state from **Maneuver Optimization Lead**.
 - [ ] Ensure the entire application is responsive and fast with zero lag.
 
 #### Phase 5: Pitch Deck, Demo Video & Hackathon Rehearsal (Hours 28 - 36)
@@ -66,11 +66,11 @@
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**:
-  - From **Member 1**: Types and math helpers.
-  - From **Member 2**: `OrbitalGlobe3D.tsx`.
-  - From **Member 3**: `AiFlightDirectorAdvisor.tsx`.
-  - From **Member 4**: `ManeuverSimulationLab.tsx` and `BPlaneCollisionPlot.tsx`.
-  - From **Member 5**: `SatelliteFleetManager.tsx`, `SpaceWeatherBar.tsx`, `CdmExporterModal.tsx`, `mockOrbitalData.ts`.
+  - From **Lead Astrodynamicist**: Types and math helpers.
+  - From **3D Graphics & WebGL Engineer**: `OrbitalGlobe3D.tsx`.
+  - From **AI Flight Director & Prompt Engineer**: `AiFlightDirectorAdvisor.tsx`.
+  - From **Maneuver Optimization Lead**: `ManeuverSimulationLab.tsx` and `BPlaneCollisionPlot.tsx`.
+  - From **Fleet Telemetry & Standards Specialist**: `SatelliteFleetManager.tsx`, `SpaceWeatherBar.tsx`, `CdmExporterModal.tsx`, `mockOrbitalData.ts`.
 * **Outputs to Provide**:
   - To **The Whole Team**: The integrated, working `App.tsx` console and the pitch presentation script.
 

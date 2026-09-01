@@ -1,4 +1,4 @@
-# 🛰️ Team Member 2: 3D Graphics & WebGL Engineer
+# 🛰️ 3D Graphics & WebGL Engineer
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -29,7 +29,7 @@
 - [ ] Add a subtle celestial starfield background cube/particle field.
 
 #### Phase 2: Orbit Ring & Trajectory Line Rendering (Hours 6 - 14)
-- [ ] Implement nominal satellite orbit rendering (Cyan glowing line) using coordinate arrays from **Member 1**.
+- [ ] Implement nominal satellite orbit rendering (Cyan glowing line) using coordinate arrays from **Lead Astrodynamicist**.
 - [ ] Implement secondary debris orbit rendering (Red pulsating line).
 - [ ] Implement post-maneuver diverted trajectory rendering (Neon Green glowing line) that appears when a maneuver is simulated.
 - [ ] Ensure lines re-render smoothly whenever orbital parameters change.
@@ -51,17 +51,17 @@
 #### Phase 5: UI Overlay & Visual Polish (Hours 28 - 36)
 - [ ] Add onscreen 3D telemetry HUD overlays (Current Altitude, Speed, Latitude/Longitude).
 - [ ] Add smooth orbit transitions when the operator selects different satellites in the fleet.
-- [ ] Coordinate with **Member 6** to integrate the 3D canvas seamlessly into the main console dashboard.
+- [ ] Coordinate with **Operations Console UI Lead** to integrate the 3D canvas seamlessly into the main console dashboard.
 
 ---
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**:
-  - From **Member 1**: 3D coordinate points $(x, y, z)$ for nominal, debris, and diverted orbits.
-  - From **Member 4**: New orbital coordinates after a simulated $\Delta V$ burn.
-  - From **Member 6**: Current selected satellite and conjunction event from the dashboard.
+  - From **Lead Astrodynamicist**: 3D coordinate points $(x, y, z)$ for nominal, debris, and diverted orbits.
+  - From **Maneuver Optimization Lead**: New orbital coordinates after a simulated $\Delta V$ burn.
+  - From **Operations Console UI Lead**: Current selected satellite and conjunction event from the dashboard.
 * **Outputs to Provide**:
-  - To **Member 6**: The interactive 3D WebGL viewport embedded inside `App.tsx`.
+  - To **Operations Console UI Lead**: The interactive 3D WebGL viewport embedded inside `App.tsx`.
 
 ---
 

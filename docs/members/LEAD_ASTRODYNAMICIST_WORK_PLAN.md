@@ -1,4 +1,4 @@
-# 🛰️ Team Member 1: Lead Astrodynamicist & Mathematical Architect
+# 🛰️ Lead Astrodynamicist & Mathematical Architect
 ## Individual Work Plan & Step-by-Step Task Guide
 
 ---
@@ -50,16 +50,16 @@
 
 #### Phase 5: Testing & Integration with Teammates (Hours 26 - 36)
 - [ ] Validate mathematical outputs against known test cases (e.g., circular LEO orbits at 500 km altitude).
-- [ ] Hand over clean, typed math helper functions to **Member 2** (3D Visualizer) and **Member 4** (Maneuver Lab).
+- [ ] Hand over clean, typed math helper functions to **3D Graphics & WebGL Engineer** (3D Visualizer) and **Maneuver Optimization Lead** (Maneuver Lab).
 
 ---
 
 ### 🔄 Team Collaboration Interfaces
 * **Inputs Needed**: None (You build the foundational math layer).
 * **Outputs to Provide**:
-  - To **Member 2**: Orbit path coordinate arrays for 3D trajectory rendering.
-  - To **Member 4**: B-Plane coordinates, miss distance calculations, and covariance formulas.
-  - To **Member 3**: State vectors and collision parameters for AI prompt generation.
+  - To **3D Graphics & WebGL Engineer**: Orbit path coordinate arrays for 3D trajectory rendering.
+  - To **Maneuver Optimization Lead**: B-Plane coordinates, miss distance calculations, and covariance formulas.
+  - To **AI Flight Director & Prompt Engineer**: State vectors and collision parameters for AI prompt generation.
 
 ---
 
