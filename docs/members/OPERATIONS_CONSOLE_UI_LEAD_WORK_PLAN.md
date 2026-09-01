@@ -1,7 +1,6 @@
 # 🛰️ Operations Console UI Lead & Hackathon Presenter
 ## Individual Work Plan & Step-by-Step Task Guide
 
----
 
 ### 👤 Role Overview
 * **Domain**: Main Dashboard Architecture, Component Assembly, Threat Ranking Matrix, Autonomous Autopilot Policy & Presentation Lead.
