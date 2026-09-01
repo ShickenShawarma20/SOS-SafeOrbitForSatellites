@@ -2,6 +2,9 @@
   publish = "public"
   command = "echo 'Static site — no build step needed'"
 
+[functions]
+  directory = "netlify/functions"
+
 [[headers]]
   for = "/css/*"
   [headers.values]
@@ -11,3 +14,118 @@
   for = "/js/*"
   [headers.values]
     Cache-Control = "public, max-age=86400"
+
+# --- API function redirects (status 200 = rewrite, function receives original path) ---
+
+[[redirects]]
+  from = "/api/v1/debris"
+  to = "/.netlify/functions/debris"
+  status = 200
+
+[[redirects]]
+  from = "/api/v1/debris/*"
+  to = "/.netlify/functions/debris"
+  status = 200
+
+[[redirects]]
+  from = "/api/v1/tracking/fleet"
+  to = "/.netlify/functions/tracking-fleet"
+  status = 200
+
+[[redirects]]
+  from = "/api/v1/tracking/status"
+  to = "/.netlify/functions/tracking-status"
+  status = 200
+
+# Catch-all: everything else → api.js mock handler
+[[redirects]]
+  from = "/api/v1/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+# --- SPA clean-URL rewrites (for browser navigation) ---
+
+[[redirects]]
+  from = "/"
+  to = "/landing.html"
+  status = 200
+
+[[redirects]]
+  from = "/home"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/debris"
+  to = "/debris.html"
+  status = 200
+
+[[redirects]]
+  from = "/debris/*"
+  to = "/debris.html"
+  status = 200
+
+[[redirects]]
+  from = "/satellite"
+  to = "/satellite.html"
+  status = 200
+
+[[redirects]]
+  from = "/satellite/*"
+  to = "/satellite.html"
+  status = 200
+
+[[redirects]]
+  from = "/conjunction"
+  to = "/conjunction.html"
+  status = 200
+
+[[redirects]]
+  from = "/conjunction/*"
+  to = "/conjunction.html"
+  status = 200
+
+[[redirects]]
+  from = "/tracking"
+  to = "/tracking.html"
+  status = 200
+
+[[redirects]]
+  from = "/orbits"
+  to = "/orbits.html"
+  status = 200
+
+[[redirects]]
+  from = "/maneuvers"
+  to = "/maneuvers.html"
+  status = 200
+
+[[redirects]]
+  from = "/groundstations"
+  to = "/groundstations.html"
+  status = 200
+
+[[redirects]]
+  from = "/analytics"
+  to = "/analytics.html"
+  status = 200
+
+[[redirects]]
+  from = "/reports"
+  to = "/reports.html"
+  status = 200
+
+[[redirects]]
+  from = "/autopilot"
+  to = "/autopilot.html"
+  status = 200
+
+[[redirects]]
+  from = "/console"
+  to = "/console.html"
+  status = 200
+
+[[redirects]]
+  from = "/settings"
+  to = "/settings.html"
+  status = 200
