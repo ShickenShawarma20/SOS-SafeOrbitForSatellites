@@ -1,0 +1,25 @@
+# SPA clean-URL rewrites (200 = rewrite, browser URL unchanged)
+/               /landing.html      200
+/home           /index.html        200
+/debris         /debris.html       200
+/debris/*       /debris.html       200
+/satellite      /satellite.html    200
+/satellite/*    /satellite.html    200
+/conjunction    /conjunction.html  200
+/conjunction/*  /conjunction.html  200
+/tracking       /tracking.html     200
+/orbits         /orbits.html       200
+/maneuvers      /maneuvers.html    200
+/groundstations /groundstations.html 200
+/analytics      /analytics.html    200
+/reports        /reports.html      200
+/autopilot      /autopilot.html    200
+/console        /console.html      200
+/settings       /settings.html     200
+
+# API proxy — route all /api/* calls to the Express backend
+# Update the target URL to your deployed backend (Render, Railway, etc.)
+# /api/*         https://your-backend-url.herokuapp.com/api/:splat  200
+
+# SPA fallback — unknown paths serve index.html
+/*             /index.html        200
