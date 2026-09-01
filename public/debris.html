@@ -9,6 +9,28 @@
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/components.css">
 <link rel="stylesheet" href="/css/screens.css">
+<style>
+.debris-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.debris-table th {
+  text-align: left;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-low);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+.debris-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+.debris-table tr:last-child td { border-bottom: none; }
+.debris-table tbody tr { transition: background .12s ease; cursor: pointer; }
+.debris-table tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
+</style>
 </head>
 <body data-page="debris">
 <div class="shell" id="shell">
@@ -43,7 +65,7 @@
 
       <article class="card">
         <div style="overflow-x:auto; max-height:560px; overflow-y:auto;">
-          <table class="cx-table" style="width:100%;">
+          <table class="debris-table" style="width:100%;">
             <thead>
               <tr>
                 <th>ID</th>

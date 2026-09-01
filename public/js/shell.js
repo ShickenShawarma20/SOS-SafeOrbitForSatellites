@@ -188,8 +188,11 @@
   });
 
   /* Render the dashboard "Upcoming Conjunctions" table from API data.
-     Each row links to the correct conjunction detail page. */
+     Each row links to the correct conjunction detail page.
+     Scoped to the index/dashboard page only — avoid overwriting other pages' tables. */
   function renderConjunctionTable(items) {
+    var page = document.body.getAttribute("data-page");
+    if (page !== "home") return;
     var tbody = document.querySelector(".cx-table tbody");
     if (!tbody) return;
     if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-mid);padding:18px;">No upcoming conjunctions</td></tr>'; return; }

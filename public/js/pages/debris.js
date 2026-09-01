@@ -49,10 +49,18 @@
         if (tb) tb.innerHTML = '<tr><td colspan="8" style="padding:24px;text-align:center;color:var(--crit);">Failed to load debris catalog.</td></tr>';
       });
 
+      var TYPE_ORDER = { "fragmentation": 0, "rocket_body": 1, "payload": 2, "unknown": 3 };
+
       function renderTable() {
         var tb = document.getElementById("debrisTableBody");
         if (!tb) return;
-        var list = allDebris;
+        var list = allDebris.slice();
+        list.sort(function (a, b) {
+          var oa = TYPE_ORDER[a.type] != null ? TYPE_ORDER[a.type] : 99;
+          var ob = TYPE_ORDER[b.type] != null ? TYPE_ORDER[b.type] : 99;
+          if (oa !== ob) return oa - ob;
+          return (a.id || "").localeCompare(b.id || "");
+        });
         if (typeFilter !== "all") list = list.filter(function (d) { return d.type === typeFilter; });
         if (query) {
           var q = query.toLowerCase();
