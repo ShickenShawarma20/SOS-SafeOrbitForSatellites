@@ -70,11 +70,15 @@ app.get("/api/v1/health", (_req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`SOS Backend running on http://localhost:${PORT}`);
-  console.log(`API base: http://localhost:${PORT}/api/v1`);
-  console.log(`Static files: ${staticRoot}`);
-  // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
-  startTleRefreshLoop();
-  console.log(`Tracking API: http://localhost:${PORT}/api/v1/tracking/fleet`);
-});
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => {
+    console.log(`SOS Backend running on http://localhost:${PORT}`);
+    console.log(`API base: http://localhost:${PORT}/api/v1`);
+    console.log(`Static files: ${staticRoot}`);
+    // Start the background TLE refresh loop (fetches from CelesTrak every 6 h).
+    startTleRefreshLoop();
+    console.log(`Tracking API: http://localhost:${PORT}/api/v1/tracking/fleet`);
+  });
+}
+
+export default app;
