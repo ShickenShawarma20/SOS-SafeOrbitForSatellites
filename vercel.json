@@ -4,6 +4,11 @@
   "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "node_modules/satellite.js/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/",

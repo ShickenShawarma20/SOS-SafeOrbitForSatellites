@@ -49,7 +49,9 @@ let satelliteJsPromise: Promise<SatelliteJs> | null = null;
 
 async function getSatelliteJs(): Promise<SatelliteJs> {
   if (!satelliteJsPromise) {
-    satelliteJsPromise = import("satellite.js");
+    // Hide the dynamic import from Vercel's bundler (nft/babel) to prevent the
+    // "Export namespace should be first transformed" error on satellite.js v7.
+    satelliteJsPromise = eval('import("satellite.js")');
   }
   return satelliteJsPromise;
 }
