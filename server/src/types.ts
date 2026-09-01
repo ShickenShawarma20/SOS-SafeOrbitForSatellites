@@ -48,11 +48,22 @@ export interface Satellite {
   subsystems: SubsystemStatus[];
 }
 
+export type SizeCategory = "small" | "medium" | "large";
+
 export interface DebrisObject {
   id: string;
   noradId?: number;
   type: ObjectType;
   elements: OrbitalElements;
+  name: string;
+  description: string;
+  origin: string;
+  sourceMission: string;
+  eventDate: string;
+  massKg: number;
+  sizeCategory: SizeCategory;
+  decayEstimate: string;
+  riskLevel: Severity;
 }
 
 export interface Conjunction {

@@ -22,7 +22,8 @@
 
       var h1 = document.querySelector(".page-head h1");
       if (h1) {
-        h1.innerHTML = c.satelliteId + ' <span style="color:var(--crit);">\u2194</span> ' + c.objectId +
+        h1.innerHTML = c.satelliteId + ' <span style="color:var(--crit);">\u2194</span> ' +
+          '<a href="debris.html?id=' + encodeURIComponent(c.objectId) + '" style="color:var(--high);text-decoration:none;border-bottom:1px dashed var(--high);">' + c.objectId + '</a>' +
           ' <span class="badge badge-crit">' + c.severity.toUpperCase() + " RISK</span>";
       }
 
@@ -84,7 +85,7 @@
         var e2 = data.object.orbitalElements;
         var objBlock = document.querySelector(".orbit-block:last-child");
         if (objBlock) {
-          objBlock.querySelector("h4").textContent = data.object.id;
+          objBlock.querySelector("h4").innerHTML = '<a href="debris.html?id=' + encodeURIComponent(data.object.id) + '" style="color:var(--high);text-decoration:none;">' + data.object.id + '</a>';
           var stats2 = objBlock.querySelectorAll(".fuel-stat");
           if (stats2[0]) stats2[0].querySelector("b").textContent = e2.altitudeKm + " km";
           if (stats2[1]) stats2[1].querySelector("b").textContent = e2.inclinationDeg + "\u00B0";

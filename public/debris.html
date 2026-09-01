@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debris Object · SOS SafeOrbitForSattelites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/screens.css">
+</head>
+<body data-page="debris">
+<div class="shell" id="shell">
+
+  <main class="page">
+
+    <!-- ============ LIST VIEW (no ?id) ============ -->
+    <section id="debrisListView">
+      <section class="page-head">
+        <div>
+          <div class="crumb">Space Situational Awareness / Debris Catalog</div>
+          <h1>DEBRIS CATALOG</h1>
+          <div class="card-sub" style="margin-top:5px;">Trackable orbital debris objects monitored by SOS</div>
+        </div>
+        <div class="page-head-actions">
+          <div class="search" role="search" style="position:relative;">
+            <input type="search" id="debrisSearch" placeholder="Search name, ID, origin…" aria-label="Search debris" style="width:260px;padding:7px 12px 7px 30px;background:var(--panel-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-hi);font-size:12.5px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-low);"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <div class="filter-bar" style="border-radius:var(--radius);background:linear-gradient(180deg,var(--panel-2),var(--panel-1));border:1px solid var(--border);margin-bottom:14px;">
+        <button class="f-chip on" data-debrisfilter="all">ALL</button>
+        <button class="f-chip" data-debrisfilter="fragmentation">FRAGMENTS</button>
+        <button class="f-chip" data-debrisfilter="rocket_body">ROCKET BODIES</button>
+        <button class="f-chip" data-debrisfilter="payload">PAYLOADS</button>
+        <button class="f-chip" data-debrisfilter="unknown">UNKNOWN</button>
+        <span style="flex:1"></span>
+        <span class="card-sub" id="debrisListCount">— objects</span>
+      </div>
+
+      <article class="card">
+        <div style="overflow-x:auto; max-height:560px; overflow-y:auto;">
+          <table class="cx-table" style="width:100%;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>NORAD</th>
+                <th>Type</th>
+                <th>Origin</th>
+                <th>Altitude</th>
+                <th>Inclination</th>
+                <th>Risk</th>
+              </tr>
+            </thead>
+            <tbody id="debrisTableBody">
+              <tr><td colspan="8" style="padding:24px;text-align:center;color:var(--text-low);">Loading debris catalog…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <!-- ============ DETAIL VIEW (?id=) ============ -->
+    <div id="debrisDetailView" hidden>
+
+    <!-- Header -->
+    <section class="page-head">
+      <div>
+        <div class="crumb">Debris Catalog / <span id="debrisCrumbId">—</span></div>
+        <h1>
+          <span id="debrisTitleName">—</span>
+          <span class="badge" id="debrisTypeBadge">—</span>
+          <span class="badge" id="debrisRiskBadge">—</span>
+        </h1>
+        <div class="card-sub" style="margin-top:5px;" id="debrisOriginSub">—</div>
+      </div>
+      <div class="page-head-actions">
+        <a class="btn" href="debris.html">← All Debris</a>
+        <a class="btn btn-primary" id="debrisConjunctionLink" href="#">View Conjunctions →</a>
+      </div>
+    </section>
+
+    <!-- Identity card -->
+    <article class="card">
+      <div class="card-body maneuver-hero" style="align-items:flex-start;">
+        <svg class="sat-illustration" viewBox="0 0 96 96" fill="none" aria-hidden="true" id="debrisSvg" style="width:110px;height:110px;">
+          <!-- Debris fragment icon -->
+          <polygon points="48,8 62,28 78,24 72,44 88,56 72,60 78,80 58,72 48,90 38,72 18,80 24,60 8,56 24,44 18,24 34,28" fill="#1A1A2E" stroke="#EF4444" stroke-width="1.5"/>
+          <circle cx="48" cy="52" r="12" fill="none" stroke="#FCA5A5" stroke-width="1" stroke-dasharray="3 2"/>
+          <circle cx="48" cy="52" r="4" fill="#EF4444" opacity="0.8"/>
+        </svg>
+        <div style="flex:1;">
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:16px;font-weight:700;color:var(--text-hi);margin:0 0 6px 0;" id="debrisDetailName">—</h3>
+            <p style="font-size:13px;color:var(--text-mid);line-height:1.6;margin:0;" id="debrisDescription">—</p>
+          </div>
+          <div class="detail-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+            <div class="info-tile"><div class="k">Object Type</div><div class="v" id="debrisType">—</div></div>
+            <div class="info-tile"><div class="k">Source Mission</div><div class="v" id="debrisSourceMission">—</div></div>
+            <div class="info-tile"><div class="k">Event Date</div><div class="v" id="debrisEventDate">—</div></div>
+            <div class="info-tile"><div class="k">Estimated Mass</div><div class="v" id="debrisMass">—</div></div>
+            <div class="info-tile"><div class="k">Size Category</div><div class="v" id="debrisSize">—</div></div>
+            <div class="info-tile"><div class="k">NORAD ID</div><div class="v" id="debrisNoradId">—</div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Tabs -->
+    <nav class="card" aria-label="Debris sections">
+      <div class="tabs">
+        <button class="tab active">Overview</button>
+        <button class="tab">Orbit</button>
+        <button class="tab">Conjunctions <span class="cnt" id="debrisConjCount">0</span></button>
+      </div>
+    </nav>
+
+    <section class="two-col" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);">
+
+      <!-- Orbit visualization -->
+      <article class="card">
+        <div class="card-head">
+          <span class="card-title">Orbital Track</span>
+          <span class="live-dot" style="margin-left:auto;">PROPAGATING</span>
+        </div>
+        <div class="orbital-viewer" style="height:380px;">
+          <canvas id="debrisOrbitCanvas"></canvas>
+          <div class="viewer-controls">
+            <button class="vc-btn" data-zoom="in" title="Zoom in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button class="vc-btn" data-zoom="out" title="Zoom out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+            </button>
+            <button class="vc-btn" data-cam="reset" title="Reset view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Orbital parameters -->
+      <div class="stack">
+        <article class="card">
+          <div class="card-head"><span class="card-title">Orbital Parameters</span><span class="card-sub" id="debrisOrbitRegime" style="margin-left:auto;">—</span></div>
+          <div class="card-body">
+            <div class="detail-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;">
+              <div class="info-tile"><div class="k">Altitude</div><div class="v" id="debrisAltitude">—</div></div>
+              <div class="info-tile"><div class="k">Inclination</div><div class="v" id="debrisInclination">—</div></div>
+              <div class="info-tile"><div class="k">RAAN</div><div class="v" id="debrisRaan">—</div></div>
+              <div class="info-tile"><div class="k">Eccentricity</div><div class="v" id="debrisEccentricity">—</div></div>
+              <div class="info-tile"><div class="k">Period</div><div class="v" id="debrisPeriod">—</div></div>
+              <div class="info-tile"><div class="k">Arg. of Perigee</div><div class="v" id="debrisArgPerigee">—</div></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Risk & Decay -->
+        <article class="card">
+          <div class="card-head"><span class="card-title">Risk Assessment</span></div>
+          <div class="card-body">
+            <div class="detail-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
+              <div class="info-tile"><div class="k">Risk Level</div><div class="v" id="debrisRiskLevel">—</div></div>
+              <div class="info-tile"><div class="k">Decay Estimate</div><div class="v" id="debrisDecayEstimate">—</div></div>
+            </div>
+            <div style="margin-top:12px;padding:11px 13px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);font-size:12.5px;" id="debrisRiskNote">
+              <b>Risk Note:</b> <span id="debrisRiskText">—</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+    </section>
+
+    <!-- Origin Story -->
+    <article class="card">
+      <div class="card-head"><span class="card-title">Origin &amp; History</span></div>
+      <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div>
+          <h4 style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin:0 0 8px 0;">SOURCE EVENT</h4>
+          <p style="font-size:13px;color:var(--text-mid);line-height:1.6;margin:0;" id="debrisOriginStory">—</p>
+        </div>
+        <div>
+          <h4 style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em;margin:0 0 8px 0;">ORBITAL CONTEXT</h4>
+          <div class="detail-grid" style="grid-template-columns:1fr;gap:8px;">
+            <div class="info-tile"><div class="k">Orbit Regime</div><div class="v" id="debrisOrbitContext">—</div></div>
+            <div class="info-tile"><div class="k">Conjunction Events</div><div class="v" id="debrisConjunctionCount">—</div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Related Conjunctions -->
+    <article class="card" id="debrisConjCard" hidden>
+      <div class="card-head"><span class="card-title">Conjunction History</span></div>
+      <div class="table-scroll">
+        <table class="cx-table">
+          <thead>
+            <tr>
+              <th>Conjunction ID</th>
+              <th>Primary Satellite</th>
+              <th>Severity</th>
+              <th>TCA</th>
+              <th>Pc</th>
+              <th>Miss Distance</th>
+            </tr>
+          </thead>
+          <tbody id="debrisConjTableBody">
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    </div><!-- /debrisDetailView -->
+
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/actions.js"></script>
+<script src="/js/orbital.js"></script>
+<script src="/js/pages/debris.js"></script>
+
+</body>
+</html>

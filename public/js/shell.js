@@ -17,6 +17,8 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M2.5 10.5h5v-3h-5zM16.5 13.5h5v3h-5z"/><path d="M12 3v3M12 18v3M4 20l3-3M17 6l3-3"/></svg>',
     maneuver:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19c6 0 4-11 10-11h4"/><path d="m15.5 5 3 3-3 3"/><circle cx="4" cy="19" r="1.6"/></svg>',
+    debris:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,8 21,8 16,12 18,19 12,15 6,19 8,12 3,8 9,8"/><circle cx="12" cy="12" r="3" fill="none" stroke-dasharray="2 2"/></svg>',
     orbit:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="6"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-22 12 12)"/></svg>',
     ground:
@@ -50,6 +52,7 @@
     { id: "track", label: "Live Tracking", href: "tracking.html", icon: I.satellite },
     { id: "conjunctions", label: "Conjunctions", href: "conjunction.html", icon: I.conjunction, badge: "12" },
     { id: "satellites", label: "Satellites", href: "satellite.html", icon: I.satellite },
+    { id: "debris", label: "Debris", href: "debris.html", icon: I.debris },
     { id: "maneuvers", label: "Maneuvers", href: "maneuvers.html", icon: I.maneuver },
     { id: "orbits", label: "Orbits", href: "orbits.html", icon: I.orbit },
     { id: "groundstations", label: "Ground Stations", href: "groundstations.html", icon: I.ground },

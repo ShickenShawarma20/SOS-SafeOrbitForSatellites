@@ -20,6 +20,7 @@ import authRouter from "./routes/auth";
 import auditRouter from "./routes/audit";
 import aiRouter from "./routes/ai";
 import trackingRouter from "./routes/tracking";
+import debrisRouter from "./routes/debris";
 import { startTleRefreshLoop } from "./services/tle-fetcher.js";
 
 const app = express();
@@ -34,7 +35,7 @@ const staticRoot = path.resolve(__dirname, "../../public");
 app.get("/", (_req, res) => res.sendFile(path.join(staticRoot, "landing.html")));
 
 /* Clean URLs — /satellite -> /satellite.html */
-["index", "analytics", "conjunction", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "tracking", "reports"].forEach(
+["index", "analytics", "conjunction", "debris", "groundstations", "maneuvers", "orbits", "satellite", "settings", "console", "autopilot", "tracking", "reports"].forEach(
   (name) => {
     app.get("/" + name, (_req, res) => res.sendFile(path.join(staticRoot, name + ".html")));
   }
@@ -59,6 +60,7 @@ app.use("/api/v1/settings", settingsRouter);
 app.use("/api/v1/audit", auditRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/tracking", trackingRouter);
+app.use("/api/v1/debris", debrisRouter);
 app.use("/auth", authRouter);
 
 app.get("/favicon.ico", (_req, res) => res.status(204).end());
