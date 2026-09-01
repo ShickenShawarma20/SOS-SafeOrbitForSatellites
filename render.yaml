@@ -3,7 +3,8 @@ services:
     name: sos-backend
     runtime: node
     plan: free
-    buildCommand: npm install
+    # server/dist is generated and excluded from Git, so compile it before npm start.
+    buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/v1/health
     envVars:
