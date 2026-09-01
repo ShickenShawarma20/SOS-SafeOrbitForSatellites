@@ -1,5 +1,5 @@
 # 🛰️ Lead Astrodynamicist & Mathematical Architect
-## Individual Work Plan & Step-by-Step Task Guide
+
 
 ---
 
@@ -63,5 +63,5 @@
 
 ---
 
-### 🎤 Hackathon Presentation Role
+### 🎤 Hackathon Presentation Rol
 * **Your Pitch Moment**: Explain to technical judges how the system performs two-body Keplerian propagation into ECI coordinates and how the B-plane transformation accurately predicts close-encounter geometry.
