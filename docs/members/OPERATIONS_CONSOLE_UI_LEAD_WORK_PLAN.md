@@ -1,7 +1,6 @@
 # 🛰️ Operations Console UI Lead & Hackathon Presenter
 ## Individual Work Plan & Step-by-Step Task Guide
 
----
 
 ### 👤 Role Overview
 * **Domain**: Main Dashboard Architecture, Component Assembly, Threat Ranking Matrix, Autonomous Autopilot Policy & Presentation Lead.
@@ -12,7 +11,6 @@
   - `public/css/base.css` (Dark theme styling)
 * **Goal**: Assemble all modular components into a breathtaking, unified Space Mission Control Console, build the live conjunction threat ranking table and autopilot policy modal, and lead the hackathon pitch deck and live demo.
 
----
 
 ### 📚 Concepts to Master
 1. **Mission Control Dashboard UX**: High-contrast, dark-mode space operations console with glassmorphism, glowing status badges, and zero visual clutter.

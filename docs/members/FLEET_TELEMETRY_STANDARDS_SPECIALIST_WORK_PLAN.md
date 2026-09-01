@@ -1,7 +1,6 @@
 # 🛰️ Fleet Telemetry, Space Weather & Standards Specialist
 ## Individual Work Plan & Step-by-Step Task Guide
 
----
 
 ### 👤 Role Overview
 * **Domain**: Constellation Health Telemetry, Space Weather Integration, Standard CCSDS CDM Formats & Mock Orbital Datasets.
