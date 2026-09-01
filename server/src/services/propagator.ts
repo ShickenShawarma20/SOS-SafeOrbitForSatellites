@@ -43,8 +43,8 @@ export interface PropagationResult {
   error?: string;
 }
 
-// satellite.js is ESM-only → dynamic import, cached as a singleton.
-type SatelliteJs = typeof import("satellite.js");
+// Use `any` to avoid `typeof import("satellite.js")` which Vercel's bundler still detects.
+type SatelliteJs = any;
 let satelliteJsPromise: Promise<SatelliteJs> | null = null;
 
 async function getSatelliteJs(): Promise<SatelliteJs> {
