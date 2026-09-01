@@ -6,7 +6,6 @@ This document catalogs **every backend feature, API endpoint, data contract, and
 > (`js/shell.js`). For a step-by-step operational walkthrough, see the
 > [OPERATIONS_GUIDE.md](OPERATIONS_GUIDE.md).
 
----
 
 ## 1. Conventions
 
