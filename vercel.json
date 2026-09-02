@@ -5,8 +5,11 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "api/**/*.ts": {
-      "includeFiles": "node_modules/satellite.js/**"
+    "api/v1/debris.ts": {
+      "maxDuration": 10
+    },
+    "api/v1/tracking/fleet.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
