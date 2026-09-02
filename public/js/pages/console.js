@@ -255,6 +255,12 @@
     setClass("resPc", "v", ok ? "ok" : (pc < 1e-4 ? "warn" : "crit"));
     setText("resPcSub", ok ? "< 10⁻⁷ threshold · CLEAR" : (pc < 1e-4 ? "below 10⁻⁴ trigger" : "ABOVE 10⁻⁴ TRIGGER"));
 
+    // flash result cards on update
+    flashSimRes("resDv");
+    flashSimRes("resDm");
+    flashSimRes("resMiss");
+    flashSimRes("resPc");
+
     // 72h screening reflect burn (mark the near one watch if small miss)
     renderScreen72(newMiss);
   }
@@ -508,6 +514,10 @@
       setText("polHorizon", "TCA − " + Math.round(horizon) + " min");
       setText("polFuel", fuel.toFixed(1) + " kg");
       setClass("polPc", "v", pc >= 1e-4 ? "warn" : "");
+      flashPolicyVal("polPc");
+      flashPolicyVal("polMiss");
+      flashPolicyVal("polHorizon");
+      flashPolicyVal("polFuel");
       if (window.SOSUI) SOSUI.toast("Autopilot policy updated & signed", "success");
     });
 
@@ -622,6 +632,81 @@
   }
 
   /* ============================================================
+     DYNAMIC OPTION INTERACTIONS — ripple, flash, glow feedback
+     ============================================================ */
+  function initDynamicInteractions() {
+    // Ripple effect on direction buttons
+    $$(".dir-btn").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        var r = document.createElement("span");
+        r.className = "ripple";
+        var rect = btn.getBoundingClientRect();
+        r.style.left = (e.clientX - rect.left) + "px";
+        r.style.top = (e.clientY - rect.top) + "px";
+        btn.appendChild(r);
+        r.addEventListener("animationend", function () { r.remove(); });
+      });
+    });
+
+    // Toggle switches — track off animation
+    $$(".switch").forEach(function (sw) {
+      sw.addEventListener("click", function () {
+        sw.classList.add("just-toggled");
+        setTimeout(function () { sw.classList.remove("just-toggled"); }, 350);
+      });
+    });
+
+    // CDM export format buttons — single selection highlight
+    $$("#cdmExportModal .fmt-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        $$("#cdmExportModal .fmt-btn").forEach(function (b) { b.classList.remove("selected"); });
+        btn.classList.add("selected");
+      });
+    });
+
+    // Policy save button — confirm flash
+    var saveBtn = $("#savePolicy");
+    if (saveBtn) {
+      saveBtn.addEventListener("click", function () {
+        saveBtn.classList.add("saved");
+        setTimeout(function () { saveBtn.classList.remove("saved"); }, 600);
+      });
+    }
+
+    // Arm/disarm badge pulse
+    var armBtn = $("#armAutopilot");
+    if (armBtn) {
+      armBtn.addEventListener("click", function () {
+        var badge = $("#autopilotBadge");
+        if (badge) {
+          badge.classList.add("pulse");
+          setTimeout(function () { badge.classList.remove("pulse"); }, 600);
+        }
+      });
+    }
+  }
+
+  // Flash a policy value when it updates
+  function flashPolicyVal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("flash");
+    void el.offsetWidth; // force reflow
+    el.classList.add("flash");
+    setTimeout(function () { el.classList.remove("flash"); }, 550);
+  }
+
+  // Flash a simulation result card
+  function flashSimRes(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var card = el.closest(".sim-res");
+    if (!card) return;
+    card.classList.add("updated");
+    setTimeout(function () { card.classList.remove("updated"); }, 400);
+  }
+
+  /* ============================================================
      helpers
      ============================================================ */
   function fmtPc(v) { return window.SOS && SOS.fmtPc ? SOS.fmtPc(v) : v.toExponential(1); }
@@ -647,6 +732,7 @@
     initPolicy();
     initCdmExport();
     initWeather();
+    initDynamicInteractions();
     wireModals();
     setInterval(tickCountdowns, 1000);
     // fonts/layout may settle after DOMContentLoaded — redraw the B-plane once more

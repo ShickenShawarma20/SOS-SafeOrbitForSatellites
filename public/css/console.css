@@ -343,6 +343,141 @@
 .fmt-btn .lbl { font: 700 10px var(--mono); letter-spacing: 0.08em; color: var(--text-mid); margin-top: 5px; text-transform: uppercase; }
 .fmt-btn .desc { font: 500 10px var(--mono); color: var(--text-low); margin-top: 3px; }
 
+/* ---------- Dynamic option animations ---------- */
+
+@keyframes btnPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.95); }
+  70% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+@keyframes selGlow {
+  0% { box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.08), 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: inset 0 0 16px rgba(16, 185, 129, 0.18), 0 0 14px rgba(16, 185, 129, 0.25); }
+  100% { box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.08), 0 0 0 rgba(16, 185, 129, 0); }
+}
+@keyframes toggleBounce {
+  0% { transform: translateX(17px) scale(1); }
+  30% { transform: translateX(17px) scale(1.18, 0.88); }
+  60% { transform: translateX(17px) scale(0.94, 1.06); }
+  100% { transform: translateX(17px) scale(1); }
+}
+@keyframes toggleOff {
+  0% { transform: translateX(0) scale(1); }
+  30% { transform: translateX(0) scale(1.18, 0.88); }
+  60% { transform: translateX(0) scale(0.94, 1.06); }
+  100% { transform: translateX(0) scale(1); }
+}
+@keyframes fmtSelect {
+  0% { transform: scale(1); }
+  25% { transform: scale(0.96); }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+@keyframes valFlash {
+  0% { text-shadow: 0 0 0 transparent; }
+  40% { text-shadow: 0 0 12px currentColor, 0 0 24px currentColor; }
+  100% { text-shadow: 0 0 0 transparent; }
+}
+@keyframes ripple {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+}
+@keyframes slideIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes glowPulse {
+  0%, 100% { border-color: rgba(56, 189, 248, 0.4); }
+  50% { border-color: rgba(56, 189, 248, 0.75); }
+}
+@keyframes thumbPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.35); }
+}
+
+/* Direction buttons — active press + ripple */
+.dir-btn { position: relative; overflow: hidden; }
+.dir-btn:active { animation: btnPulse 0.25s ease; }
+.dir-btn.sel { animation: selGlow 0.6s ease 1; }
+.dir-btn .ripple {
+  position: absolute; border-radius: 50%; width: 40px; height: 40px;
+  background: rgba(16, 185, 129, 0.35); pointer-events: none;
+  animation: ripple 0.5s ease-out forwards;
+}
+
+/* Toggle switches — bounce on flip */
+.switch.on::after { animation: toggleBounce 0.3s ease; }
+.switch:not(.on).just-toggled::after { animation: toggleOff 0.3s ease; }
+.switch { transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.switch.on { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+
+/* CDM export format buttons — select flash + glow */
+.fmt-btn { transition: all 0.2s ease, transform 0.15s ease; }
+.fmt-btn:active { transform: scale(0.95); }
+.fmt-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15); }
+.fmt-btn.selected { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); box-shadow: 0 0 18px rgba(56, 189, 248, 0.2); animation: fmtSelect 0.3s ease; }
+.fmt-btn.selected .ext { text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+
+/* Policy value flash when updated */
+.policy-row .v.flash { animation: valFlash 0.5s ease; }
+
+/* Range slider — thumb pulse when dragging */
+input[type=range]:active::-webkit-slider-thumb { animation: thumbPulse 0.8s ease infinite; }
+input[type=range]:active::-moz-range-thumb { animation: thumbPulse 0.8s ease infinite; }
+
+/* Select dropdowns — focus glow */
+.field select { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.field select:focus { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); border-color: var(--accent); }
+
+/* Input fields — focus glow */
+.field input { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.field input:focus { box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15); border-color: var(--accent); }
+
+/* Simulation result cards — slide in on update */
+.sim-res { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+.sim-res.updated { border-color: rgba(56, 189, 248, 0.4); box-shadow: 0 0 14px rgba(56, 189, 248, 0.12); }
+
+/* Autopilot CTA buttons — hover lift + active press */
+.autopilot-cta .btn { transition: all 0.2s ease; }
+.autopilot-cta .btn:hover { transform: translateY(-1px); }
+.autopilot-cta .btn:active { transform: scale(0.97); }
+
+/* Policy modal save button — confirm flash */
+#savePolicy.saved { background: var(--emerald); border-color: var(--emerald); color: #fff; animation: btnPulse 0.3s ease; }
+
+/* Badge pulse on state change */
+.badge { transition: all 0.3s ease; }
+.badge.pulse { animation: selGlow 0.5s ease; }
+
+/* Live dot animation enhancement */
+.live-dot { transition: color 0.3s ease, text-shadow 0.3s ease; }
+@keyframes liveGlow {
+  0%, 100% { text-shadow: 0 0 4px currentColor; }
+  50% { text-shadow: 0 0 10px currentColor, 0 0 20px currentColor; }
+}
+.live-dot { animation: liveGlow 2s ease infinite; }
+
+/* Screen72 row stagger animation */
+.screen72-row { animation: slideIn 0.3s ease backwards; }
+.screen72-row:nth-child(1) { animation-delay: 0.05s; }
+.screen72-row:nth-child(2) { animation-delay: 0.1s; }
+.screen72-row:nth-child(3) { animation-delay: 0.15s; }
+.screen72-row:nth-child(4) { animation-delay: 0.2s; }
+
+/* AOCS step transition enhancement */
+.aocs-step { transition: all 0.3s ease, box-shadow 0.3s ease; }
+.aocs-step.active { animation: glowPulse 1.5s ease infinite; }
+.aocs-step.done .idx { animation: btnPulse 0.3s ease; }
+
+/* Master state button press */
+#armAutopilot { transition: all 0.2s ease; }
+#armAutopilot:active { transform: scale(0.96); }
+
+/* Reset AOCs button */
+#resetAocs { transition: all 0.2s ease; }
+#resetAocs:active { transform: scale(0.96); }
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1360px) {
