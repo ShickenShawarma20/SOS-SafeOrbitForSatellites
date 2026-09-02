@@ -62,6 +62,12 @@
   --z-sidebar: 40;
   --z-modal: 90;
   --z-toast: 99;
+
+  /* Sci-fi glow scale */
+  --glow-accent-lg: 0 0 40px rgba(56, 189, 248, 0.25), 0 0 80px rgba(56, 189, 248, 0.1);
+  --glow-nominal-lg: 0 0 30px rgba(34, 197, 94, 0.35), 0 0 60px rgba(34, 197, 94, 0.12);
+  --glow-warn-lg: 0 0 30px rgba(245, 158, 11, 0.35), 0 0 60px rgba(245, 158, 11, 0.12);
+  --glow-crit-lg: 0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -375,7 +381,178 @@ button { font-family: inherit; cursor: pointer; }
 
 .menu-btn { display: none; }
 
-/* ---------- Reduced motion ---------- */
+/* ============================================================
+   SCI-FI · Data Flow Animation (progress bars)
+   ============================================================ */
+@keyframes dataFlow {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes dataFlowVert {
+  0% { background-position: 0 200%; }
+  100% { background-position: 0 -200%; }
+}
+
+/* ============================================================
+   SCI-FI · Topbar Enhancements
+   ============================================================ */
+
+/* Animated bottom glow on topbar */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 0 rgba(56, 189, 248, 0.12);
+  animation: topbarGlow 4s ease-in-out infinite;
+}
+@keyframes topbarGlow {
+  0%, 100% { box-shadow: 0 1px 0 0 rgba(56, 189, 248, 0.08); }
+  50% { box-shadow: 0 1px 0 0 rgba(56, 189, 248, 0.25), 0 2px 12px rgba(56, 189, 248, 0.06); }
+}
+
+/* Clock text-shadow pulse */
+.clock .t {
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+  animation: clockPulse 3s ease-in-out infinite;
+}
+@keyframes clockPulse {
+  0%, 100% { text-shadow: 0 0 6px rgba(56, 189, 248, 0.2); }
+  50% { text-shadow: 0 0 14px rgba(56, 189, 248, 0.45), 0 0 28px rgba(56, 189, 248, 0.15); }
+}
+
+/* Top-metric HUD corner brackets */
+.top-metric {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.top-metric::before,
+.top-metric::after {
+  content: "";
+  position: absolute;
+  width: 8px; height: 8px;
+  border-color: rgba(56, 189, 248, 0.4);
+  border-style: solid;
+  transition: border-color 0.2s ease;
+}
+.top-metric::before {
+  top: 3px; left: 3px;
+  border-width: 1px 0 0 1px;
+}
+.top-metric::after {
+  bottom: 3px; right: 3px;
+  border-width: 0 1px 1px 0;
+}
+.top-metric:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.1);
+}
+.top-metric:hover::before,
+.top-metric:hover::after {
+  border-color: rgba(56, 189, 248, 0.7);
+}
+.top-metric.crit::before,
+.top-metric.crit::after { border-color: rgba(239, 68, 68, 0.4); }
+.top-metric.crit:hover::before,
+.top-metric.crit:hover::after { border-color: rgba(239, 68, 68, 0.7); }
+.top-metric.warn::before,
+.top-metric.warn::after { border-color: rgba(245, 158, 11, 0.4); }
+.top-metric.warn:hover::before,
+.top-metric.warn:hover::after { border-color: rgba(245, 158, 11, 0.7); }
+
+/* ============================================================
+   SCI-FI · Sidebar Enhancements
+   ============================================================ */
+
+/* Animated right-edge glow */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.0) 20%,
+    rgba(56, 189, 248, 0.3) 50%,
+    rgba(56, 189, 248, 0.0) 80%,
+    transparent 100%
+  );
+  animation: sidebarScan 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sidebarScan {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Active nav-item scanning line */
+.nav-item.active {
+  position: relative;
+  overflow: hidden;
+}
+.nav-item.active::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+  animation: navScan 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes navScan {
+  0% { top: 0; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Brand mark rotating ring */
+.brand-mark {
+  position: relative;
+}
+.brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  border-top-color: rgba(56, 189, 248, 0.45);
+  animation: brandSpin 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes brandSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   SCI-FI · Button Enhancements
+   ============================================================ */
+
+/* Primary button shimmer sweep */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  left: 120%;
+}
+
+/* Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

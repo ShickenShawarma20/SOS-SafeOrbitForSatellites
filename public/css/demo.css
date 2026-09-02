@@ -185,9 +185,11 @@
 .demo-progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--accent), #22C55E);
+  background: linear-gradient(90deg, var(--accent), #22C55E, var(--accent), #22C55E);
+  background-size: 200% 100%;
   border-radius: 999px;
   transition: width 0.2s linear;
+  animation: dataFlow 2.5s linear infinite;
 }
 
 .demo-actions {

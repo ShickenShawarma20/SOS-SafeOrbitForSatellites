@@ -286,9 +286,11 @@
 .burn-bar { height: 10px; border-radius: 999px; background: var(--ap-slate); border: 1px solid var(--ap-micro); overflow: hidden; position: relative; }
 .burn-fill {
   height: 100%; width: 0%; border-radius: 999px;
-  background: linear-gradient(90deg, var(--ap-amber), var(--ap-crimson));
+  background: linear-gradient(90deg, var(--ap-amber), var(--ap-crimson), var(--ap-amber), var(--ap-crimson));
+  background-size: 200% 100%;
   box-shadow: 0 0 12px rgba(245,158,11,.5);
   transition: width 0.1s linear;
+  animation: dataFlow 2s linear infinite;
 }
 .burn-fill.pulsing { animation: burnPulse 0.8s infinite; }
 @keyframes burnPulse {
