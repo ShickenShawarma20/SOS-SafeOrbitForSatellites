@@ -48,10 +48,21 @@ function buildResponse(path, method, body) {
 
   // Conjunctions
   if (resource === "conjunctions") {
-    if (segments[1] === "critical") return CONJUNCTIONS.filter((c) => c.severity === "critical");
-    if (segments[1] === "summary") return { total: CONJUNCTIONS.length, critical: CONJUNCTIONS.filter((c) => c.severity === "critical").length, high: CONJUNCTIONS.filter((c) => c.severity === "high").length, medium: CONJUNCTIONS.filter((c) => c.severity === "medium").length, low: CONJUNCTIONS.filter((c) => c.severity === "low").length };
-    if (segments[1] === "upcoming") return CONJUNCTIONS.slice(0, 5);
-    if (segments[1] === "timeline") return CONJUNCTIONS.map((c) => ({ id: c.id, tca: c.tca, severity: c.severity, satelliteId: c.satelliteId, objectId: c.objectId }));
+    if (segments[1] === "critical") {
+      const crit = CONJUNCTIONS.filter((c) => c.severity === "critical" && !c.acknowledged)
+        .sort((a, b) => new Date(b.tca).getTime() - new Date(a.tca).getTime())[0];
+      return crit || null;
+    }
+    if (segments[1] === "summary") return { critical: CONJUNCTIONS.filter((c) => c.severity === "critical").length, high: CONJUNCTIONS.filter((c) => c.severity === "high").length, medium: CONJUNCTIONS.filter((c) => c.severity === "medium").length, low: CONJUNCTIONS.filter((c) => c.severity === "low").length, total: CONJUNCTIONS.length };
+    if (segments[1] === "upcoming") return { items: CONJUNCTIONS.filter((c) => !c.acknowledged).slice(0, 5), total: CONJUNCTIONS.length };
+    if (segments[1] === "timeline") {
+      const nowMs = Date.now();
+      return CONJUNCTIONS.map((c) => {
+        const tcaMs = new Date(c.tca).getTime();
+        const offsetMs = tcaMs - nowMs;
+        return { satelliteId: c.satelliteId, objectId: c.objectId, time: c.tca, offsetHours: Math.round(offsetMs / 3600000 * 10) / 10, severity: c.severity, probabilityOfCollision: c.probabilityOfCollision };
+      }).sort((a, b) => a.offsetHours - b.offsetHours);
+    }
     if (segments[1]) {
       const conj = CONJUNCTIONS.find((c) => c.id === segments[1]);
       if (!conj) return { error: { code: "NOT_FOUND", message: "Conjunction not found" } };
@@ -76,6 +87,10 @@ function buildResponse(path, method, body) {
       if (segments[2] === "subsystems") return [{ name: "Power", status: "nominal" }, { name: "Communications", status: "nominal" }, { name: "Propulsion", status: "nominal" }, { name: "ADCS", status: "nominal" }];
       if (segments[2] === "events") return [{ type: "tle_update", timestamp: new Date().toISOString(), description: "TLE data refreshed from CelesTrak" }];
       if (segments[2] === "passes") return [];
+      if (!segments[2]) {
+        const satWithFuel = { ...sat, fuel: { pctRemaining: 87, totalKg: 400, usableKg: 348, reservedKg: 52 } };
+        return satWithFuel;
+      }
       return sat;
     }
     const page = parseInt(new URL("http://x?" + (segments.join("/").includes("?") ? segments.join("/").split("?")[1] : "")).searchParams.get("page")) || 1;
@@ -84,12 +99,17 @@ function buildResponse(path, method, body) {
 
   // Dashboard KPIs
   if (resource === "dashboard" && segments[1] === "kpis") {
-    return { activeSatellites: 19, conjunctionAlerts: CONJUNCTIONS.filter((c) => !c.acknowledged).length, maneuversPlanned: 3, systemHealth: 98, dataLatency: "0.7s", trackingSources: 38 };
+    return { activeSatellites: 19, conjunctionAlerts: CONJUNCTIONS.filter((c) => !c.acknowledged).length, maneuversPlanned: 3, systemHealthPct: 98, trackingSourcesOnline: 38, dataLatencySec: 0.7, coveragePct: 95.2 };
   }
 
   // Network status
   if (resource === "network" && segments[1] === "status") {
-    return { status: "operational", uptime: "99.97%", latency: "0.7s", coverage: "95%", sources: 38, lastSync: new Date().toISOString() };
+    const online = GROUND_STATIONS.filter((s) => s.status === "online").length;
+    const offline = GROUND_STATIONS.filter((s) => s.status === "offline").length;
+    const total = GROUND_STATIONS.length;
+    const coveragePct = total > 0 ? Math.round((online / total) * 1000) / 10 : 0;
+    const latencySec = Math.max(0.4, Math.round((1.5 - online * 0.02) * 10) / 10);
+    return { stationsOnline: online, stationsOffline: offline, coveragePct, latencySec };
   }
 
   // Ground stations
@@ -110,20 +130,20 @@ function buildResponse(path, method, body) {
   if (resource === "catalog" && segments[1] === "stats") return { trackedObjects: 124, conjunctions: CONJUNCTIONS.length, launches: 2, fragments: 45, rocketBodies: 18, payloads: 56 };
 
   // Events feed
-  if (resource === "events" && segments[1] === "feed") return [{ type: "conjunction", message: "Critical conjunction: SAT-51656 ↔ OBJ-8821", timestamp: new Date().toISOString(), severity: "critical" }, { type: "maneuver", message: "Collision avoidance maneuver planned for SAT-51656", timestamp: new Date().toISOString(), severity: "high" }];
+  if (resource === "events" && segments[1] === "feed") return [{ type: "conjunction", text: "Critical conjunction: SAT-51656 ↔ OBJ-8821", description: "Critical conjunction: SAT-51656 ↔ OBJ-8821", timestamp: new Date().toISOString(), severity: "critical" }, { type: "maneuver", text: "Collision avoidance maneuver planned for SAT-51656", description: "Collision avoidance maneuver planned for SAT-51656", timestamp: new Date().toISOString(), severity: "high" }];
 
   // AI assessments
-  if (resource === "ai" && segments[1] === "assessments") return [{ id: "AI-001", type: "risk", title: "Critical debris threat to EOS-4", confidence: 0.94, recommendation: "Execute collision avoidance maneuver within 12 hours" }];
+  if (resource === "ai" && segments[1] === "assessments") return { items: [{ id: "AI-001", type: "risk", title: "Critical debris threat to EOS-4", confidence: 0.94, dataConfidence: "HIGH", riskTrend: "increasing", probabilityOfCollision: 0.00032, previousPc: 0.00018, trendDrivers: [{ change: "Updated tracking solution", delta: 0.00014 }], recommendation: "Execute collision avoidance maneuver within 12 hours" }] };
 
   // Maneuvers
   if (resource === "maneuvers") {
-    if (segments[1] === "next") return { id: "MP-001", satelliteId: "SAT-51656", deltaV: 0.8, fuelMass: 0.12, planned: true, status: "ready" };
+    if (segments[1] === "next") return { id: "MP-001", satelliteId: "SAT-51656", conjunctionId: "CD-2024-0526-0417", deltaVmps: 0.8, fuelImpactPct: 0.12, fuelImpactKg: 0.048, burnDurationSec: 32, burnWindow: { earliest: new Date(Date.now() + 3600000).toISOString(), latest: new Date(Date.now() + 7200000).toISOString() }, planned: true, status: "ready" };
     if (segments[1] === "plans") return [{ id: "MP-001", satelliteId: "SAT-51656", deltaV: 0.8, status: "ready" }];
     return {};
   }
 
   // Auth
-  if (resource === "auth" && segments[1] === "me") return { user: "operator@isro.gov.in", role: "admin", name: "Mission Controller" };
+  if (resource === "auth" && segments[1] === "me") return { user: "operator@isro.gov.in", role: "admin", name: "Mission Controller", initials: "MC" };
 
   // Notifications
   if (resource === "notifications") return [];
