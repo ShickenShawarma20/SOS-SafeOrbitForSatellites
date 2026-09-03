@@ -2,29 +2,7 @@
  * Handles: /api/v1/debris, /api/v1/debris/:id, /api/v1/debris/:id/conjunctions, /api/v1/debris/:id/geometry
  */
 
-interface OrbitalElements {
-  altitudeKm: number; inclinationDeg: number; raanDeg: number;
-  eccentricity: number; periodMin: number; argPerigeeDeg: number;
-  tle: { line1: string; line2: string; epoch: string };
-  eciPosition?: [number, number, number]; eciVelocity?: [number, number, number];
-}
-interface DebrisObject {
-  id: string; noradId?: number; type: string; elements: OrbitalElements;
-  name: string; description: string; origin: string; sourceMission: string;
-  eventDate: string; massKg: number; sizeCategory: string;
-  decayEstimate: string; riskLevel: string;
-}
-interface Conjunction {
-  id: string; satelliteId: string; objectId: string; severity: string;
-  tca: string; probabilityOfCollision: number; missDistanceMeters: number;
-  relativeVelocityKms: number; relativeSpeedKmh: number;
-  combinedUncertaintyKm: number; screeningVolumeKm: [number, number, number];
-  hardBodyRadiusM: number; bPlane?: { xiKm: number; zetaKm: number };
-  covariance?: { sigma1: number; sigma2: number; orientationDeg: number };
-  assessment: string; acknowledged: boolean; watchlisted: boolean;
-}
-
-const DEBRIS_OBJECTS: DebrisObject[] = [
+const DEBRIS_OBJECTS = [
   {
     id: "OBJ-8821", noradId: 39122, type: "fragmentation",
     name: "Fengyun-1C Fragment #39122",
@@ -97,7 +75,7 @@ const DEBRIS_OBJECTS: DebrisObject[] = [
   },
 ];
 
-const CONJUNCTIONS: Conjunction[] = [
+const CONJUNCTIONS = [
   { id: "CD-2024-0526-0417", satelliteId: "SAT-51656", objectId: "OBJ-8821", severity: "critical", tca: "2024-05-26T04:32:18Z", probabilityOfCollision: 0.00032, missDistanceMeters: 742, relativeVelocityKms: 15.29, relativeSpeedKmh: 55041, combinedUncertaintyKm: 1.29, screeningVolumeKm: [10, 10, 10], hardBodyRadiusM: 60, bPlane: { xiKm: 0, zetaKm: -0.742 }, covariance: { sigma1: 1.05, sigma2: 0.74, orientationDeg: 42.5 }, assessment: "Pc exceeds 10^-4 maneuver threshold. Collision-avoidance burn recommended.", acknowledged: false, watchlisted: true },
   { id: "CD-2024-0526-0912", satelliteId: "SAT-44804", objectId: "OBJ-3421", severity: "high", tca: "2024-05-26T11:15:42Z", probabilityOfCollision: 0.0000076, missDistanceMeters: 1180, relativeVelocityKms: 11.2, relativeSpeedKmh: 40320, combinedUncertaintyKm: 0.95, screeningVolumeKm: [8, 8, 8], hardBodyRadiusM: 50, bPlane: { xiKm: 0.3, zetaKm: -1.14 }, covariance: { sigma1: 0.82, sigma2: 0.56, orientationDeg: 38.1 }, assessment: "Elevated risk. Monitor closely; next CDM update in 6 hours.", acknowledged: false, watchlisted: true },
   { id: "CD-2024-0526-1542", satelliteId: "SAT-54361", objectId: "OBJ-1123", severity: "medium", tca: "2024-05-26T15:42:09Z", probabilityOfCollision: 0.0000012, missDistanceMeters: 3820, relativeVelocityKms: 9.4, relativeSpeedKmh: 33840, combinedUncertaintyKm: 0.72, screeningVolumeKm: [6, 6, 6], hardBodyRadiusM: 45, bPlane: { xiKm: 0.8, zetaKm: -3.73 }, covariance: { sigma1: 0.65, sigma2: 0.41, orientationDeg: 55.3 }, assessment: "Low-moderate risk. No maneuver required at this time.", acknowledged: true, watchlisted: false },
@@ -105,11 +83,12 @@ const CONJUNCTIONS: Conjunction[] = [
   { id: "CD-2024-0524-1430", satelliteId: "SAT-58990", objectId: "OBJ-9912", severity: "low", tca: "2024-05-24T14:30:55Z", probabilityOfCollision: 0.00000031, missDistanceMeters: 8100, relativeVelocityKms: 7.6, relativeSpeedKmh: 27360, combinedUncertaintyKm: 0.5, screeningVolumeKm: [5, 5, 5], hardBodyRadiusM: 40, bPlane: { xiKm: 1.2, zetaKm: -7.99 }, covariance: { sigma1: 0.48, sigma2: 0.33, orientationDeg: 62.1 }, assessment: "Negligible risk. Object in MEO, no action required.", acknowledged: true, watchlisted: false },
 ];
 
-exports.handler = async (event: any) => {
+exports.handler = async (event) => {
   const headers = { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" };
 
-  // event.path comes in as the full path: /api/v1/debris or /api/v1/debris/OBJ-8821
-  const path = (event.path || "").replace(/^\/api\/v1\/debris/, "") || "/";
+  // event.path may be the original (/api/v1/debris) or rewritten (/.netlify/functions/debris)
+  const rawPath = event.path || "";
+  const path = rawPath.replace(/^\/api\/v1\/debris/, "").replace(/^\/\.netlify\/functions\/debris/, "") || "/";
   const qs = event.queryStringParameters || {};
 
   // GET /api/v1/debris — list all
@@ -136,7 +115,7 @@ exports.handler = async (event: any) => {
   const parts = path.replace(/^\//, "").split("/");
   const id = decodeURIComponent(parts[0]);
   const debris = DEBRIS_OBJECTS.find((d) => d.id === id);
-  if (!debris) return { statusCode: 404, headers, body: JSON.stringify({ error: { code: "NOT_FOUND", message: `Debris ${id} not found` } }) };
+  if (!debris) return { statusCode: 404, headers, body: JSON.stringify({ error: { code: "NOT_FOUND", message: "Debris " + id + " not found" } }) };
 
   const subRoute = parts[1] || "";
   if (subRoute === "conjunctions") {
