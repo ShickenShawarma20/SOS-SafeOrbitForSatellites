@@ -1,9 +1,12 @@
 import { Router } from "express";
-import type { Conjunction, OrbitalElements } from "../types.js";
+import type { Conjunction, CdmRecord, OrbitalElements } from "../types.js";
 import { conjunctions, cdmRecords } from "../data/conjunctions.js";
 import { satellites } from "../data/satellites.js";
 import { debrisObjects } from "../data/debris.js";
+import { ISRO_FLEET } from "../data/isro-fleet.js";
 import { AppError } from "../middleware/error.js";
+import { getCachedFleet } from "../services/tle-fetcher.js";
+import { propagateAt as propagateAtServ } from "../services/propagator.js";
 import {
   keplerToState,
   orbitRing,
@@ -90,6 +93,22 @@ function enrichConj(c: Conjunction): Conjunction {
   return { ...c, probabilityOfCollision: computePc(c) };
 }
 
+/* ---------- Live satellite state from TLE cache ---------- */
+async function fetchSatState(noradId: number) {
+  const tles = getCachedFleet();
+  const tle = tles.find((t) => t.noradId === noradId);
+  if (!tle || !tle.ok || !tle.line1) return null;
+  const result = await propagateAtServ(noradId, tle.name, tle.line1, tle.line2, tle.epoch, new Date());
+  if (!result.ok || !result.state) return null;
+  return result.state;
+}
+
+/* Linear B-plane encounter trajectory (the standard short-encounter model).
+ * Over the brief encounter the relative motion is a straight line along the
+ * relative-velocity axis; the secondary passes the primary at the recorded
+ * B-plane miss offset.  Returns samples { tOffsetSec, alongKm, xiKm, zetaKm, rangeKm }. */
+
+/* Linear B-plane encounter trajectory
 /* Linear B-plane encounter trajectory (the standard short-encounter model).
  * Over the brief encounter the relative motion is a straight line along the
  * relative-velocity axis; the secondary passes the primary at the recorded

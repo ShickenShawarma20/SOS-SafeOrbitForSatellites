@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { GroundStation } from "../types.js";
 
 const router = Router();
 
@@ -53,6 +54,19 @@ router.get("/", (req, res) => {
 router.put("/", (req, res) => {
   settings = { ...settings, ...req.body };
   res.json(settings);
+});
+
+router.get("/coverage", (req, res) => {
+  const gs: GroundStation[] = require("../data/groundstations.ts").groundStations;
+  const online = gs.filter((s) => s.status === "online");
+  const total = gs.length;
+  const coveragePct = Math.round((online.length / total) * 100);
+  res.json({
+    totalStations: total,
+    onlineStations: online.length,
+    coveragePct,
+    stations: online.map((s) => ({ id: s.id, name: s.name, lat: s.lat, lon: s.lon })),
+  });
 });
 
 export default router;
