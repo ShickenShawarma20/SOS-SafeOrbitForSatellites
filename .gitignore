@@ -6,3 +6,5 @@ server/dist/
 .DS_Store
 Thumbs.db
 .vercel
+assets/
+docs/

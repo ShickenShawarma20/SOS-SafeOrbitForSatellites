@@ -315,9 +315,10 @@
                    box-shadow: 0 16px 44px rgba(0,0,0,.45), 0 0 24px rgba(6,182,212,0.12);
                    transform: translateY(-3px); }
 
-.team-avatar { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px;
+.team-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 16px;
+               overflow: hidden;
                display: grid; place-items: center;
-               font-family: var(--mono); font-size: 18px; font-weight: 700;
+               font-family: var(--mono); font-size: 20px; font-weight: 700;
                color: #BAE6FD;
                background: linear-gradient(135deg,
                  hsl(var(--avatar-hue, 195) 60% 18%),
@@ -325,6 +326,7 @@
                border: 2px solid hsla(var(--avatar-hue, 195), 60%, 55%, 0.5);
                box-shadow: 0 0 18px hsla(var(--avatar-hue, 195), 60%, 55%, 0.2);
                transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.team-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .team-card:hover .team-avatar { transform: scale(1.08);
                                  box-shadow: 0 0 28px hsla(var(--avatar-hue, 195), 60%, 55%, 0.35); }
 
