@@ -53,9 +53,9 @@
 
 .vid-overlay { position: fixed; inset: 0; z-index: 0; pointer-events: none;
                background:
-                 radial-gradient(ellipse at 50% 0%, rgba(0,0,0,.2), rgba(0,0,0,.7) 75%),
-                 linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(4,16,31,.72) 100%);
-               backdrop-filter: blur(1.5px); }
+                 radial-gradient(ellipse at 50% 0%, rgba(0,0,0,.08), rgba(0,0,0,.35) 75%),
+                 linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(4,16,31,.45) 100%);
+               backdrop-filter: blur(0.5px); }
 
 /* ---------- Orbiting satellite decoration ---------- */
 .sat-orbit { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
