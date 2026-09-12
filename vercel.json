@@ -2,17 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/dist/index.js",
+      "src": "server/dist/bundle.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": "public/**"
+        "includeFiles": "public/**",
+        "bundle": false
       }
     }
   ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/server/dist/index.js"
+      "destination": "/server/dist/bundle.js"
     }
   ]
 }
