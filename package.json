@@ -8,7 +8,8 @@
     "dev": "npx tsx server/src/index.ts",
     "build": "node scripts/build.js",
     "build:ts": "tsc -p server/tsconfig.json",
-    "serve:static": "npx --yes serve -l 3000 public"
+    "serve:static": "npx --yes serve -l 3000 public",
+    "postinstall": "node scripts/patch-satellite.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
