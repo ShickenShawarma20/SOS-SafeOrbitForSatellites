@@ -7,3 +7,5 @@ server/dist/
 Thumbs.db
 assets/
 docs/
+.vercel
+.env*
