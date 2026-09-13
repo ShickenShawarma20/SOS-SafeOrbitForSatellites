@@ -8,7 +8,7 @@
  */
 
 import { Router } from "express";
-import { supabase } from "../services/supabase.js";
+import { getSupabase } from "../services/supabase.js";
 
 const router = Router();
 
@@ -22,6 +22,11 @@ const TEAM_IMAGES = [
 ];
 
 router.get("/team", (_req, res) => {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return res.json({ images: [] });
+  }
+
   const images = TEAM_IMAGES.map((file) => {
     const name = file.replace(/\.[^.]+$/, "");
     const { data } = supabase.storage

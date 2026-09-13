@@ -1,8 +1,6 @@
-import dotenv from "dotenv";
-import path from "path";
-dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
 import express from "express";
 import cors from "cors";
+import path from "path";
 import { errorHandler } from "./middleware/error";
 
 import satellitesRouter from "./routes/satellites";
