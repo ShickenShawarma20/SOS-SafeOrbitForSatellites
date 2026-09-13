@@ -11,6 +11,7 @@
     "serve:static": "npx --yes serve -l 3000 public"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "satellite.js": "^7.1.0",

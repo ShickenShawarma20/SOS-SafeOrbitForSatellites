@@ -21,6 +21,7 @@ import auditRouter from "./routes/audit";
 import aiRouter from "./routes/ai";
 import trackingRouter from "./routes/tracking";
 import debrisRouter from "./routes/debris";
+import assetsRouter from "./routes/assets";
 import { startTleRefreshLoop } from "./services/tle-fetcher.js";
 
 const app = express();
@@ -61,6 +62,7 @@ app.use("/api/v1/audit", auditRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/tracking", trackingRouter);
 app.use("/api/v1/debris", debrisRouter);
+app.use("/api/v1/assets", assetsRouter);
 app.use("/auth", authRouter);
 
 app.get("/favicon.ico", (_req, res) => res.status(204).end());

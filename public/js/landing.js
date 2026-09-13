@@ -163,4 +163,18 @@
     document.addEventListener("touchstart", tryPlay, { once: true });
     document.addEventListener("keydown", tryPlay, { once: true });
   }
+
+  /* ---------- Load team images from Supabase Storage ---------- */
+  fetch("/api/v1/assets/team")
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (!data.images || !data.images.length) return;
+      var urlMap = {};
+      data.images.forEach(function (img) { urlMap[img.name] = img.url; });
+      document.querySelectorAll("img[data-supabase-name]").forEach(function (el) {
+        var key = el.getAttribute("data-supabase-name");
+        if (urlMap[key]) el.src = urlMap[key];
+      });
+    })
+    .catch(function () { /* fallback to local images */ });
 })();
