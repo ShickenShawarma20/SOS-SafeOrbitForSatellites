@@ -143,8 +143,13 @@ function encounterTrajectory(c: Conjunction, windowSec = 150, step = 1) {
 
 // ---- Handler ----
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const urlParts = (req.query.id as string) || (req.url?.split("?")[0]?.split("/").filter(Boolean).pop() || "");
-  const id = urlParts;
+  // Vercel file-system routing sets req.query.id from the [id] directory segment.
+  // Explicit routes with regex capture groups set req.query[1], req.query[2], etc.
+  // Fallback: extract from URL path using regex (handles edge cases).
+  const id = (req.query.id as string) || (req.query[1] as string) || (() => {
+    const m = (req.url || "").match(/\/conjunctions\/([^/]+)\/geometry/);
+    return m ? decodeURIComponent(m[1]) : "";
+  })();
 
   const c = CONJUNCTIONS.find((conj) => conj.id === id);
   if (!c) { res.status(404).json({ error: { code: "NOT_FOUND", message: `Conjunction ${id} not found` } }); return; }
