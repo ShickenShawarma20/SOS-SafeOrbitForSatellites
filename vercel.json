@@ -6,11 +6,26 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/v1/tracking/fleet.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/v1/tracking/status.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/v1/debris.ts",
+      "use": "@vercel/node"
+    },
+    {
       "src": "public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    { "src": "/api/v1/tracking/fleet", "dest": "/api/v1/tracking/fleet.ts" },
+    { "src": "/api/v1/tracking/status", "dest": "/api/v1/tracking/status.ts" },
+    { "src": "/api/v1/debris", "dest": "/api/v1/debris.ts" },
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/(.*\\.(css|js|jpg|jpeg|png|gif|svg|mp4|ico|json|woff|woff2|ttf|eot))", "dest": "/public/$1" },
     { "src": "/(index|landing|analytics|autopilot|conjunction|console|debris|groundstations|maneuvers|orbits|reports|satellite|settings|tracking)", "dest": "/public/$1.html" },
