@@ -392,12 +392,12 @@ tr.row-med  { box-shadow: inset 3px 0 0 var(--warn); }
 .fuel-wrap { display: flex; align-items: center; gap: 18px; }
 .fuel-ring { position: relative; width: 128px; height: 128px; flex: none; }
 .fuel-ring svg { transform: rotate(-90deg); }
-.fuel-ring circle { fill: none; stroke-linecap: round; filter: drop-shadow(0 0 4px currentColor); }
+.fuel-ring circle { fill: none; stroke-linecap: round; }
 .fuel-center {
   position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
 }
-.fuel-center .pct { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--nominal); line-height: 1; }
-.fuel-center .lbl { font-size: 9px; color: var(--text-mid); letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; }
+.fuel-center .pct { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--text-hi); line-height: 1; }
+.fuel-center .lbl { font-size: 9px; color: var(--text-low); letter-spacing: .1em; text-transform: uppercase; margin-top: 3px; }
 
 .fuel-stats { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
 .fuel-stat {

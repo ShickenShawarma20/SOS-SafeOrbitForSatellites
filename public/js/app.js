@@ -59,13 +59,13 @@
   window.renderFuelGauge = function (svgId, pct, color) {
     const svg = document.getElementById(svgId);
     if (!svg) return;
-    const size = 128, stroke = 11;
+    const size = 128, stroke = 8;
     const r = (size - stroke) / 2, c = size / 2;
     const circ = 2 * Math.PI * r;
-    const col = color || "var(--nominal)";
+    const col = color || "var(--accent)";
     svg.innerHTML =
-      `<circle cx="${c}" cy="${c}" r="${r}" stroke="rgba(148,163,184,.14)" stroke-width="${stroke}"></circle>` +
-      `<circle cx="${c}" cy="${c}" r="${r}" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="${(pct / 100) * circ} ${circ}">` +
+      `<circle cx="${c}" cy="${c}" r="${r}" stroke="rgba(148,163,184,.1)" stroke-width="${stroke}"></circle>` +
+      `<circle cx="${c}" cy="${c}" r="${r}" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="${(pct / 100) * circ} ${circ}" opacity="0.8">` +
       `<title>Fuel remaining ${pct}%</title></circle>`;
   };
 
