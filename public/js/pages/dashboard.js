@@ -36,6 +36,7 @@
     var S = window.SOS;
     var refreshInterval = 30000; // 30 seconds
     var lastUpdated = null;
+    var criticalTcaIso = null;
 
     /* ---- Live Timestamp ---- */
     function updateTimestamp() {
@@ -45,6 +46,26 @@
     }
     updateTimestamp();
     setInterval(updateTimestamp, 1000);
+
+    /* ---- Live TCA Countdown ---- */
+    function fmtCountdown(iso) {
+      if (!iso) return "—";
+      var tca = new Date(iso).getTime();
+      var now = Date.now();
+      var diff = tca - now;
+      var sign = diff < 0 ? "+" : "−";
+      var abs = Math.abs(diff);
+      var h = Math.floor(abs / 3600000);
+      var m = Math.floor((abs % 3600000) / 60000);
+      var s = Math.floor((abs % 60000) / 1000);
+      return "T" + sign + String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+    function updateTcaCountdown() {
+      if (!criticalTcaIso) return;
+      var el = document.querySelector(".alert-crit .am-row .v.red.num");
+      if (el) el.textContent = fmtCountdown(criticalTcaIso);
+    }
+    setInterval(updateTcaCountdown, 1000);
 
     /* ---- Periodic Data Refresh Loop ---- */
     async function refreshAll() {
@@ -56,7 +77,8 @@
           if (alertPair) fadeReplace(alertPair, c.satelliteId + ' \u2194 ' + c.objectId);
 
           var rows = document.querySelectorAll(".alert-crit .am-row");
-          if (rows[0]) animateNumber(rows[0].querySelector(".v"), S.fmtTime(c.tca), "", "", 300);
+          criticalTcaIso = c.tca;
+          if (rows[0]) animateNumber(rows[0].querySelector(".v"), fmtCountdown(c.tca), "", "", 300);
           if (rows[1]) animateNumber(rows[1].querySelector(".v"), S.fmtPc(c.probabilityOfCollision), "", "", 300);
           if (rows[2]) animateNumber(rows[2].querySelector(".v"), S.fmtDist(c.missDistanceMeters), "", " m", 300);
           if (rows[3]) animateNumber(rows[3].querySelector(".v"), c.relativeVelocityKms + " km/s", "", "", 300);
