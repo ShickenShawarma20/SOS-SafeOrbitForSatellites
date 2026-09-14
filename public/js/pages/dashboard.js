@@ -55,9 +55,11 @@
       var diff = tca - now;
       var sign = diff < 0 ? "+" : "−";
       var abs = Math.abs(diff);
-      var h = Math.floor(abs / 3600000);
+      var d = Math.floor(abs / 86400000);
+      var h = Math.floor((abs % 86400000) / 3600000);
       var m = Math.floor((abs % 3600000) / 60000);
       var s = Math.floor((abs % 60000) / 1000);
+      if (d > 0) return "T" + sign + d + "d " + String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
       return "T" + sign + String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
     }
     function updateTcaCountdown() {
