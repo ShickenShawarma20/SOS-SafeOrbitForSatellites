@@ -36,7 +36,7 @@
     var S = window.SOS;
     var refreshInterval = 30000; // 30 seconds
     var lastUpdated = null;
-    var criticalTcaIso = null;
+    var criticalTcaIso = "2024-05-26T04:32:18Z";
 
     /* ---- Live Timestamp ---- */
     function updateTimestamp() {
@@ -78,7 +78,7 @@
 
           var rows = document.querySelectorAll(".alert-crit .am-row");
           criticalTcaIso = c.tca;
-          if (rows[0]) animateNumber(rows[0].querySelector(".v"), fmtCountdown(c.tca), "", "", 300);
+          if (rows[0]) { var tcaEl = rows[0].querySelector(".v"); if (tcaEl) tcaEl.textContent = fmtCountdown(c.tca); }
           if (rows[1]) animateNumber(rows[1].querySelector(".v"), S.fmtPc(c.probabilityOfCollision), "", "", 300);
           if (rows[2]) animateNumber(rows[2].querySelector(".v"), S.fmtDist(c.missDistanceMeters), "", " m", 300);
           if (rows[3]) animateNumber(rows[3].querySelector(".v"), c.relativeVelocityKms + " km/s", "", "", 300);
