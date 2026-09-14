@@ -30,6 +30,7 @@
     { "src": "/api/v1/tracking/fleet", "dest": "/api/v1/tracking/fleet.ts" },
     { "src": "/api/v1/tracking/status", "dest": "/api/v1/tracking/status.ts" },
     { "src": "/api/v1/debris", "dest": "/api/v1/debris.ts" },
+    { "src": "/api/v1/debris/(.*)", "dest": "/api/v1/debris.ts" },
     { "src": "/api/v1/conjunctions/([^/]+)/geometry", "dest": "/api/v1/conjunctions/[id]/geometry.ts" },
     { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "src": "/(.*\\.(css|js|jpg|jpeg|png|gif|svg|mp4|ico|json|woff|woff2|ttf|eot))", "dest": "/public/$1" },
